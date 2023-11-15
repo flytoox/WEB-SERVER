@@ -1,0 +1,15 @@
+http://localhost:8080
+
+
+HTTP/1.1 200 OK
+Server: nginx/1.25.3
+Date: Mon, 13 Nov 2023 16:23:28 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Thu, 02 Nov 2023 16:08:09 GMT
+Connection: close
+ETag: "6543c969-267"
+Accept-Ranges: bytes
+
+<html><head><title>Welcome to Our Webserver!</title></head>
+<body><p><em>Thank you for using our webserver.</em></p></body></html>
