@@ -1,6 +1,6 @@
 #include "webserve.hpp"
 
-static std::vector<std::string> splitBySpace( const std::string& httpLine ) {
+static std::vector<std::string> splitBySpace(Request &request, const std::string& httpLine ) {
 
     std::vector<std::string> tokens;
     std::string token;
@@ -9,6 +9,18 @@ static std::vector<std::string> splitBySpace( const std::string& httpLine ) {
     while (std::getline(tokenStream, token, ' ')) {
         if (token.length())
             tokens.push_back(token);
+    }
+
+    token = tokens[0];
+
+    //* Whitespaces ruled : https://www.rfc-editor.org/rfc/rfc7230#section-3.2
+
+    if ( token[token.length() - 1] == ' ' ) {
+        std::string response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
+        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
+        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+        throw "400" ; 
     }
 
     return tokens;
@@ -223,20 +235,16 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
         ( track.find("POST") != std::string::npos ) || 
         ( track.find("DELETE") != std::string::npos ) )
         parseSingleLine(headerSplitVector, request);
-    if (track == "Host:")
+    if (track == "Host:" )
         parseHost(headerSplitVector, request);
-    if (track == "Content-Type:")
+    if (track == "Content-Type:" )
         parseContentType(headerSplitVector, request);
-    if (track == "Content-Length:")
-    {
+    if (track == "Content-Length:" )
         parseContentLength(headerSplitVector, request);
-
-    }
-    if (track == "Transfer-Encoding:")
-    {
+    if (track == "Transfer-Encoding:" )
         parseTransferEncoding(headerSplitVector, request);
-    }
     return ;
+
 }
 
 void parseAndSetRequestHeader(Request &request) {
@@ -261,13 +269,20 @@ void parseAndSetRequestHeader(Request &request) {
 
             httpRequestHeader = header.substr(0, found);
             //std::cout << "|" << httpRequestHeader;
-            spaceParse = splitBySpace(httpRequestHeader);
+            spaceParse = splitBySpace(request, httpRequestHeader);
 
             tokenizeHttpHeader(spaceParse, request);
 
             header.erase(0, found + 2);
         } else {
             //exit (0);
+            if ( request.getHttpVerb().empty() ) {
+                std::string response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
+                response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+                response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
+                response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+                throw "400" ; 
+            }
             break ;
         }
     }

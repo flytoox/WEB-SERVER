@@ -149,11 +149,17 @@ void parseRequestBody(Request &request) {
         std::string value = itContentType->second;
 
         if (value == "text/plain") {
+            std::cout << "1\n";
             textContentType(request);
+            throw "200L";
         } else if ((itContentType->second).find("multipart/form-data") != std::string::npos ) {
+            std::cout << "11\n";
             multipartContentType(request);
+            throw "200L";
         } else if (value == "application/x-www-form-urlencoded") {
+            std::cout << "111\n";
             urlencodedContentType(request);
+            throw "200L";
         } else {
             throw "502 Content-type";
         }

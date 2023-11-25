@@ -155,7 +155,7 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
         }
 
         response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-        response = "Content-type: text/plain; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+        response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
 
         std::fstream file(absolutePath);
     
@@ -181,6 +181,7 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
     for (mapConstIterator it = locationBlock.begin(); it != locationBlock.end(); ++it) {
         if (it->first == "root") {
             concatenateWithRoot = it->second;
+            std::cout << "INROOT|" << concatenateWithRoot << "|\n";
         }
         if (it->first == "location match" ) {
             locationUsed = it->second;
@@ -224,6 +225,7 @@ void getMethod(Request &request) {
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;
 
+    std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
             requestTypeFile(concatenateWithRoot, uri, request);
@@ -236,8 +238,7 @@ void getMethod(Request &request) {
             response = "<html><h1>502 Bad Gateway</h1></html>\r\n"; request.setResponseVector(response);
             throw "502"; 
         }
-    } 
-    else {
+    } else {
         
         std::string response = "HTTP/1.1 404 Not Found\r\n"; request.setResponseVector(response);
         response = "Content-Type: text/html\r\n"; request.setResponseVector(response);

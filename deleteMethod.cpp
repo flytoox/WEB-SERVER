@@ -69,7 +69,7 @@ static bool deleteAllFolderContent(Request &request,std::string &absolutePath) {
         std::string dir = absolutePath + '/' + cmp;
         if ( cmp.compare(".") && cmp.compare("..") ) {
             if (read_dir->d_type == DT_DIR) {
-                if (!deleteAllFolderContent(request, dir))
+                if ( ! deleteAllFolderContent(request, dir))
                     return (false);
             }
             if ( remove(dir.c_str()) ) {
@@ -126,9 +126,12 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
 
         bool check = deleteAllFolderContent(request, absolutePath);
         if ( check ) {
+
+            std::cout << "apssd\n"; 
+
             std::string response = "HTTP/1.1 204 No Content\r\n"; request.setResponseVector(response);
             response = "Content-Type: text/html\r\nContent-Length: 0\r\n\r\n"; request.setResponseVector(response);
-            throw "204";
+            throw "55204";
         }
     
         if ( ! check ) {
@@ -184,7 +187,7 @@ void deleteMethod(Request &request) {
 
     retrieveRootAndUri(request, concatenateWithRoot, locationUsed);
     // TODO : request.setRoot(concatenateWithRoot);
-
+    // TODO : Figure out whta's that if statement for below 
     if ( concatenateWithRoot.empty() ) {
 
         mapConstIterator it = (request.getDirectives()).find("root");
@@ -201,17 +204,32 @@ void deleteMethod(Request &request) {
     }
 
     std::string uri = request.getUri();
-    request.setRoot(concatenateWithRoot);
 
-    concatenateWithRoot += uri;
-    const char *path = concatenateWithRoot.c_str();
+    std::cout << "URI|" << uri << "|\n";
+    std::cout << "root|" << concatenateWithRoot << "|\n";
+
+    request.setRoot(concatenateWithRoot);
+    // concatenateWithRoot += uri;
+    std::string absolutePath = concatenateWithRoot + (uri);
+
+    std::cout << "absolutePath|" << absolutePath << "|\n";
+
+    if (absolutePath == concatenateWithRoot + '/') {
+        std::string response = "HTTP/1.1 405 Method Not Allowed\r\n"; request.setResponseVector(response);
+        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+        response = "Content-Length: 46\r\n\r\n"; request.setResponseVector(response);
+        response = "<html><h1> 405 Method Not Allowed </h1></html>\r\n"; request.setResponseVector(response);
+        throw "405";  
+    }
+
+    const char *path = absolutePath.c_str();
     struct stat fileStat;
 
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
-            deleteFile(concatenateWithRoot, uri, request);
+            deleteFile(absolutePath, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
-            deleteDirectory(concatenateWithRoot, uri, request);
+            deleteDirectory(absolutePath, uri, request);
         } else {
             std::string response = "HTTP/1.1 502 Bad Gateway\r\n"; request.setResponseVector(response);
             response = "Content-Type: text/html\r\n"; request.setResponseVector(response);

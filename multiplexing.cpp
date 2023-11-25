@@ -21,6 +21,21 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
         FD_CLR(i, &readsd); FD_SET(i, &writesd);
 
+        std::cout << "\nRESPONSE\n";
+
+        std::vector<std::string> chunkedResponse = simultaneousRequests[i].getChunkedResponse();
+        std::string textResponse = simultaneousRequests[i].getTextResponse();
+        std::vector<std::string> multipartReponse = simultaneousRequests[i].getMultipartReponse();
+        std::map<std::string, std::string> urlencodedResponse = simultaneousRequests[i].getUrlencodedResponse();
+
+
+        // std::cerr << textResponse << std::endl;
+        std::cout << "start" << std::endl;
+        for (auto it : multipartReponse) {
+            std::cerr << it << std::endl;
+        }
+        std::cout << "finished" << std::endl;
+
         // res +=  "HTTP/1.1 200 OK\r\n";
         // res += "Content-Length: "; res += (simultaneousRequests[i].getrequestOutputTest()).length() ; res += "\r\n";
         // res += "Content-Type: text/html; charset=UTF-8\r\n";
@@ -136,8 +151,8 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 if ( ! (simultaneousRequests[i].getRequestBodyChunk()) ) {
                     //! REQUEST HEADER
                     simultaneousRequests[i].setRequestHeader(convert);
+                    try {
                     if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
-                        try {
                             parseAndSetRequestHeader(simultaneousRequests[i]);
                             // mapConstIterator mapIt = ((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:");
                             // std::string transferEncoding = mapIt->second; (&& ! ( transferEncoding.empty() ) && transferEncoding != "chunked")
@@ -147,12 +162,23 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
                             }
                             
-                        } catch (const char *err) {
-                            functionToSend(i, readsd, writesd, allsd, simultaneousRequests);
-                            std::cout << "Error From Request Header : " << err << std::endl;
-                            // functionToSend(i, readsd, writesd, simultaneousRequests);
+                    } else if ( recevRequestLen < 1024 ) {
+                        if ( ((simultaneousRequests[i]).getRequestHeader()).empty() ) {
+
+                            std::string response = "HTTP/1.1 204 No Content\r\n"; (simultaneousRequests[i]).setResponseVector(response);
+                            response = "Content-Type: text/html\r\n"; (simultaneousRequests[i]).setResponseVector(response);
+                            response = "Content-Length: 36\r\n\r\n"; (simultaneousRequests[i]).setResponseVector(response);
+                            response = "<html><h1>204 No Content</h1></html>\r\n"; (simultaneousRequests[i]).setResponseVector(response);
+                            throw "204" ; 
+
+                        } else {
+                            parseRequestBody(simultaneousRequests[i]); checkRequestedHttpMethod(simultaneousRequests[i]);
                         }
-                    } 
+                    } } catch (const char *err) {
+                        functionToSend(i, readsd, writesd, allsd, simultaneousRequests);
+                        std::cout << "Error From Request Header : " << err << std::endl;
+                        // functionToSend(i, readsd, writesd, simultaneousRequests);
+                    }
                 } else {
                     //! REQUEST BODY
                     simultaneousRequests[i].setRequestBody(convert);
