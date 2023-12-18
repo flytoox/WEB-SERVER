@@ -9,7 +9,7 @@ void    adjustServer2DirectivesMap(std::map<std::string, std::string> &serverDir
     serverDirectives["server_name"] = "localhost";
     serverDirectives["autoindex"] = "on";
     serverDirectives["root"] = "/";
-    serverDirectives["client_max_body_size"] = "2000000";
+    // serverDirectives["client_max_body_size"] = "2000000";
     serverDirectives["index"] = "index.html";
 
 }

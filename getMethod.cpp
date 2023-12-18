@@ -147,26 +147,37 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
 
     {
-        std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
 
-        if ( extension == ".php" || extension == ".py") {
-            //! RUN CGI !
-            throw "CGI";
+        if ( file.find('.') != std::string::npos ) {
+
+            std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+
+            if ( extension == ".php" || extension == ".py") {
+                //! RUN CGI !
+                response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+                response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+                throw "CGI";
+            }
+
         }
-
-        response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-        response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
-
-        std::fstream file(absolutePath);
     
+        std::fstream file(absolutePath);
+
         if ( file.good() ) {
 
+            // std::cout << "GOOTOOT \n";
+
+            // std::cout << "hhhhhere\n"    ;
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
             std::string content = str;
-
-            response = "Content-Length: "; response += content.size(); response += "\r\n"; request.setResponseVector(response);
-            response = "\r\n" ; request.setResponseVector(response);
+            // std::cout << << content << std::endl;
+            std::string response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+            unsigned long number = content.size() ; std::ostringstream oss ; oss << number ; std::string result = oss.str();
+            response = "Content-Length: "; response += result ; response += "\r\n" ; request.setResponseVector(response);
+            response = "Content-Type: video/mp4\r\n\r\n"; request.setResponseVector(response);
             response = content ; request.setResponseVector(response);
+            // std::cerr << content << std::endl;
+            //std::cout << request.getResponse << std::endl;
 
             throw "200";
         }
@@ -179,9 +190,9 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
     std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
 
     for (mapConstIterator it = locationBlock.begin(); it != locationBlock.end(); ++it) {
+
         if (it->first == "root") {
             concatenateWithRoot = it->second;
-            std::cout << "INROOT|" << concatenateWithRoot << "|\n";
         }
         if (it->first == "location match" ) {
             locationUsed = it->second;
@@ -225,7 +236,10 @@ void getMethod(Request &request) {
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;
 
-    std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
+    std::cout << "--> absolutePath |" << concatenateWithRoot << "|\n";
+    std::cout << "--> uri |" << uri << "|\n"; 
+
+    // std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
             requestTypeFile(concatenateWithRoot, uri, request);

@@ -22,9 +22,10 @@ int	set_socket(int port) {
 		return 0;
 	if (bind(sokt, (struct sockaddr *)&addr, sizeof(addr)) == -1)
 		return 0;
-	if (listen(sokt, 128) == -1)
+	if (listen(sokt, 2) == -1)
 		return 0;
 	//here logic of select
+	//while (1);
 	fd_set current, ready;
 	FD_ZERO(&current);
 	FD_SET(sokt, &current);

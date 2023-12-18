@@ -62,8 +62,8 @@ Content-Type: text/html
 
 
 
-7
-Mozilla
+7\r\n
+Mozilla\r\n
 11
 Developer Network
 0

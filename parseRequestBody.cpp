@@ -97,9 +97,9 @@ static void multipartContentType(Request &request) {
 
     request.setMultipartResponse(split);
     // for (auto i : split) {
-    //     std::cout << "\n--------------             START  -----------------------------\n";
-    //     std::cout  << i ;
-    //     std::cout << "\n--------------             END  -----------------------------\n";
+    //     // std::cout << "\n--------------             START  -----------------------------\n";
+    //     std::cerr << i << std::endl;
+    //     // std::cout << "\n--------------             END  -----------------------------\n";
     // }
     // exit (0);
 
@@ -125,8 +125,55 @@ static void urlencodedContentType(Request &request) {
 
 }
 
+static int getTheMaxsize(Request &request) {
+
+    std::map<std::string, std::string> location = request.getLocationBlockWillBeUsed();
+    int size = 0;
+
+    for ( mapConstIterator it =  location.begin() ; it != location.end() ; ++it ) {
+        if (it->first == "client_max_body_size") {
+            size = std::atoi((it->second).c_str());
+            return (size);
+        }
+    }
+
+    std::map<std::string, std::string> directives = request.getDirectives();
+
+    for ( mapConstIterator it =  directives.begin() ; it != directives.end() ; ++it ) {
+        if (it->first == "client_max_body_size") {
+            size = std::atoi((it->second).c_str());
+            break ;
+        }
+    }
+
+    return (size);
+}
+
 void parseRequestBody(Request &request) {
 
+
+    //*Check Length of the Body
+
+    unsigned long sizeMax = getTheMaxsize(request);
+    if ( sizeMax && request.getRequestBody().length() > sizeMax ) {
+        
+        std::string response = "HTTP/1.1 413 Content Too Large\r\n"; request.setResponseVector(response);
+        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+        response = "Content-Length: 45\r\n\r\n"; request.setResponseVector(response);
+        response = "<html><h1> 413 Content Too Large </h1></html>\r\n"; request.setResponseVector(response);
+        throw "413";
+
+    }
+
+    if ( request.getRequestBody().length() > 4000000000 ) {
+
+        std::string response = "HTTP/1.1 413 Content Too Large\r\n"; request.setResponseVector(response);
+        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+        response = "Content-Length: 45\r\n\r\n"; request.setResponseVector(response);
+        response = "<html><h1> 413 Content Too Large </h1></html>\r\n"; request.setResponseVector(response);
+        throw "413";
+
+    }
 
     //TODO : Check Transfer-Encoding && multipart
 
@@ -142,6 +189,8 @@ void parseRequestBody(Request &request) {
         }
         chunkedRequest(request);
     }
+
+
 
     itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
     if ( itContentType != (request.getHttpRequestHeaders()).end()) {

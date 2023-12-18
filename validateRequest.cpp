@@ -66,8 +66,11 @@ static std::string fetchTheExactDirectory(const std::string uri) {
 static void removeLastOccurrence(std::string &str) {
 
     size_t pos = str.rfind('/');
+    std::cout << "i: |" << pos << "|\n";
 
-    if (pos != std::string::npos) {
+    if (pos == 0 && pos != std::string::npos) {
+        str = str[0];
+    } else if ( pos != std::string::npos ) {
         str.erase(pos, str.length() - 1);
     }
 
@@ -145,7 +148,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
 
         for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-
             std::map<std::string, std::string> mapIterator = (*it);
             if (mapIterator["location match"] == uri) {
                 found = mapIterator ;
@@ -154,19 +156,14 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
             //     defaultLocation = mapIterator ;
             // }
         }
-
         if ( ! found.empty() )
             return (found);
-        //return (defaultLocation);
-
+        //return (defaultLocation)
     // }
-
-
-
 
     std::string directoryUri = fetchTheExactDirectory(uri);
 
-
+    //! Aren't the same ?
     for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
 
         std::map<std::string, std::string> mapIterator = (*it);
@@ -181,11 +178,12 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         return (found);
 
     std::string substrUri = uri; unsigned long i = 0;
-
+    std::cout << "BEFORE URI|" << uri << "|\n";
     while (i++ < locationsBlock.size()) {
 
-        removeLastOccurrence(substrUri);
 
+        removeLastOccurrence(substrUri);
+        std::cout << "substraction :|" << substrUri << "|\n";
         for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
 
             std::map<std::string, std::string> mapIterator = (*it);
@@ -261,6 +259,8 @@ void validateRequest(Request &request) {
     //! Skipped: if => no location match the request uri
     std::map<std::string, std::string> location = fetchSuitableLocationBlock(request, uri);
 
+    std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
+
     // for (auto it : location) {
     //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
     // }
@@ -275,7 +275,7 @@ void validateRequest(Request &request) {
     // locationNotFound = root + request.getUri();
 
     if ( ! location.empty() ) {
-        request.setLocationBlockWillBeUsed(location);
+        request.setLocationBlockWillBeUsed(location) ;
     
     } else if (  request.getLocationBlockWillBeUsed().empty() ) {
 
@@ -310,6 +310,7 @@ void validateRequest(Request &request) {
         response = "<html><h1>301 Moved Permanently</h1></html>\r\n"; request.setResponseVector(response);
         throw "301";
     }
+
 
 
 }

@@ -21,7 +21,7 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
         FD_CLR(i, &readsd); FD_SET(i, &writesd);
 
-        std::cout << "\nRESPONSE\n";
+        // std::cout << "\nRESPONSE\n";
 
         std::vector<std::string> chunkedResponse = simultaneousRequests[i].getChunkedResponse();
         std::string textResponse = simultaneousRequests[i].getTextResponse();
@@ -30,11 +30,12 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
 
         // std::cerr << textResponse << std::endl;
-        std::cout << "start" << std::endl;
-        for (auto it : multipartReponse) {
-            std::cerr << it << std::endl;
-        }
-        std::cout << "finished" << std::endl;
+        // std::cout << "start" << std::endl;
+        // std::cout << multipartReponse[0].size() << std::endl;
+        // for (auto it : multipartReponse) {
+        //     std::cerr << it << std::endl;
+        // }
+        // std::cout << "finished" << std::endl;
 
         // res +=  "HTTP/1.1 200 OK\r\n";
         // res += "Content-Length: "; res += (simultaneousRequests[i].getrequestOutputTest()).length() ; res += "\r\n";
@@ -46,9 +47,33 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
             res += it;
         }
 
-        if (FD_ISSET(i, &writesd) && send(i, res.c_str(), res.length(), 0) < 0) {
-            std::cout << "Error: send()" << std::endl; exit (1);
-        }
+
+        // chunk = res.length() < 6000 ? res : res.substr(0, 6000) ;
+        // res.length() < 6000 ? res.erase() : res.erase(0, 6000) ;
+        // if (FD_ISSET(i, &writesd) && send(i, res.c_str(), res.length(), 0) == -1) {
+        //     std::cout << "done herte" << std::endl;
+        //     std::cout << "Error: send()" << std::endl; exit (1);
+        // }
+        int sd;
+        while ( res.length() ) {
+
+            std::string chunk = "";
+            if (res.length() > 500) {
+                chunk = res.substr(0, 500); res.erase(0, 500);
+            } else {
+                chunk = res; res.clear();
+            }
+
+            if (FD_ISSET(i, &writesd) && (sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
+                std::cout << "Error: send()" << std::endl; exit (1);
+            }
+
+
+            //std::cout << "HEADER:|" << chunk.c_str() << "|\n";
+            //std::cout << " res : " << res.length() << "|\t sd : |" << sd << "|\n";
+        } 
+
+        std::cout << "HERE\n";
         close(i) ; FD_CLR(i, &allsd);
     
         std::map<int, Request>::iterator it = simultaneousRequests.find(i); 
@@ -156,7 +181,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             parseAndSetRequestHeader(simultaneousRequests[i]);
                             // mapConstIterator mapIt = ((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:");
                             // std::string transferEncoding = mapIt->second; (&& ! ( transferEncoding.empty() ) && transferEncoding != "chunked")
-                            if (recevRequestLen < 1024 ) {
+                            if ( recevRequestLen < 1024 ) {
                                 // std::cout << (simultaneousRequests[i]).getRequestBody() << std::endl;
                                 parseRequestBody(simultaneousRequests[i]);
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
@@ -182,6 +207,9 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 } else {
                     //! REQUEST BODY
                     simultaneousRequests[i].setRequestBody(convert);
+
+                    //? here insert the max here
+
                     // mapConstIterator mapIt = ((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:");
                     // std::string transferEncoding = mapIt->second; (&& ! ( transferEncoding.empty() ) && transferEncoding != "chunked")
                     try {

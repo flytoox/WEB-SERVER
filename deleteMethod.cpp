@@ -129,8 +129,9 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
 
             std::cout << "apssd\n"; 
 
-            std::string response = "HTTP/1.1 204 No Content\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\nContent-Length: 0\r\n\r\n"; request.setResponseVector(response);
+            response = "HTTP/1.1 204 No Content\r\n"; request.setResponseVector(response);
+            response = "Content-Type: text/html\r\nContent-Length: 36\r\n\r\n"; request.setResponseVector(response);
+            response = "<html><h1>204 No Content</h1></html>\r\n\r\n"; request.setResponseVector(response);
             throw "55204";
         }
     
@@ -219,7 +220,7 @@ void deleteMethod(Request &request) {
         response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
         response = "Content-Length: 46\r\n\r\n"; request.setResponseVector(response);
         response = "<html><h1> 405 Method Not Allowed </h1></html>\r\n"; request.setResponseVector(response);
-        throw "405";  
+        throw "405";
     }
 
     const char *path = absolutePath.c_str();
