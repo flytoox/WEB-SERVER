@@ -187,7 +187,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
                             }
                             
-                    } else if ( recevRequestLen < 1024 ) {
+                    } else if ( recevRequestLen ) {
                         if ( ((simultaneousRequests[i]).getRequestHeader()).empty() ) {
 
                             std::string response = "HTTP/1.1 204 No Content\r\n"; (simultaneousRequests[i]).setResponseVector(response);

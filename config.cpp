@@ -12,6 +12,10 @@
 
 #include "Server.hpp"
 #include "configFile.hpp"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 using namespace std;
 
@@ -27,20 +31,51 @@ void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 		
 }
 
-void fatal(std::string expression) {
-    std::cerr << expression << std::endl;
+void fatal(string expression) {
+    cerr << expression << endl;
     exit (1);
 }
 
+string convertDomainToIPv4(string &domain)
+{
+    struct addrinfo hints, *result, *p;
+    char ipstr[INET_ADDRSTRLEN];
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(domain.c_str(), NULL, &hints, &result) != 0)
+        return "";
 
+    for (p = result; p != NULL; p = p->ai_next)
+    {
+        if (p->ai_family == AF_INET)
+        {
+            struct sockaddr_in *ipv4 = reinterpret_cast<struct sockaddr_in *>(p->ai_addr);
+            inet_ntop(AF_INET, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
+            freeaddrinfo(result);
+            return ipstr;
+        }
+    }
+    freeaddrinfo(result);
+    return "";
+}
+//TODO: cheange server_name to host
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
 
-    int port = std::atoi(((server.getdirectives().find("listen"))->second).c_str());
+    int port = atoi(((server.getdirectives().find("listen"))->second).c_str());
 
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = htonl(2130706433);
+	string server_name= ((server.getdirectives().find("server_name"))->second);
+	string ultimateHost = convertDomainToIPv4(server_name);
+	std::cout << "HERE: |" << ultimateHost << "|\n"; 
+	if (ultimateHost.empty()  ) {
+		//TODO : through expceptions
+		cout << "Invalid\n"; exit (0);
+	}
+    //serverAddress.sin_addr.s_addr = inet_pton(AF_INET, ultimateHost.c_str(), &serverAddress.sin_addr);
+	serverAddress.sin_addr.s_addr = inet_addr(ultimateHost.c_str());
     serverAddress.sin_port = htons(port);
 }
 
@@ -163,6 +198,8 @@ vector<Server> parsingFile(string s) {
 		setsockopt(servers[i].socketD, SOL_SOCKET, SO_REUSEADDR, &add, sizeof(add));
 
 		servers[i].setSocketDescriptor(servers[i].socketD);
+		//* SAVE HISTORY ( HOST & PORT )
+
 		servers[i].bindSockets();
 		servers[i].listenToIncomingConxs();
 		for (map<string, string>::iterator it = servers[i].directives.begin(); it != servers[i].directives.end(); it++)
