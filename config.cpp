@@ -70,8 +70,7 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
     serverAddress.sin_family = AF_INET;
 	string host= ((server.getdirectives().find("host"))->second);
 	string ultimateHost = convertDomainToIPv4(host);
-	std::cout << "HERE: |" << ultimateHost << "|\n"; 
-	if (ultimateHost.empty()  ) {
+	if ( ultimateHost.empty()  ) {
 		//TODO : through expceptions
 		cout << "Invalid\n"; exit (0);
 	}
@@ -187,7 +186,6 @@ vector<Server> parsingFile(string s) {
 	set<pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
-		cout << "Server " << i << endl;
 		adjustServerAddress(servers[i], servers[i].serverAddress);
 		servers[i].setServerAddress(servers[i].serverAddress);
 		
@@ -204,18 +202,7 @@ vector<Server> parsingFile(string s) {
 			servers[i].bindSockets();
 			servers[i].listenToIncomingConxs();
 			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
-			cerr << servers[i].directives["listen"]<< " " <<  servers[i].directives["host"] << endl;
 		}
-		for (map<string, string>::iterator it = servers[i].directives.begin(); it != servers[i].directives.end(); it++)
-			cout << it->first << " = " << it->second << endl;
-		for (size_t j = 0; j < servers[i].locationsBlock.size(); j++)
-		{
-			cout << "Location " << j << endl;
-			for (map<string, string>::iterator it = servers[i].locationsBlock[j].begin(); it != servers[i].locationsBlock[j].end(); it++)
-				cout << it->first << " = " << it->second << endl;
-			cout << endl;
-		}
-		cout << endl << endl;
 	}
 	return (servers);
 }

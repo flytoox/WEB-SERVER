@@ -7,7 +7,6 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<in
         //* GET SOCKET ON EACH SERVER
         Server serverIndex = (*it);
         int eachSocket = serverIndex.getSocketDescriptor();
-    
         //* PUSH IT TO THE allSocketsVector
         allSocketsVector.push_back(eachSocket);
     }
@@ -93,10 +92,18 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     }
 
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
+    std::string first_d =  serverDirectives["server_name"];
+    std::cout << " SERVER_NAME | " << first_d << " | \n";
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
 
     request.setDirectives(serverDirectives);
     request.setLocationsBlock(serverLocationsBlock);
+}
+
+void reCheckTheServer(configFile &configurationServers, std::string &header) {
+
+    std::cout << "|" << header << "|\n"; exit (0);
+
 }
 
 void funcMultiplexingBySelect(configFile &configurationServers) {
@@ -130,7 +137,6 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             std::cerr << "Error: select() fail" << std::endl;
             exit (1);
         }
-
         for (int i = 0; i <= max; i++) {
 
             if ( ! FD_ISSET(i, &readsd)) {
@@ -138,7 +144,6 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             }
 
             socket_iterator readyToConnect = std::find(allSocketsVector.begin(), allSocketsVector.end(), i);
-
             if (readyToConnect != allSocketsVector.end()) {
                 struct sockaddr_in clientAddress;
                 socklen_t addrlen =  sizeof(clientAddress);
@@ -164,20 +169,22 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             
                 std::string res; 
                 int recevRequestLen = recv(i , buffer, sizeof(buffer), 0);
-
+                
                 if (recevRequestLen < 0) {
                     std::cout << "Error: recev()" << std::endl;
                     close(i), FD_CLR(i, &allsd); continue ;
                 }
 
                 std::string convert(buffer, recevRequestLen);
-
+                // checkRightServer();
                 //* REQUEST 
                 if ( ! (simultaneousRequests[i].getRequestBodyChunk()) ) {
                     //! REQUEST HEADER
                     simultaneousRequests[i].setRequestHeader(convert);
                     try {
                     if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
+                            std::string header = (simultaneousRequests[i]).getRequestHeader();
+                            reCheckTheServer(configurationServers, header);
                             parseAndSetRequestHeader(simultaneousRequests[i]);
                             // mapConstIterator mapIt = ((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:");
                             // std::string transferEncoding = mapIt->second; (&& ! ( transferEncoding.empty() ) && transferEncoding != "chunked")
