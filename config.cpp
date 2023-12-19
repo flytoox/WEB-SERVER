@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <set>
 
 using namespace std;
 
@@ -67,8 +68,8 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
     int port = atoi(((server.getdirectives().find("listen"))->second).c_str());
 
     serverAddress.sin_family = AF_INET;
-	string server_name= ((server.getdirectives().find("server_name"))->second);
-	string ultimateHost = convertDomainToIPv4(server_name);
+	string host= ((server.getdirectives().find("host"))->second);
+	string ultimateHost = convertDomainToIPv4(host);
 	std::cout << "HERE: |" << ultimateHost << "|\n"; 
 	if (ultimateHost.empty()  ) {
 		//TODO : through expceptions
@@ -183,13 +184,13 @@ vector<Server> parsingFile(string s) {
 	if (!st.empty())
 		return (cout << "FUCK U DONT PLAY WITH ME\n", servers);
 	duplicateServerBasedOnListen(servers);
+	set<pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		cout << "Server " << i << endl;
 		adjustServerAddress(servers[i], servers[i].serverAddress);
 		servers[i].setServerAddress(servers[i].serverAddress);
 		
-
 
 		if (( servers[i].socketD = socket(AF_INET, SOCK_STREAM, 0) ) < 0) {
 			fatal("Error: Fail to create a Socket for Server 1");
@@ -199,9 +200,12 @@ vector<Server> parsingFile(string s) {
 
 		servers[i].setSocketDescriptor(servers[i].socketD);
 		//* SAVE HISTORY ( HOST & PORT )
-
-		servers[i].bindSockets();
-		servers[i].listenToIncomingConxs();
+		if (!Check.count({servers[i].directives["listen"], servers[i].directives["host"]})) {
+			servers[i].bindSockets();
+			servers[i].listenToIncomingConxs();
+			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
+			cerr << servers[i].directives["listen"]<< " " <<  servers[i].directives["host"] << endl;
+		}
 		for (map<string, string>::iterator it = servers[i].directives.begin(); it != servers[i].directives.end(); it++)
 			cout << it->first << " = " << it->second << endl;
 		for (size_t j = 0; j < servers[i].locationsBlock.size(); j++)
