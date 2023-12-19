@@ -173,8 +173,9 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             // std::cout << << content << std::endl;
             std::string response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
             unsigned long number = content.size() ; std::ostringstream oss ; oss << number ; std::string result = oss.str();
-            response = "Content-Length: "; response += result ; response += "\r\n" ; request.setResponseVector(response);
+            //response = "Content-Length: "; response += result ; response += "\r\n" ; request.setResponseVector(response);
             response = "Content-Type: video/mp4\r\n\r\n"; request.setResponseVector(response);
+            //response = "Content-Type: text/html\r\n\r\n"; request.setResponseVector(response);
             response = content ; request.setResponseVector(response);
             // std::cerr << content << std::endl;
             //std::cout << request.getResponse << std::endl;

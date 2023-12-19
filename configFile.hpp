@@ -18,6 +18,7 @@ public:
 
     const std::vector<Server> &getServers() const ;
     void setServers(Server &initiateServer);
+    void setTheVector( std::vector<Server> servers);
 
     ~configFile();
 

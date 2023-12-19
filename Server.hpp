@@ -4,24 +4,25 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <stack>
 #include <netinet/in.h>
 #include <vector>
 #include <string.h>
 #include <sys/socket.h>
+#include <fstream>
 #include <sys/_endian.h>
+#include <sstream>
 
 
 class Server {
 
-protected:
+public:
+
 
     int socketD;
     struct sockaddr_in serverAddress;
     std::map<std::string, std::string> directives;
     std::vector<std::map<std::string, std::string> > locationsBlock;
-
-public:
-
     Server();
 
 

@@ -30,6 +30,9 @@ typedef std::map<std::string, std::string>::const_iterator               mapCons
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
 typedef std::vector<std::map<std::string, std::string> >::const_iterator vectorToMapIterator;
 
+//! config.cpp
+
+std::vector<Server> parsingFile(std::string s);
 
 
 //! parseServer1Block.cpp
