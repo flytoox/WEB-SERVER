@@ -143,7 +143,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     for (FOREVER) {
 
         readsd = allsd;
-        char buffer[1024] = {0};
+        char buffer[100000] = {0};
 
         if (select(max + 1, &readsd, 0, 0, 0) < 0) {
             std::cerr << "Error: select() fail" << std::endl;
