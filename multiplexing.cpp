@@ -31,7 +31,7 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
         // std::cerr << textResponse << std::endl;
         // std::cout << "start" << std::endl;
         // std::cout << multipartReponse[0].size() << std::endl;
-        // for (auto it : multipartReponse) {
+        // for (auto it : multipartReponse) {+
         //     std::cerr << it << std::endl;
         // }
         // std::cout << "finished" << std::endl;
@@ -143,7 +143,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     for (FOREVER) {
 
         readsd = allsd;
-        char buffer[100000] = {0};
+        char buffer[1024] = {0};
 
         if (select(max + 1, &readsd, 0, 0, 0) < 0) {
             std::cerr << "Error: select() fail" << std::endl;

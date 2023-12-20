@@ -99,7 +99,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 {
     //! erase all the backslashes at the end of URI
     //TODO : /////////////////
-    if ( ! (uri.length() == 1) ) {
+    if (uri.length() != 1) {
         while (1) {
             if (uri[uri.length() - 1] == '/')
             { 
@@ -204,9 +204,9 @@ void validateRequest(Request &request) {
 
     std::string response;
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
-
+	// cerr << 
     std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
-    if ( ! transferEncoding.empty() && transferEncoding != "chunked") {
+    if ( !transferEncoding.empty() && transferEncoding != "chunked") {
         response = "HTTP/1.1 501 Not Implemented\r\n"; request.setResponseVector(response);
         response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
         response = "Content-Length: 41\r\n\r\n"; request.setResponseVector(response);
@@ -225,18 +225,19 @@ void validateRequest(Request &request) {
     }
 
     std::string uri = request.getUri();
-    if ( ! uri.empty() && characterNotAllowed( uri ) ) {
+    if ( !uri.empty() && characterNotAllowed( uri ) ) {
         response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
         response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
         response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
         response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
         throw "414" ;
     }
-    if ( ! uri.length()  &&  uri.length() > 2048) {
+    if ( uri.length()  &&  uri.length() > 2048) {
         response = "HTTP/1.1 414 Request-URI Too Long\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 46\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>414 Request-URI Too Long</h1></html>\r\n"; request.setResponseVector(response);
+        response += "Content-Type: text/html\r\n"; request.setResponseVector(response);
+        response += "Content-Length: 46\r\n\r\n"; request.setResponseVector(response);
+        response += "<html><h1>414 Request-URI Too Long</h1></html>\r\n"; request.setResponseVector(response);
+		
         throw "414" ;
     }     
 

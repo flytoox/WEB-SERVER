@@ -15,7 +15,7 @@ static std::vector<std::string> splitBySpace(Request &request, const std::string
 
     //* Whitespaces ruled : https://www.rfc-editor.org/rfc/rfc7230#section-3.2
 
-    if ( token[token.length() - 1] == ' ' ) {
+    if ( token.back() == ' ' ) {
         std::string response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
         response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
         response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);

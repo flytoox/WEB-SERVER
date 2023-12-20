@@ -52,6 +52,9 @@ public:
     Request();
 
 
+
+
+	std::string result;
     //* GETTERS
 
     const std::map<std::string, std::string> &getDirectives() const;
