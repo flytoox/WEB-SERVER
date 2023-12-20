@@ -38,17 +38,13 @@ int Server::getSocketDescriptor() const {
     return (socketD);
 }
 
-std::map<std::string, std::string> const& Server::getdirectives(void) {
+std::map<std::string, std::string> const& Server::getdirectives(void) const {
     return (this->directives);
 }
 
 
-std::vector<std::map<std::string, std::string> > const& Server::getlocationsBlock(void) {
+std::vector<std::map<std::string, std::string> > const& Server::getlocationsBlock(void) const {
     return (this->locationsBlock);
-}
-
-std::string Server::getServerName() const {
-    return (this->serverName);
 }
 
 void Server::setServerAddress(struct sockaddr_in &eachServerAddress) {

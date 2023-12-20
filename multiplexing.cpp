@@ -104,9 +104,8 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
     std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1); hostValue.erase(hostValue.length() - 1);
 
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
-        std::string thisServerName = it->getServerName();
-    
-        if ( ! thisServerName.empty() && thisServerName == hostValue) {
+        std::map<std::string, std::string>tmp = it->getdirectives();
+        if (tmp["server_name"] == hostValue) {
             serverReform = *it;
             std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
             std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
@@ -155,6 +154,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             if ( ! FD_ISSET(i, &readsd)) {
                 continue ;
             }
+            
 
             socket_iterator readyToConnect = std::find(allSocketsVector.begin(), allSocketsVector.end(), i);
             if (readyToConnect != allSocketsVector.end()) {

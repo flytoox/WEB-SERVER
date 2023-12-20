@@ -22,7 +22,6 @@ public:
     int socketD;
     struct sockaddr_in serverAddress;
     std::map<std::string, std::string> directives;
-    std::string serverName;
     std::vector<std::map<std::string, std::string> > locationsBlock;
     Server();
 
@@ -32,8 +31,8 @@ public:
 
     int getSocketDescriptor() const;
     std::string getServerName() const;  
-    std::map<std::string, std::string> const& getdirectives(void);
-    std::vector<std::map<std::string, std::string> > const& getlocationsBlock(void);
+    std::map<std::string, std::string> const& getdirectives(void) const ;
+    std::vector<std::map<std::string, std::string> > const& getlocationsBlock(void) const;
 
 
 
