@@ -47,6 +47,10 @@ std::vector<std::map<std::string, std::string> > const& Server::getlocationsBloc
     return (this->locationsBlock);
 }
 
+std::string Server::getServerName() const {
+    return (this->serverName);
+}
+
 void Server::setServerAddress(struct sockaddr_in &eachServerAddress) {
     this->serverAddress = eachServerAddress;
 }
@@ -55,5 +59,7 @@ void Server::setServerAddress(struct sockaddr_in &eachServerAddress) {
 void Server::setLocationBlock(std::vector<std::map<std::string, std::string> > &newLocDirectives) {
     this->locationsBlock = newLocDirectives;
 }
+
+
 
 Server::~Server() {}

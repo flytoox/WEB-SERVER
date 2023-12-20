@@ -61,6 +61,7 @@ string convertDomainToIPv4(string &domain)
     return "";
 }
 //TODO: cheange server_name to host
+//TODO : ALERT CHANGE THE NAMES 
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
@@ -71,7 +72,7 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 	string host= ((server.getdirectives().find("host"))->second);
 	string ultimateHost = convertDomainToIPv4(host);
 	if ( ultimateHost.empty()  ) {
-		//TODO : through expceptions
+		//TODO : throw expceptions
 		cout << "Invalid\n"; exit (0);
 	}
     //serverAddress.sin_addr.s_addr = inet_pton(AF_INET, ultimateHost.c_str(), &serverAddress.sin_addr);

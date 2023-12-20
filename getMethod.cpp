@@ -237,8 +237,8 @@ void getMethod(Request &request) {
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;
 
-    std::cout << "--> absolutePath |" << concatenateWithRoot << "|\n";
-    std::cout << "--> uri |" << uri << "|\n"; 
+    // std::cout << "--> absolutePath |" << concatenateWithRoot << "|\n";
+    // std::cout << "--> uri |" << uri << "|\n"; 
 
     // std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {

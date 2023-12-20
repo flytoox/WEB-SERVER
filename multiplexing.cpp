@@ -57,8 +57,8 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
         while ( res.length() ) {
 
             std::string chunk = "";
-            if (res.length() > 500) {
-                chunk = res.substr(0, 500); res.erase(0, 500);
+            if (res.length() > 65500) {
+                chunk = res.substr(0, 65500); res.erase(0, 65500);
             } else {
                 chunk = res; res.clear();
             }
@@ -72,7 +72,6 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
             //std::cout << " res : " << res.length() << "|\t sd : |" << sd << "|\n";
         } 
 
-        std::cout << "HERE\n";
         close(i) ; FD_CLR(i, &allsd);
     
         std::map<int, Request>::iterator it = simultaneousRequests.find(i); 
@@ -92,17 +91,31 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     }
 
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
-    std::string first_d =  serverDirectives["server_name"];
-    std::cout << " SERVER_NAME | " << first_d << " | \n";
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
 
     request.setDirectives(serverDirectives);
     request.setLocationsBlock(serverLocationsBlock);
 }
 
-void reCheckTheServer(configFile &configurationServers, std::string &header) {
+void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request) {
 
-    std::cout << "|" << header << "|\n"; exit (0);
+    Server serverReform;
+    std::string v1 = header.substr(header.find("Host: ")); std::string hostHeader = v1.substr(0, v1.find("\n"));
+    std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1); hostValue.erase(hostValue.length() - 1);
+
+    for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
+        std::string thisServerName = it->getServerName();
+    
+        if ( ! thisServerName.empty() && thisServerName == hostValue) {
+            serverReform = *it;
+            std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
+            std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
+
+            request.setDirectives(serverDirectives);
+            request.setLocationsBlock(serverLocationsBlock);
+            break ;
+        }
+    }
 
 }
 
@@ -184,7 +197,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     try {
                     if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
                             std::string header = (simultaneousRequests[i]).getRequestHeader();
-                            reCheckTheServer(configurationServers, header);
+                            reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             parseAndSetRequestHeader(simultaneousRequests[i]);
                             // mapConstIterator mapIt = ((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:");
                             // std::string transferEncoding = mapIt->second; (&& ! ( transferEncoding.empty() ) && transferEncoding != "chunked")

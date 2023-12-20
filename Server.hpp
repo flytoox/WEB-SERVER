@@ -22,6 +22,7 @@ public:
     int socketD;
     struct sockaddr_in serverAddress;
     std::map<std::string, std::string> directives;
+    std::string serverName;
     std::vector<std::map<std::string, std::string> > locationsBlock;
     Server();
 
@@ -29,7 +30,8 @@ public:
     void bindSockets();
     void listenToIncomingConxs();
 
-    int getSocketDescriptor() const;    
+    int getSocketDescriptor() const;
+    std::string getServerName() const;  
     std::map<std::string, std::string> const& getdirectives(void);
     std::vector<std::map<std::string, std::string> > const& getlocationsBlock(void);
 
