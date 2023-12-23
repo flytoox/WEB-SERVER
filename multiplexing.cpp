@@ -86,13 +86,18 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
 
         if (it->getSocketDescriptor() == i) {
+            if ( it->duplicated == true ) {
+                request.dup = true;
+            }
             serverUsed = *it;
         }
     }
 
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
-
+    
+    request.RePort = serverUsed.prePort;
+    request.ReHost = serverUsed.preHost;
     request.setDirectives(serverDirectives);
     request.setLocationsBlock(serverLocationsBlock);
 }
@@ -103,18 +108,24 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
     std::string v1 = header.substr(header.find("Host: ")); std::string hostHeader = v1.substr(0, v1.find("\n"));
     std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1); hostValue.erase(hostValue.length() - 1);
 
-    for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
-        std::map<std::string, std::string>tmp = it->getdirectives();
-        if (tmp["server_name"] == hostValue) {
-            serverReform = *it;
-            std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
-            std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
+    if ( request.dup == true ) {
 
-            request.setDirectives(serverDirectives);
-            request.setLocationsBlock(serverLocationsBlock);
-            break ;
+        for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
+            std::map<std::string, std::string>tmp = it->getdirectives();
+            if (tmp["server_name"] == hostValue && tmp["port"] == serverReform.prePort && tmp["host"] == serverReform.preHost ) {
+                serverReform = *it;
+                std::cout << "passed" ;
+                std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
+                std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
+
+                request.setDirectives(serverDirectives);
+                request.setLocationsBlock(serverLocationsBlock);
+                break ;
+            }
         }
+
     }
+
 
 }
 

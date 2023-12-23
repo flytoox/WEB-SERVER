@@ -51,9 +51,10 @@ public:
 
     Request();
 
+    std::string RePort;
+    std::string ReHost;
 
-
-
+    bool dup = false;
 	std::string result;
     //* GETTERS
 
