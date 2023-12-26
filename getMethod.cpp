@@ -228,7 +228,7 @@ void getMethod(Request &request) {
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call 
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    // std::cout << "URI |" << uri << "|\n";
+    std::cout << "URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
     concatenateWithRoot += uri;
 

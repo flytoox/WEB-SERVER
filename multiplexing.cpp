@@ -96,7 +96,6 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
     
-    request.serverLocationsBlock = serverLocationsBlock;
     request.RePort = serverUsed.prePort;
     request.ReHost = serverUsed.preHost;
     std::cout << "Port |" << request.RePort << "|\n";
