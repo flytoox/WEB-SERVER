@@ -293,6 +293,22 @@ void validateRequest(Request &request) {
 
     }
 
+    if ( location.find("return") != location.end() ) {
+
+        std::string changeLocation = location["return"];
+
+
+        for (vectorToMapIterator it = request.getLocationsBlock().begin(); it != request.getLocationsBlock().end(); ++it) {
+            std::map<std::string, std::string> location = (*it);
+            std::string checkRecursion = location["return"];
+            if ( location["location match"] == changeLocation  ) {
+                if ( location["location match"] != checkRecursion )
+                    request.setLocationBlockWillBeUsed(location);
+            }
+        }
+
+    }
+
     if ( location.find("allowedMethods") != location.end()) {
         if (location["allowedMethods"] != request.getHttpVerb()) {
             response = "HTTP/1.1 405 Method Not Allowed\r\n"; request.setResponseVector(response);
@@ -303,14 +319,14 @@ void validateRequest(Request &request) {
         }
     }
 
-    if ( location.find("return") != location.end()) {
-        response = "HTTP/1.1 301 Moved Permanently\r\n"; request.setResponseVector(response);
-        response = "Location: " + location["return"] + "/\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 43\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>301 Moved Permanently</h1></html>\r\n"; request.setResponseVector(response);
-        throw "301";
-    }
+    // if ( location.find("return") != location.end()) {
+    //     response = "HTTP/1.1 301 Moved Permanently\r\n"; request.setResponseVector(response);
+    //     response = "Location: " + location["return"] + "/\r\n"; request.setResponseVector(response);
+    //     response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+    //     response = "Content-Length: 43\r\n\r\n"; request.setResponseVector(response);
+    //     response = "<html><h1>301 Moved Permanently</h1></html>\r\n"; request.setResponseVector(response);
+    //     throw "301";
+    // }
 
 
 

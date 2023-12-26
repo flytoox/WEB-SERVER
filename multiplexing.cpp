@@ -96,6 +96,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
     
+    request.serverLocationsBlock = serverLocationsBlock;
     request.RePort = serverUsed.prePort;
     request.ReHost = serverUsed.preHost;
     std::cout << "Port |" << request.RePort << "|\n";
@@ -220,6 +221,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     try {
                     if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
                             std::string header = (simultaneousRequests[i]).getRequestHeader();
+                            //TODO: this unction must check the server only once! 
                             reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             parseAndSetRequestHeader(simultaneousRequests[i]);
                             // mapConstIterator mapIt = ((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:");
