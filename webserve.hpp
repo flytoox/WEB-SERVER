@@ -4,6 +4,8 @@
 #include "Request.hpp"
 #include "Server.hpp"
 #include "multiplexing.hpp"
+#include "responseBuilder.hpp"
+#include "macros.hpp"
 
 #include <iostream>
 #include <exception>

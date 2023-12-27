@@ -10,6 +10,7 @@ class Request {
 
 private:
 
+    
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
 
@@ -51,6 +52,8 @@ public:
 
     Request();
 
+    responseBuilder response;
+    std::string extension;
 
     std::string RePort;
     std::string ReHost;

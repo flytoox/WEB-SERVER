@@ -17,6 +17,7 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
         std::string res = "";
     
+        simultaneousRequests.bui
 
         FD_CLR(i, &readsd); FD_SET(i, &writesd);
 

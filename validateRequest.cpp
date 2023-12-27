@@ -225,13 +225,25 @@ void validateRequest(Request &request) {
     }
 
     std::string uri = request.getUri();
+    //! TEST BUILDER PATTERN
+
     if ( !uri.empty() && characterNotAllowed( uri ) ) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-        throw "414" ;
+        response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addContentLength("47")
+            .addResponseBody("<html><h1>414 Request-URI Too Long</h1></html>")
+            .build();
+        throw "414";
     }
+
+    // if ( !uri.empty() && characterNotAllowed( uri ) ) {
+    //     response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
+    //     response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
+    //     response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
+    //     response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+    //     throw "414" ;
+    // }
     if ( uri.length()  &&  uri.length() > 2048) {
         response = "HTTP/1.1 414 Request-URI Too Long\r\n"; request.setResponseVector(response);
         response += "Content-Type: text/html\r\n"; request.setResponseVector(response);
