@@ -20,3 +20,4 @@
 #define RESPONSE_URI_TOO_LONG            "414 URI Too Long"
 #define RESPONSE_INTERNAL_SERVER_ERROR   "500 Internal Server Error"
 #define RESPONSE_NOT_IMPLEMENTED         "501 Not Implemented"
+#define RESPONSE_BAD_GATEWAY             "502 Bad Gateway"

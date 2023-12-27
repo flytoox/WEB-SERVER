@@ -26,8 +26,9 @@ STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
         return URI_TOO_LONG;
     if (type == "500") 
         return INTERNAL_SERVER_ERROR;
-    //if (type == "501") 
+    if (type == "501") 
         return NOT_IMPLEMENTED;
+    return BAD_GATEWAY;
 }
 
 void responseBuilder::defineStatusLine(const std::string &type) {
@@ -48,6 +49,7 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 10 : ret = RESPONSE_URI_TOO_LONG; break ;
         case 11 : ret = RESPONSE_INTERNAL_SERVER_ERROR; break ;
         case 12 : ret = RESPONSE_NOT_IMPLEMENTED; break ;
+        case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
     }
 
 
@@ -86,6 +88,16 @@ responseBuilder& responseBuilder::addContentLength() {
     ss << length;
     headersResponses.insert(std::make_pair(CONTENT_LENGTH, ss.str()));
     return (*this);
+}
+
+responseBuilder& responseBuilder::addContentLength(const std::string &content) {
+
+   unsigned long number = content.size();
+   std::ostringstream oss ;
+
+    oss << number ;
+    headersResponses.insert(std::make_pair(CONTENT_LENGTH, oss.str()));
+    return (*this);   
 }
 
 responseBuilder& responseBuilder::addResponseBody(const std::string &responseBody) {

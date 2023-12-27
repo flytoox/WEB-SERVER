@@ -91,7 +91,7 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
     if ( ! request.getSaveLastBS() ) {
 
         request.response = responseBuilder()
-        .addStatusLine("406")
+        .addStatusLine("409")
         .addContentType("text/html")
         .addResponseBody("<html><h1>409 Conflict</h1></html>");
         throw "409";        
@@ -245,20 +245,16 @@ void deleteMethod(Request &request) {
 
             request.response = responseBuilder()
             .addStatusLine("502")
-            .a
-
-            std::string response = "HTTP/1.1 502 Bad Gateway\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>502 Bad Gateway</h1></html>\r\n"; request.setResponseVector(response);
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
             throw "502"; 
         }
     } else {
 
-        std::string response = "HTTP/1.1 404 Not Found\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 36\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 404 Not Found</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("404")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
         throw "4041";         
     }
 

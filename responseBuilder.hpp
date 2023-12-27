@@ -16,7 +16,7 @@ enum STATUS_CODE_ENUM {
     INTERNAL_SERVER_ERROR ,     //* 500
     NOT_IMPLEMENTED,            //* 501
     METHOD_NOT_ALLOWED,         //* 405
-    BAD_GATEWAY                 //*502
+    BAD_GATEWAY                 //* 502
 };
 
 class responseBuilder {
@@ -33,6 +33,7 @@ public:
     responseBuilder& addLocation(const std::string &location);
     responseBuilder& addContentType(const std::string &extension);
     responseBuilder& addContentLength();
+    responseBuilder& addContentLength(const std::string &content);
     responseBuilder& addResponseBody(const std::string &responseBody);
 
 
