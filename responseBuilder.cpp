@@ -31,6 +31,35 @@ STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
     return BAD_GATEWAY;
 }
 
+std::string defineMimeType(const std::string &type) {
+
+    if (type == "css")
+        return "text/css";
+    if (type == "xml")
+        return "text/xml";
+    if (type == "jpg")
+        return "image/jpeg";
+    if (type == "jpeg")
+        return "image/jpeg";
+    if (type == "js")
+        return "application/javascript";
+    if (type == "zip")
+        return "application/zip";
+    if (type == "img")
+        return "application/octet-stream";
+    if (type == "mp3")
+        return "audio/mpeg";
+    if (type == "mp4")
+        return "video/mp4";
+    if (type == "webm")
+        return "video/webm";
+    if (type == "json")
+        return "application/json";
+    if (type == "pdf")
+        return "application/pdf";  
+    return "application/octet-stream";
+}
+
 void responseBuilder::defineStatusLine(const std::string &type) {
 
     std::string ret;
@@ -56,10 +85,27 @@ void responseBuilder::defineStatusLine(const std::string &type) {
 }
 
 void responseBuilder::defineContentType(const std::string &extension) {
-    std::string res;
-    res += extension == "mp4" ? "video/mp4" : "text/html";
 
-    headersResponses.insert(std::make_pair(CONTENT_TYPE,extension));
+    // res += extension == "mp4" ? "video/mp4" : "text/html";
+
+    if (extension == "text/html"){
+        headersResponses.insert(std::make_pair(CONTENT_TYPE, extension));
+        return ;
+    }
+    std::string type;
+
+    // std::cout << "ALL |" << extension << "|\n";
+
+    size_t lastSlashPos = extension.find_last_of('.');
+
+    // Extract the substring starting from the position after the last '/'
+    std::string version = extension.substr(lastSlashPos + 1);
+
+    // std::cout << "version |" << version << "|\n"; exit (0);
+
+    type = defineMimeType(version);
+    headersResponses.insert(std::make_pair(CONTENT_TYPE, type));
+
 }
 
 

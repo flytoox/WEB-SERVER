@@ -48,9 +48,9 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
         std::string res = simultaneousRequests[i].response.build();
 
-        std::cout << "\n-----------------------------------------------\n";
-        std::cout << "|" << res << "|\n";
-        std::cout << "\n-----------------------------------------------\n";
+        // std::cout << "\n-----------------------------------------------\n";
+        // std::cout << "|" << res << "|\n";
+        // std::cout << "\n-----------------------------------------------\n";
 
         // chunk = res.length() < 6000 ? res : res.substr(0, 6000) ;
         // res.length() < 6000 ? res.erase() : res.erase(0, 6000) ;

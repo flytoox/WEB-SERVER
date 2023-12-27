@@ -19,6 +19,7 @@ enum STATUS_CODE_ENUM {
     BAD_GATEWAY                 //* 502
 };
 
+
 class responseBuilder {
 
 public:

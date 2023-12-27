@@ -33,7 +33,7 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 
     request.response = responseBuilder()
     .addStatusLine("200")
-    .addContentType("text/html");
+    .addContentType("text/html"); //* COOL
 
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
@@ -67,12 +67,12 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
         std::cout << "I'mHERE\n";
         request.response = responseBuilder()
         .addStatusLine("301")
-        .addContentType("text/html")
+        .addContentType("text/html") //* COOL
         .addLocation(uri)
         .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
         throw "301";
     }
-    std::cout << "didn't \n";
+
     // std::map<std::string, std::string> directives = request.getDirectives();
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
     mapConstIterator it = directives.find("index");
@@ -101,7 +101,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
             request.response = responseBuilder()
             .addStatusLine("200")
-            .addContentType("text/html");
+            .addContentType(absolutePath);
             request.response = responseBuilder().addResponseBody(content);
             throw "200";
         } else {
@@ -186,7 +186,7 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
             request.response = responseBuilder()
             .addStatusLine("200")
-            .addContentType("video/mp4")
+            .addContentType(absolutePath)
             .addContentLength(content)
             .addResponseBody(content);
 
