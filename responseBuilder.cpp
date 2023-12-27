@@ -50,7 +50,6 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 12 : ret = RESPONSE_NOT_IMPLEMENTED; break ;
     }
 
-    std::cout <<"generated |" << ret << "|\n";
 
     headersResponses.insert(std::make_pair(HTTP_VERSION, ret));
 }

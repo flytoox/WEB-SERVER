@@ -15,7 +15,8 @@ enum STATUS_CODE_ENUM {
     URI_TOO_LONG ,              //* 414
     INTERNAL_SERVER_ERROR ,     //* 500
     NOT_IMPLEMENTED,            //* 501
-    METHOD_NOT_ALLOWED         //*405
+    METHOD_NOT_ALLOWED,         //* 405
+    BAD_GATEWAY                 //*502
 };
 
 class responseBuilder {
