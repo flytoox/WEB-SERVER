@@ -16,10 +16,11 @@ static std::vector<std::string> splitBySpace(Request &request, const std::string
     //* Whitespaces ruled : https://www.rfc-editor.org/rfc/rfc7230#section-3.2
 
     if ( token.back() == ' ' ) {
-        std::string response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "400" ; 
     }
 
@@ -28,13 +29,16 @@ static std::vector<std::string> splitBySpace(Request &request, const std::string
 
 static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request &request) {
 
-    std::string response = "";
     int index = -1;
 
     if (headerSplitVector.size() != 3) {
-        response = "Single Line: 400 Bad request\n";
-        request.setrequestOutputTest(response);
-        throw "401";
+    
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>"); 
+        throw "400";
+    
     }
 
     for (const_vector_it it = headerSplitVector.begin() ; it != headerSplitVector.end(); ++it) {
@@ -46,10 +50,10 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
             if ( request.getHttpVerb().empty() && ( (value == "GET") || (value == "POST") || (value == "DELETE")) ) {
                 request.setHttpVerb(value);
             } else {
-                response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-                response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-                response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-                response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+                request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
                 throw "400" ; 
             }
         }
@@ -58,10 +62,10 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
             if ( (request.getUri()).empty() && value[0] == '/') {
                 request.setUri(value);
             } else {
-                response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-                response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-                response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-                response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+                request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
                 throw "400" ;  
             }
         }
@@ -70,11 +74,11 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
             if ( (request.getHTTPVersion()).empty() && (value == "HTTP/1.1")) {
                 request.setHTTPVersion(value);
             } else {
-                response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-                response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-                response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-                response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-                throw "400" ;      
+                request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                throw "400" ;     
             }
         }
     }
@@ -82,22 +86,20 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
 
 
 static void parseHost(std::vector<std::string> &headerSplitVector, Request &request) {
-    
-    std::string response = "";
 
     if  (headerSplitVector.size() != 2) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "400" ; 
     }
 
     if (request.getHttpRequestHeaders().find("Host:") != request.getHttpRequestHeaders().end()) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "400" ;     
     }
 
@@ -109,11 +111,11 @@ static void parseHost(std::vector<std::string> &headerSplitVector, Request &requ
 
     if (request.getHttpRequestHeaders().find("Port:") != request.getHttpRequestHeaders().end()) {
     
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-        throw "400" ;     
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "400" ;    
     }
 
     std::string httpPort = headerSplitVector[1].erase(0, ++pos);
@@ -126,22 +128,21 @@ static void parseHost(std::vector<std::string> &headerSplitVector, Request &requ
 
 static void parseContentType(std::vector<std::string> &headerSplitVector, Request &request) {
 
-    std::string response = "";
 
     if  (headerSplitVector.size() == 1) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "400" ; 
     }
 
     if (request.getHttpRequestHeaders().find("Content-Type:") != request.getHttpRequestHeaders().end()) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-        throw "400" ;       
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "400" ;      
     }
 
 
@@ -158,22 +159,20 @@ static void parseContentType(std::vector<std::string> &headerSplitVector, Reques
 
 static void parseContentLength(std::vector<std::string> &headerSplitVector, Request &request) {
 
-    std::string response = "";
-
     if  (headerSplitVector.size() != 2) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "400" ; 
     }
 
     if (request.getHttpRequestHeaders().find("Content-Length:") != request.getHttpRequestHeaders().end()) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-        throw "400" ;     
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "400" ;    
     }
 
 
@@ -188,20 +187,20 @@ static void parseTransferEncoding(std::vector<std::string> &headerSplitVector, R
     std::string response = "";
 
     if  (headerSplitVector.size() != 2) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "400" ; 
     }
    
 
     if (request.getHttpRequestHeaders().find("Transfer-Encoding:") != request.getHttpRequestHeaders().end()) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-        throw "400" ;   
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "400" ;    
     }
 
 
@@ -224,10 +223,10 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
 
         if (track.find(':') == std::string::npos) {
 
-            std::string response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
             throw "400" ; 
         }
     }
@@ -277,10 +276,10 @@ void parseAndSetRequestHeader(Request &request) {
         } else {
             //exit (0);
             if ( request.getHttpVerb().empty() ) {
-                std::string response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-                response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-                response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-                response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+                request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
                 throw "400" ; 
             }
             break ;

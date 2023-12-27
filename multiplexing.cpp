@@ -239,10 +239,11 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     } else if ( recevRequestLen ) {
                         if ( ((simultaneousRequests[i]).getRequestHeader()).empty() ) {
 
-                            std::string response = "HTTP/1.1 204 No Content\r\n"; (simultaneousRequests[i]).setResponseVector(response);
-                            response = "Content-Type: text/html\r\n"; (simultaneousRequests[i]).setResponseVector(response);
-                            response = "Content-Length: 36\r\n\r\n"; (simultaneousRequests[i]).setResponseVector(response);
-                            response = "<html><h1>204 No Content</h1></html>\r\n"; (simultaneousRequests[i]).setResponseVector(response);
+                            (simultaneousRequests[i]).response = responseBuilder()
+                            .addStatusLine("204")
+                            .addContentType("text/html")
+                            .addResponseBody("<html><h1>204 No Content</h1></html>");
+
                             throw "204" ; 
 
                         } else {

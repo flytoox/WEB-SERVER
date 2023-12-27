@@ -12,9 +12,14 @@ static bool uploadRequestBody(Request &request) {
     bool uploaded = cgiRun(request);
     if (uploaded) {
 
-        std::string response = "HTTP/1.1 201 Created\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 0\r\n"; request.setResponseVector(response);
-        response = "\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("201")
+        .addContentType("text/html")
+        .addResponseBody("");
+
+        // std::string response = "HTTP/1.1 201 Created\r\n"; request.setResponseVector(response);
+        // response = "Content-Length: 0\r\n"; request.setResponseVector(response);
+        // response = "\r\n"; request.setResponseVector(response);
 
     }
 
@@ -44,10 +49,11 @@ void postMethod(Request &request) {
         mapConstIterator it = request.getDirectives().find("root");
         if (it == (request.getDirectives()).end()) {
 
-            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 130\r\n\r\n" ; request.setResponseVector(response);
-            response = "<html><head><title>Welcome to Our Webserver!</title></head>" ; request.setResponseVector(response);
-            response = "<body><p><em>Thank you for using our webserver.</em></p></body></html>\r\n"; request.setResponseVector(response);
+
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("text/html")
+            .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
 
             throw "No Root: 200";
         }
@@ -68,16 +74,17 @@ void postMethod(Request &request) {
         } else if (S_ISDIR(fileStat.st_mode)) {
             requestTypeDirectory(root, uri, request);
         } else {
-            std::string response = "HTTP/1.1 502 Bad Gateway\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 0\r\n"; request.setResponseVector(response);
-            response = "\r\n"; request.setResponseVector(response);
-            throw "502 Bad Gateway\n";
+            request.response = responseBuilder()
+            .addStatusLine("502")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
         }
     } else {
         
-        std::string response = "HTTP/1.1 404 Not Found \r\n"; request.setResponseVector(response);
-        response = "Content-Length: 0\r\n"; request.setResponseVector(response);
-        response = "\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("404")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
         
         throw "404 here";
     }

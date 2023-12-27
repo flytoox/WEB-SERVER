@@ -157,20 +157,20 @@ void parseRequestBody(Request &request) {
     unsigned long sizeMax = getTheMaxsize(request);
     if ( sizeMax && request.getRequestBody().length() > sizeMax ) {
         
-        std::string response = "HTTP/1.1 413 Content Too Large\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 45\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 413 Content Too Large </h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("413")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 413 Content Too Large </h1></html>");
         throw "413";
 
     }
 
     if ( request.getRequestBody().length() > 4000000000 ) {
 
-        std::string response = "HTTP/1.1 413 Content Too Large\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 45\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 413 Content Too Large </h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("413")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 413 Content Too Large </h1></html>");
         throw "413";
 
     }
