@@ -202,9 +202,9 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
 void validateRequest(Request &request) {
 
-    std::string response;
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
 	// cerr << 
+    std::string response;
     std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
     if ( !transferEncoding.empty() && transferEncoding != "chunked") {
         response = "HTTP/1.1 501 Not Implemented\r\n"; request.setResponseVector(response);
@@ -228,12 +228,11 @@ void validateRequest(Request &request) {
     //! TEST BUILDER PATTERN
 
     if ( !uri.empty() && characterNotAllowed( uri ) ) {
-        response = responseBuilder()
+        std::cout << "TIITT\n";
+        request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addContentLength("47")
-            .addResponseBody("<html><h1>414 Request-URI Too Long</h1></html>")
-            .build();
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
         throw "414";
     }
 

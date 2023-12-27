@@ -15,23 +15,27 @@ enum STATUS_CODE_ENUM {
     URI_TOO_LONG ,              //* 414
     INTERNAL_SERVER_ERROR ,     //* 500
     NOT_IMPLEMENTED,            //* 501
-    METHOD_NOT_ALLOWED,         //*405
-    ERROR                       //*Error response
+    METHOD_NOT_ALLOWED         //*405
 };
 
 class responseBuilder {
 
-private:
-
-    std::string response;
-
 public:
     
+    std::map<std::string, std::string> headersResponses;
+    std::string body;
+
+    void defineStatusLine(const std::string &type);
+    void defineContentType(const std::string &extension);
+
     responseBuilder& addStatusLine(const std::string &type);
     responseBuilder& addLocation(const std::string &location);
     responseBuilder& addContentType(const std::string &extension);
-    responseBuilder& addContentLength(const std::string &responseBody);
+    responseBuilder& addContentLength();
     responseBuilder& addResponseBody(const std::string &responseBody);
+
+
+
     std::string build();
 
 };

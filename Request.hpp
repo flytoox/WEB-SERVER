@@ -2,6 +2,7 @@
 
 #include "configFile.hpp"
 #include "Server.hpp"
+#include "responseBuilder.hpp"
 #include <sstream>
 
 typedef std::pair<std::string, std::string> pair;

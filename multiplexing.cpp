@@ -15,18 +15,16 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<in
 
 static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
 
-        std::string res = "";
-    
-        simultaneousRequests.bui
+        // std::string res = "";
 
         FD_CLR(i, &readsd); FD_SET(i, &writesd);
 
         // std::cout << "\nRESPONSE\n";
 
-        std::vector<std::string> chunkedResponse = simultaneousRequests[i].getChunkedResponse();
-        std::string textResponse = simultaneousRequests[i].getTextResponse();
-        std::vector<std::string> multipartReponse = simultaneousRequests[i].getMultipartReponse();
-        std::map<std::string, std::string> urlencodedResponse = simultaneousRequests[i].getUrlencodedResponse();
+        // std::vector<std::string> chunkedResponse = simultaneousRequests[i].getChunkedResponse();
+        // std::string textResponse = simultaneousRequests[i].getTextResponse();
+        // std::vector<std::string> multipartReponse = simultaneousRequests[i].getMultipartReponse();
+        // std::map<std::string, std::string> urlencodedResponse = simultaneousRequests[i].getUrlencodedResponse();
 
 
         // std::cerr << textResponse << std::endl;
@@ -43,10 +41,12 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
         // res += "\r\n";
         // res += (simultaneousRequests[i].getrequestOutputTest());
 
-        for (auto it : simultaneousRequests[i].getResponseVector()) {
-            res += it;
-        }
+        // for (auto it : simultaneousRequests[i].getResponseVector()) {
+        //     res += it;
+        // }
 
+
+        std::string res = simultaneousRequests[i].response.build();
 
         // chunk = res.length() < 6000 ? res : res.substr(0, 6000) ;
         // res.length() < 6000 ? res.erase() : res.erase(0, 6000) ;
