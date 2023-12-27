@@ -24,13 +24,14 @@ class responseBuilder {
 public:
     
     std::map<std::string, std::string> headersResponses;
+    std::string resultMsg;
     std::string body;
 
     void defineStatusLine(const std::string &type);
     void defineContentType(const std::string &extension);
 
     responseBuilder& addStatusLine(const std::string &type);
-    responseBuilder& addLocation(const std::string &location);
+    responseBuilder& addLocation(std::string location);
     responseBuilder& addContentType(const std::string &extension);
     responseBuilder& addContentLength();
     responseBuilder& addContentLength(const std::string &content);

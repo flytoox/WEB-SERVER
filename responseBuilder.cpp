@@ -52,8 +52,7 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
     }
 
-
-    headersResponses.insert(std::make_pair(HTTP_VERSION, ret));
+    resultMsg = ret;
 }
 
 void responseBuilder::defineContentType(const std::string &extension) {
@@ -74,8 +73,9 @@ responseBuilder& responseBuilder::addContentType(const std::string &extension) {
     return (*this);
 }
 
-responseBuilder& responseBuilder::addLocation(const std::string &location) {
+responseBuilder& responseBuilder::addLocation(std::string location) {
 
+    location += "/";
     headersResponses.insert(std::make_pair(LOCATION, location));
     return (*this);
 }
@@ -112,7 +112,8 @@ std::string responseBuilder::build() {
 
     std::stringstream response;
 
-    response << HTTP_VERSION;
+    response << HTTP_VERSION << " " << resultMsg << CRLF;
+
     for (auto it : headersResponses) {
         response << it.first << it.second << CRLF;
     }

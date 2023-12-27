@@ -64,14 +64,15 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request) {
 
     if ( ! request.getSaveLastBS() ) {
+        std::cout << "I'mHERE\n";
         request.response = responseBuilder()
         .addStatusLine("301")
-        .addLocation(uri)
         .addContentType("text/html")
+        .addLocation(uri)
         .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
         throw "301";
     }
-
+    std::cout << "didn't \n";
     // std::map<std::string, std::string> directives = request.getDirectives();
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
     mapConstIterator it = directives.find("index");
