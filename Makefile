@@ -4,6 +4,7 @@ SRCS = main.cpp configFile.cpp Server.cpp multiplexing.cpp Request.cpp\
 	parseServer1Block.cpp parseServer2Block.cpp parseServer3Block.cpp\
 	parseRequestHeader.cpp parseRequestBody.cpp validateRequest.cpp\
 	checkHttpMethod.cpp getMethod.cpp postMethod.cpp deleteMethod.cpp config.cpp\
+	cgiHandling.cpp\
 
 CPP = c++
 

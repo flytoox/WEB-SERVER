@@ -135,4 +135,6 @@ void postMethod(Request &request);
 
 void deleteMethod(Request &request);
 
- 
+//! CGI.cpp
+
+void handle_cgi_get(const std::string& file, std::string& response);

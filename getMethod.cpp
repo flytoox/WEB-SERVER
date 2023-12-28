@@ -148,17 +148,27 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
     {
 
-        if ( file.find('.') != std::string::npos ) {
+        if (file.find('.') != std::string::npos) {
+            std::string extension = file.substr(file.find_last_of('.'));
 
-            std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+            if (extension == ".php" || extension == ".py") {
+                // Set the initial HTTP response headers
+                response = "HTTP/1.1 200 OK\r\n"; request.setResponseVector(response);
+                response = "Content-Type: text/html; charset=UTF-8\r\n"; request.setResponseVector(response);
+                response = "Content-Length: "; request.setResponseVector(response);
 
-            if ( extension == ".php" || extension == ".py") {
-                //! RUN CGI !
-                response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-                response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
-                throw "CGI";
+                // Capture CGI output
+
+                // Append additional headers
+                response = "\r\n\r\n"; request.setResponseVector(response);
+                handle_cgi_get(file, response); request.setResponseVector(response);
+                throw ("CGI");
+                
+                // You can add more headers or modify the existing ones as needed
+
+                // Set the response vector for your request
+                //request.setResponseVector(response);
             }
-
         }
     
         std::fstream file(absolutePath);
