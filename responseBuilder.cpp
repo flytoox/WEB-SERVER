@@ -56,7 +56,11 @@ std::string defineMimeType(const std::string &type) {
     if (type == "json")
         return "application/json";
     if (type == "pdf")
-        return "application/pdf";  
+        return "application/pdf";
+    if (type == "txt")
+        return "text/plain";
+    if (type == "html")
+        return ("text/html");
     return "application/octet-stream";
 }
 
