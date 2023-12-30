@@ -178,12 +178,12 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         return (found);
 
     std::string substrUri = uri; unsigned long i = 0;
-    std::cout << "BEFORE URI|" << uri << "|\n";
+
     while (i++ < locationsBlock.size()) {
 
 
         removeLastOccurrence(substrUri);
-        std::cout << "substraction :|" << substrUri << "|\n";
+
         for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
 
             std::map<std::string, std::string> mapIterator = (*it);
@@ -202,42 +202,50 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
 void validateRequest(Request &request) {
 
-    std::string response;
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
-	// cerr << 
+
+
     std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
     if ( !transferEncoding.empty() && transferEncoding != "chunked") {
-        response = "HTTP/1.1 501 Not Implemented\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 41\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>501 Not Implemented</h1></html>\r\n"; request.setResponseVector(response);
+
+        request.response = responseBuilder()
+            .addStatusLine("501")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>501 Not Implemented</h1></html>");
         throw "501" ;
+    
     }
 
     std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); int contentLength = std::atoi(contentLenghStr.c_str());
     std::string method = request.getHttpVerb();
     if (method == "POST" && contentLength == 0 && transferEncoding.empty()) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
+
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+
         throw "400" ;        
     }
 
     std::string uri = request.getUri();
+    //! TEST BUILDER PATTERN
+
     if ( !uri.empty() && characterNotAllowed( uri ) ) {
-        response = "HTTP/1.1 400 Bad Request\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>400 Bad Request</h1></html>\r\n"; request.setResponseVector(response);
-        throw "414" ;
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "414";
     }
+
     if ( uri.length()  &&  uri.length() > 2048) {
-        response = "HTTP/1.1 414 Request-URI Too Long\r\n"; request.setResponseVector(response);
-        response += "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response += "Content-Length: 46\r\n\r\n"; request.setResponseVector(response);
-        response += "<html><h1>414 Request-URI Too Long</h1></html>\r\n"; request.setResponseVector(response);
-		
+
+        request.response = responseBuilder()
+        .addStatusLine("414")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>414 Request-URI Too Long</h1></html>");
+	
         throw "414" ;
     }     
 
@@ -249,10 +257,12 @@ void validateRequest(Request &request) {
 
     if (request.getRequestBodyChunk() == true) {
         if ( clientMaxBody && (request.getRequestBody()).length() > clientMaxBody ) {
-            response = "HTTP/1.1 413 Request Entity Too Large\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 51\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>413 Request Entity Too Large</h1></html>\r\n"; request.setResponseVector(response);
+
+            request.response = responseBuilder()
+            .addStatusLine("413")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>413 Request Entity Too Large</h1></html>");
+
             throw "413";
         }
     }
@@ -260,7 +270,7 @@ void validateRequest(Request &request) {
     //! Skipped: if => no location match the request uri
     std::map<std::string, std::string> location = fetchSuitableLocationBlock(request, uri);
 
-    std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
+    //std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
 
     // for (auto it : location) {
     //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
@@ -285,32 +295,55 @@ void validateRequest(Request &request) {
 
     } else {
 
-        response = "HTTP/1.1 404 Not Found\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 36\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 404 Not Found</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("404")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
         throw "4042";  
+    }
+
+    if ( directives.find("return") != directives.end() ) {
+
+
+        std::string changeLocation = directives["return"];
+        if (changeLocation.length() && changeLocation[0] != '/' ) {
+            request.response = responseBuilder()
+            .addStatusLine("301")
+            .addLocation(changeLocation)
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
+    
+            throw "301";
+        }
+
+        std::map<std::string, std::string> directives = request.getDirectives();
+        std::string returnCheck = directives["return"];
+        std::vector<std::map<std::string, std::string> > allLocations = request.getLocationsBlock();
+        for (vectorToMapIterator it = allLocations.begin(); it != allLocations.end(); it++) {
+            std::map<std::string, std::string> locations = *it;
+            if ( locations["location match"] == returnCheck  ) {
+                if ( directives["location match"] != returnCheck )
+                    request.setUri(returnCheck);
+                    request.setLocationBlockWillBeUsed(locations);
+                    break ;
+            }
+        }
 
     }
 
+    //TODO: this is a mqp which containes notAllowd methods ; must be split and checked !
     if ( location.find("allowedMethods") != location.end()) {
         if (location["allowedMethods"] != request.getHttpVerb()) {
-            response = "HTTP/1.1 405 Method Not Allowed\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 44\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>405 Method Not Allowed</h1></html>\r\n"; request.setResponseVector(response);
+
+            request.response = responseBuilder()
+            .addStatusLine("405")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>405 Method Not Allowed</h1></html>");
+
             throw "405";            
         }
     }
 
-    if ( location.find("return") != location.end()) {
-        response = "HTTP/1.1 301 Moved Permanently\r\n"; request.setResponseVector(response);
-        response = "Location: " + location["return"] + "/\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 43\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>301 Moved Permanently</h1></html>\r\n"; request.setResponseVector(response);
-        throw "301";
-    }
 
 
 

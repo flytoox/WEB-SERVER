@@ -2,6 +2,7 @@
 
 #include "configFile.hpp"
 #include "Server.hpp"
+#include "responseBuilder.hpp"
 #include <sstream>
 
 typedef std::pair<std::string, std::string> pair;
@@ -10,6 +11,7 @@ class Request {
 
 private:
 
+    
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
 
@@ -51,9 +53,13 @@ public:
 
     Request();
 
+    responseBuilder response;
+    std::string extension;
 
+    std::string RePort;
+    std::string ReHost;
 
-
+    bool dup = false;
 	std::string result;
     //* GETTERS
 

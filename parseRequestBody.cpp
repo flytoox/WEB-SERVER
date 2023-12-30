@@ -82,7 +82,38 @@ static void textContentType(Request &request) {
 
     std::string ret = request.getRequestBody();
 
-    request.setTextResponse(ret);
+    request.response = responseBuilder()
+    .addResponseBody(ret);
+
+}
+
+static void pureBinary(std::string &image, std::string &destination) {
+
+    std::size_t pos = image.find("filename=\"");
+
+    image.erase(0, pos + 10);
+    std::string filename = image.substr(0, image.find("\""));
+    pos = image.find("Content-Type: ");
+    image.erase(0, pos + 14);
+
+    // std::string type = image.substr('/');
+    // std::cout << "|" << type << "|\n"; exit (0);
+
+
+    std::string absolutePath = destination + '/' + filename ; 
+
+    std::ofstream outputFile(absolutePath);
+
+    if (!outputFile.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        exit (1); // Return an error code
+    }
+
+    outputFile << image.substr(image.find("\r\n\r\n") + 4);
+    outputFile.close();
+    return ;
+
+
 }
 
 static void multipartContentType(Request &request) {
@@ -92,14 +123,30 @@ static void multipartContentType(Request &request) {
     std::string boundary = request.getBoundary();
 
     std::vector<std::string> split = splitString(request.getRequestBody(), boundary);
-
     split.erase(split.begin());  split.erase(split.end() - 1);
 
-    request.setMultipartResponse(split);
+
+    std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
+    if (locations["upload_enable"] == "on") {
+        std::string destination = locations["upload_store"];
+        for (size_t i = 0; i < split.size(); i++) {
+            pureBinary(split[i], destination);
+        }
+        return ;
+    } else {
+        request.response = responseBuilder()
+        .addStatusLine("403")
+        .addContentType("text/html")
+        .addResponseBody("<html><head><title>403 Forbidden</title></head><body><h1>Forbidden</h1><p>You don't have permission to access the requested resource. File uploads are not allowed.</p></body></html>");
+        throw "403";
+    }
+
+
+    // request.setMultipartResponse(split);
     // for (auto i : split) {
-    //     // std::cout << "\n--------------             START  -----------------------------\n";
+    //     std::cout << "\n--------------             START  -----------------------------\n";
     //     std::cerr << i << std::endl;
-    //     // std::cout << "\n--------------             END  -----------------------------\n";
+    //     std::cout << "\n--------------             END  -----------------------------\n";
     // }
     // exit (0);
 
@@ -157,20 +204,20 @@ void parseRequestBody(Request &request) {
     unsigned long sizeMax = getTheMaxsize(request);
     if ( sizeMax && request.getRequestBody().length() > sizeMax ) {
         
-        std::string response = "HTTP/1.1 413 Content Too Large\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 45\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 413 Content Too Large </h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("413")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 413 Content Too Large </h1></html>");
         throw "413";
 
     }
 
     if ( request.getRequestBody().length() > 4000000000 ) {
 
-        std::string response = "HTTP/1.1 413 Content Too Large\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 45\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 413 Content Too Large </h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("413")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 413 Content Too Large </h1></html>");
         throw "413";
 
     }
@@ -199,11 +246,23 @@ void parseRequestBody(Request &request) {
 
         if (value == "text/plain") {
             std::cout << "1\n";
+
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("txt");
+
             textContentType(request);
             throw "200L";
         } else if ((itContentType->second).find("multipart/form-data") != std::string::npos ) {
             std::cout << "11\n";
+
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("text/html");
+
             multipartContentType(request);
+            request.response = responseBuilder()
+            .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
             throw "200L";
         } else if (value == "application/x-www-form-urlencoded") {
             std::cout << "111\n";

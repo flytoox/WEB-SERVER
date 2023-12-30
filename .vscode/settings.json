@@ -67,6 +67,7 @@
         "utility": "cpp",
         "vector": "cpp",
         "filesystem": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "__functional_base_03": "cpp"
     }
 }

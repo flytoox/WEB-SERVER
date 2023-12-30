@@ -62,14 +62,18 @@ string convertDomainToIPv4(string &domain)
 }
 //TODO: cheange server_name to host
 //TODO : ALERT CHANGE THE NAMES 
+
+
+//TODO : if you find listen && port the same -> duplicated : true 
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
 
     int port = atoi(((server.getdirectives().find("listen"))->second).c_str());
-
+	server.prePort = (server.getdirectives().find("listen")->second);
     serverAddress.sin_family = AF_INET;
 	string host= ((server.getdirectives().find("host"))->second);
+	server.preHost = host;
 	string ultimateHost = convertDomainToIPv4(host);
 	if ( ultimateHost.empty()  ) {
 		//TODO : throw expceptions
@@ -187,6 +191,12 @@ vector<Server> parsingFile(string s) {
 	set<pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
+		for (size_t j = 0; j < servers.size(); j++) {
+			if (i == j) continue;
+			if (servers[i].directives["listen"] == servers[j].directives["listen"]
+			 && servers[i].directives["host"] == servers[j].directives["host"])
+			 servers[i].duplicated = true, servers[j].duplicated = true;
+		}
 		adjustServerAddress(servers[i], servers[i].serverAddress);
 		servers[i].setServerAddress(servers[i].serverAddress);
 		
@@ -204,6 +214,9 @@ vector<Server> parsingFile(string s) {
 			servers[i].listenToIncomingConxs();
 			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
 		}
+	}
+	for (auto &i: servers) {
+		std::cerr << "-->" << i.duplicated << endl;
 	}
 	return (servers);
 }

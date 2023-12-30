@@ -18,8 +18,12 @@ class Server {
 
 public:
 
+    std::string preHost;
+    std::string prePort;
+
 
     int socketD;
+    bool duplicated = false;
     struct sockaddr_in serverAddress;
     std::map<std::string, std::string> directives;
     std::vector<std::map<std::string, std::string> > locationsBlock;

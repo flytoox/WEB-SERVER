@@ -90,9 +90,10 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
 
     if ( ! request.getSaveLastBS() ) {
 
-        response = "HTTP/1.1 409 Conflict\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\nContent-Length: 34\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>409 Conflict</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("409")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>409 Conflict</h1></html>");
         throw "409";        
 
     }
@@ -114,9 +115,11 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
             //! RUN CGI on requested file with DELTE REQUEST_METHOD
             throw "CGI";
         } else {
-            response = "HTTP/1.1 403 Forbidden\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\nContent-Length: 39\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>403 Forbidden</h1></html>\r\n"; request.setResponseVector(response);
+
+            request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>403 Forbidden</h1></html>");
             throw "403"; 
         }
     } else {
@@ -127,25 +130,28 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
         bool check = deleteAllFolderContent(request, absolutePath);
         if ( check ) {
 
-            std::cout << "apssd\n"; 
-
-            response = "HTTP/1.1 204 No Content\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\nContent-Length: 36\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>204 No Content</h1></html>\r\n\r\n"; request.setResponseVector(response);
+            request.response = responseBuilder()
+            .addStatusLine("204")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>204 No Content</h1></html>");
             throw "55204";
         }
     
         if ( ! check ) {
 
             if ( access(absolutePath.c_str(), W_OK) == 0 ) {
-                response = "HTTP/1.1 500 Internal Server Error\r\n"; request.setResponseVector(response);
-                response = "Content-Type: text/html\r\nContent-Length: 49\r\n\r\n"; request.setResponseVector(response);
-                response = "<html><h1>500 Internal Server Error</h1></html>\r\n"; request.setResponseVector(response);
+
+                request.response = responseBuilder()
+                .addStatusLine("500")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
                 throw "500";
             } else {
-                response = "HTTP/1.1 403 Forbidden\r\n"; request.setResponseVector(response);
-                response = "Content-Type: text/html\r\nContent-Length: 39\r\n\r\n"; request.setResponseVector(response);
-                response = "<html><h1>403 Forbidden</h1></html>\r\n"; request.setResponseVector(response);
+
+                request.response = responseBuilder()
+                .addStatusLine("403")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>403 Forbidden</h1></html>");
                 throw "403";
             }
         }
@@ -163,15 +169,17 @@ static void deleteFile(std::string &absolutePath, std::string &uri, Request &req
         int out = std::remove(absolutePath.c_str());
 
         if ( out != 0 ) {
-            std::string response = "HTTP/1.1 502 Bad Gateway\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 56\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>Server Couldn't Delete the File</h1></html>\r\n"; request.setResponseVector(response);
+            request.response = responseBuilder()
+            .addStatusLine("502")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>Server Couldn't Delete the File</h1></html>");
             throw "Error(): remove system call";             
 
         } else {
-            std::string response = "HTTP/1.1 204 No Content\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>Server Couldn't Delete the File</h1></html>\r\n"; request.setResponseVector(response);
+            request.response = responseBuilder()
+            .addStatusLine("204")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>Server Couldn't Delete the File</h1></html>");
             throw "204";
         }
 
@@ -193,10 +201,11 @@ void deleteMethod(Request &request) {
 
         mapConstIterator it = (request.getDirectives()).find("root");
         if (it == request.getDirectives().end() ) {
-            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 130\r\n\r\n" ; request.setResponseVector(response);
-            response = "<html><head><title>Welcome to Our Webserver!</title></head>" ; request.setResponseVector(response);
-            response = "<body><p><em>Thank you for using our webserver.</em></p></body></html>\r\n"; request.setResponseVector(response);
+
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("text/html")
+            .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
 
             throw "No Root: 200";
         } else {
@@ -216,10 +225,11 @@ void deleteMethod(Request &request) {
     std::cout << "absolutePath|" << absolutePath << "|\n";
 
     if (absolutePath == concatenateWithRoot + '/') {
-        std::string response = "HTTP/1.1 405 Method Not Allowed\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 46\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 405 Method Not Allowed </h1></html>\r\n"; request.setResponseVector(response);
+
+        request.response = responseBuilder()
+        .addStatusLine("405")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 405 Method Not Allowed </h1></html>");
         throw "405";
     }
 
@@ -232,18 +242,19 @@ void deleteMethod(Request &request) {
         } else if (S_ISDIR(fileStat.st_mode)) {
             deleteDirectory(absolutePath, uri, request);
         } else {
-            std::string response = "HTTP/1.1 502 Bad Gateway\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>502 Bad Gateway</h1></html>\r\n"; request.setResponseVector(response);
+
+            request.response = responseBuilder()
+            .addStatusLine("502")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
             throw "502"; 
         }
     } else {
 
-        std::string response = "HTTP/1.1 404 Not Found\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 36\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 404 Not Found</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("404")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
         throw "4041";         
     }
 

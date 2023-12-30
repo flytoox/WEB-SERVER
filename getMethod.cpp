@@ -29,10 +29,11 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
     struct dirent *read_dir;
 
     absolutePath += '/';
+    std::string response = "";
 
-    std::string response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-    response = "Content-type: text/html\r\n"; request.setResponseVector(response);
-    response = "\r\n"; request.setResponseVector(response);
+    request.response = responseBuilder()
+    .addStatusLine("200")
+    .addContentType("text/html"); //* COOL
 
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
@@ -40,18 +41,18 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
         exit (1);
     }
 
-    response = "<html><head><title>Index of " + request.getUri() + "</title></head><body><h1>Index \
-         of " + request.getUri() + "</h1><hr><pre>"; request.setResponseVector(response);
+    response += "<html><head><title>Index of " + request.getUri() + "</title></head><body><h1>Index \
+         of " + request.getUri() + "</h1><hr><pre>"; 
 
     while ( (read_dir = readdir(dir_ptr)) != NULL ) {
         std::string link = read_dir->d_name;
         if (read_dir->d_type == DT_REG || read_dir->d_type == DT_DIR) {
-            response = "<a href=" + link + "> "+ read_dir->d_name + "/ </a>\r\n" ; request.setResponseVector(response);
+            response += "<a href=" + link + "> "+ read_dir->d_name + "/ </a>\r\n" ; 
         }
     }
 
-    response = "</pre><hr></body></html>"; request.setResponseVector(response);
-    std::cout << response << std::endl;
+    response += "</pre><hr></body></html>";
+    request.response = responseBuilder().addResponseBody(response);
     if (closedir(dir_ptr) == -1) {
         std::cout << "Error: cannot close the directory" << std::endl; 
         throw "Error: closedir()";
@@ -62,15 +63,13 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request) {
 
-    std::string response;
     if ( ! request.getSaveLastBS() ) {
-
-        response = "HTTP/1.1 301 Moved Permanently\r\n"; request.setResponseVector(response);
-        response = "Location: " + uri + "/\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 21\r\n"; request.setResponseVector(response);
-        response = "\r\n"; request.setResponseVector(response);
-        response = "<html><h1>301 Moved Permanently</h1></html>\r\n"; request.setResponseVector(response);
+        std::cout << "I'mHERE\n";
+        request.response = responseBuilder()
+        .addStatusLine("301")
+        .addContentType("text/html") //* COOL
+        .addLocation(uri)
+        .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
         throw "301";
     }
 
@@ -78,9 +77,6 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
     mapConstIterator it = directives.find("index");
 
-    // for (auto it : directives) {
-    //     std::cout << "BASED UPON|" << it.first << "|\t|" << it.second << "|\n";
-    // }
     std::string absolutePath = root;
 
     //* Index file if it exists 
@@ -93,8 +89,6 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             throw "CGI";
         }
 
-        response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
 
         absolutePath += '/' + indexFile;
         std::fstream file(absolutePath);
@@ -105,13 +99,20 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
             std::string content = str;
 
-            response = "Content-Length: "; response += content.size(); response += "\r\n"; request.setResponseVector(response);
-            response = "\r\n" ; request.setResponseVector(response);
-            response = content ; request.setResponseVector(response);
-
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType(absolutePath);
+            request.response = responseBuilder().addResponseBody(content);
             throw "200";
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html");
+            request.response = responseBuilder().addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            throw "400";
         }
     } else {
+        //TODO: check this else below if it is valid
         std::cout << "Error: open indexFile has failed\n";
         //throw "502";
     }
@@ -122,14 +123,15 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
     // absolutePath = root ;
     mapConstIterator autoIn = directives.find("autoindex");
 
+    std::string response;
+
     if (autoIn != directives.end() ) {
         autoIndexFunction(root, request);
     } else {
-        response = "HTTP/1.1 403 Forbidden \r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 36\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1>403 Forbidden</h1></html>\r\n"; request.setResponseVector(response);
-        response = "\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("403")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>403 Forbidden</h1></html>");
         throw ("403");
     }
 
@@ -173,6 +175,8 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
     
         std::fstream file(absolutePath);
 
+        //TODO: FIX IF THE CONETENT IS VIDEO
+
         if ( file.good() ) {
 
             // std::cout << "GOOTOOT \n";
@@ -181,14 +185,21 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
             std::string content = str;
             // std::cout << << content << std::endl;
-            std::string response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-            unsigned long number = content.size() ; std::ostringstream oss ; oss << number ; std::string result = oss.str();
+            //std::string response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+            //unsigned long number = content.size() ; std::ostringstream oss ; oss << number ; std::string result = oss.str();
             //response = "Content-Length: "; response += result ; response += "\r\n" ; request.setResponseVector(response);
-            response = "Content-Type: video/mp4\r\n\r\n"; request.setResponseVector(response);
+            //response = "Content-Type: video/mp4\r\n\r\n"; request.setResponseVector(response);
             //response = "Content-Type: text/html\r\n\r\n"; request.setResponseVector(response);
-            response = content ; request.setResponseVector(response);
+            //response = content ; request.setResponseVector(response);
             // std::cerr << content << std::endl;
             //std::cout << request.getResponse << std::endl;
+
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType(absolutePath)
+            .addContentLength(content)
+            .addResponseBody(content);
+
 
             throw "200";
         }
@@ -223,10 +234,10 @@ void getMethod(Request &request) {
         mapConstIterator it = (request.getDirectives()).find("root");
         if (it == (request.getDirectives()).end()) {
 
-            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 130\r\n\r\n" ; request.setResponseVector(response);
-            response = "<html><head><title>Welcome to Our Webserver!</title></head>" ; request.setResponseVector(response);
-            response = "<body><p><em>Thank you for using our webserver.</em></p></body></html>\r\n"; request.setResponseVector(response);
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("text/html")
+            .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
 
             throw "No Root: 200";
         }
@@ -238,7 +249,7 @@ void getMethod(Request &request) {
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call 
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    // std::cout << "URI |" << uri << "|\n";
+    std::cout << "URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
     concatenateWithRoot += uri;
 
@@ -257,18 +268,18 @@ void getMethod(Request &request) {
         } else if (S_ISDIR(fileStat.st_mode)) {
             requestTypeDirectory(concatenateWithRoot, uri, request);
         } else {
-            std::string response = "HTTP/1.1 502 Bad Gateway\r\n"; request.setResponseVector(response);
-            response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-            response = "Content-Length: 37\r\n\r\n"; request.setResponseVector(response);
-            response = "<html><h1>502 Bad Gateway</h1></html>\r\n"; request.setResponseVector(response);
+            request.response = responseBuilder()
+            .addStatusLine("502")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
             throw "502"; 
         }
     } else {
         
-        std::string response = "HTTP/1.1 404 Not Found\r\n"; request.setResponseVector(response);
-        response = "Content-Type: text/html\r\n"; request.setResponseVector(response);
-        response = "Content-Length: 36\r\n\r\n"; request.setResponseVector(response);
-        response = "<html><h1> 404 Not Found</h1></html>\r\n"; request.setResponseVector(response);
+        request.response = responseBuilder()
+        .addStatusLine("404")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
         throw "4041"; 
     }
 
