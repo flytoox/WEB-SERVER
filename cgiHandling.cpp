@@ -56,8 +56,6 @@ void handle_cgi_get(const std::string& file, std::string& response) {
         // Convert the stringstream to a string
         response = ss.str();
 
-        std::cerr << "response: " << response << std::endl;
-
         // Wait for the child process to finish
         int status;
         waitpid(pid, &status, 0);
@@ -136,4 +134,3 @@ bool handle_cgi_post(const std::string& file, const std::string& body, std::stri
         return true;
     }
 }
-
