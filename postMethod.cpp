@@ -1,21 +1,24 @@
 #include "webserve.hpp"
 
-static bool cgiRun(Request &request) {
+// static bool cgiRun(Request &request) {
 
-    (void)request ;
-    return (false);
-}
+//     (void)request ;
+//     return (false);
+// }
 
 static bool uploadRequestBody(Request &request) {
 
     //! CGI MUST BE RUN
-    bool uploaded = cgiRun(request);
+    std::cout << "CGI POST\n";
+    std::string response;
+
+    bool uploaded = handle_cgi_post(request.getUri(), request.getRequestBody(), response);
     if (uploaded) {
 
         request.response = responseBuilder()
         .addStatusLine("201")
         .addContentType("text/html")
-        .addResponseBody("");
+        .addResponseBody(response);
 
         // std::string response = "HTTP/1.1 201 Created\r\n"; request.setResponseVector(response);
         // response = "Content-Length: 0\r\n"; request.setResponseVector(response);
@@ -28,14 +31,13 @@ static bool uploadRequestBody(Request &request) {
 }
 
 void postMethod(Request &request) {
-
-
+    std::cout << "POST METHOD\n";
     //std::cout << "GOT HERE\n";
     //* if_location_support_upload()
     for (vectorToMapIterator it = request.getLocationsBlock().begin() ; it != request.getLocationsBlock().end(); ++it) {
         std::map<std::string, std::string> locationBlock = (*it);
         if ( locationBlock["location match"] == "/upload" ) {
-            if  ( uploadRequestBody(request) ) 
+            if (uploadRequestBody(request)) 
                 throw "201" ;  
         }
     }
