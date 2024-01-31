@@ -64,7 +64,6 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request) {
 
     if ( ! request.getSaveLastBS() ) {
-        std::cout << "I'mHERE\n";
         request.response = responseBuilder()
         .addStatusLine("301")
         .addContentType("text/html") //* COOL
@@ -109,13 +108,14 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             .addStatusLine("400")
             .addContentType("text/html");
             request.response = responseBuilder().addResponseBody("<html><h1>400 Bad Request</h1></html>");
-            throw "400";
+            throw "4001";
         }
-    } else {
-        //TODO: check this else below if it is valid
-        std::cout << "Error: open indexFile has failed\n";
-        //throw "502";
-    }
+    } 
+    // else {
+    //     //TODO: check this else below if it is valid
+    //     std::cout << "Error: open indexFile has failed\n";
+    //     //throw "502";
+    // }
 
     //* Index File doesn't exist && check autoindex
     //TODO : check if the '/' must be added to the absolute path;
@@ -242,8 +242,8 @@ void getMethod(Request &request) {
     std::cout << "URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
     concatenateWithRoot += uri;
+    std::cout << "ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
 
-    // std::cout << "BECOMES  |" << concatenateWithRoot << "|\n";
 
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;

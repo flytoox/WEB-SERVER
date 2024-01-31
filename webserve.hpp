@@ -137,4 +137,13 @@ void postMethod(Request &request);
 
 void deleteMethod(Request &request);
 
- 
+//! parseRequestBody.cpp
+
+int hexaToDec(std::string &res);
+void chunkedRequest(Request &request);
+void textContentType(Request &request);
+void pureBinary(std::string &image, std::string &destination);
+void multipartContentType(Request &request);
+void urlencodedContentType(Request &request);
+
+

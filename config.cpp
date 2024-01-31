@@ -114,6 +114,10 @@ void	duplicateServerBasedOnListen(vector<Server> &servers) {
 	}
 }
 
+void alo() {
+	return ;
+}
+
 vector<Server> parsingFile(string s) {
 	stack<string> st;
 	vector<Server> servers;
@@ -187,7 +191,8 @@ vector<Server> parsingFile(string s) {
 	}
 	if (!st.empty())
 		return (cout << "FUCK U DONT PLAY WITH ME\n", servers);
-	duplicateServerBasedOnListen(servers);
+	// duplicateServerBasedOnListen(servers);
+	alo();
 	set<pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
@@ -214,10 +219,13 @@ vector<Server> parsingFile(string s) {
 			servers[i].listenToIncomingConxs();
 			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
 		}
+		servers.erase(servers.begin()+1, servers.begin() + servers.size());
+		break ;
 	}
-	for (auto &i: servers) {
-		std::cerr << "-->" << i.duplicated << endl;
-	}
+	// for (auto &i: servers) {
+	// 	std::cerr << "-->" << i.duplicated << endl;
+	// }
+	std::cout << "LENGTH: |" << servers.size() << "|\n";
 	return (servers);
 }
 
