@@ -219,48 +219,32 @@ void parseQueriesInURI(Request &request,std::string &uri) {
 
     std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123
     std::map<std::string, std::string> mapTopush;
-    int keyValue = 0;
 
-    for (size_t i = 0; i < queriesString.length(); i++) {
-        if (queriesString[i] == '=')
-            keyValue++;
+    std::vector<std::string> keyValueVector = splitString(queriesString, "&");
+
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        if (signPos != std::string::npos) {
+            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+            mapTopush.insert(pair);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            throw "400";
+        }
     }
 
-    size_t dividerPos = queriesString.find('&');
 
-    std::string firstKeyValue = queriesString.substr(0, dividerPos);
-    size_t equalSignPos = firstKeyValue.find('=');
-    pair firstPair = std::make_pair(firstKeyValue.substr(0, equalSignPos), firstKeyValue.substr(equalSignPos + 1));
-    mapTopush.insert(firstPair); 
-    queriesString.erase(0, dividerPos + 1);
+    // std::cout << "***TRY****"
 
-    std::cout << "NOW|" << queriesString << "|\n";
-
-    while (--keyValue) {
-    
-        std::vector<std::string> keyValueVector = splitString(queriesString, '&');
-
-        // size_t dividerPos = queriesString.find('&');
-        // std::string secondKeyValue = queriesString.substr(dividerPos + 1, queriesString.length() - 1);
-        // equalSignPos = secondKeyValue.find('=');
-        // pair secondPair = std::make_pair(secondKeyValue.substr(0, equalSignPos), secondKeyValue.substr(equalSignPos + 1));
-        // mapTopush.insert(secondPair);
-
-
-
-    }
 
     request.setUrlencodedResponse(mapTopush);
 
-
-    std::cout << "---TRY-----\n";
-    for (auto it : mapTopush ) {
-        std::cout << it.first << "|\t|" << it.second << "|\n";
-    }
-    std::cout << "---TRY-----\n";
     // Remove queries from uri 
     uri.erase(uri.find('?'));
-
 }
 
 void getMethod(Request &request) {
@@ -290,11 +274,11 @@ void getMethod(Request &request) {
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call 
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    std::cout << "BEFORE URI |" << uri << "|\n";
+    // std::cout << "BEFORE URI |" << uri << "|\n";
     if (uri.find('?') != std::string::npos) {
         parseQueriesInURI(request, uri);
     }
-    std::cout << "AFTER URI |" << uri << "|\n";
+    // std::cout << "AFTER URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
     concatenateWithRoot += uri;
     std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";

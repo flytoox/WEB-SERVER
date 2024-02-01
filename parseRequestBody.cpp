@@ -185,25 +185,51 @@ void multipartContentType(Request &request) {
 
 }
 
+// void urlencodedContentType(Request &request) {
+
+//     std::string res = request.getRequestBody();
+//     std::map<std::string, std::string> mapTopush;
+
+//     size_t dividerPos = res.find('&');
+
+//     std::string firstKeyValue = res.substr(0, dividerPos);
+//     size_t equalSignPos = firstKeyValue.find('=');
+//     pair firstPair = std::make_pair(firstKeyValue.substr(0, equalSignPos), firstKeyValue.substr(equalSignPos + 1));
+
+//     std::string secondKeyValue = res.substr(dividerPos + 1, res.length() - 1);
+//     equalSignPos = secondKeyValue.find('=');
+//     pair secondPair = std::make_pair(secondKeyValue.substr(0, equalSignPos), secondKeyValue.substr(equalSignPos + 1));
+    
+//     mapTopush.insert(firstPair); mapTopush.insert(secondPair);
+//     request.setUrlencodedResponse(mapTopush);
+
+// }
+
 void urlencodedContentType(Request &request) {
 
     std::string res = request.getRequestBody();
     std::map<std::string, std::string> mapTopush;
 
-    size_t dividerPos = res.find('&');
+    std::vector<std::string> keyValueVector = splitString(res, "&");
 
-    std::string firstKeyValue = res.substr(0, dividerPos);
-    size_t equalSignPos = firstKeyValue.find('=');
-    pair firstPair = std::make_pair(firstKeyValue.substr(0, equalSignPos), firstKeyValue.substr(equalSignPos + 1));
-
-    std::string secondKeyValue = res.substr(dividerPos + 1, res.length() - 1);
-    equalSignPos = secondKeyValue.find('=');
-    pair secondPair = std::make_pair(secondKeyValue.substr(0, equalSignPos), secondKeyValue.substr(equalSignPos + 1));
-    
-    mapTopush.insert(firstPair); mapTopush.insert(secondPair);
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        if (signPos != std::string::npos) {
+            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+            mapTopush.insert(pair);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            throw "400";
+        }
+    }
     request.setUrlencodedResponse(mapTopush);
 
 }
+
 
 static int getTheMaxsize(Request &request) {
 
