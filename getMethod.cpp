@@ -1,5 +1,6 @@
 #include "webserve.hpp"
 #include <fstream>
+#include <string>
 
 // static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
 
@@ -247,6 +248,44 @@ void parseQueriesInURI(Request &request,std::string &uri) {
     uri.erase(uri.find('?'));
 }
 
+
+std::vector<std::string> splitWithChar(std::string s, char delim) {
+	std::vector<std::string> result;
+	std::stringstream ss (s);
+	std::string item;
+
+	while (getline (ss, item, delim)) {
+		result.push_back (item);
+	}
+
+	return result;
+}
+
+std::string CheckPathForSecurity(std::string path) {
+	std::vector<std::string> ret = splitWithChar(path, '/');
+	std::string result = "";
+	for (int i = 0; i < (int)ret.size(); i++) {
+		if (ret[i] == "..") {
+			if (i) {
+				ret.erase(ret.begin() + i);
+				ret.erase(ret.begin() + i - 1);
+				i -= 2;
+			}
+			else {
+				ret.erase(ret.begin());
+				i--;
+			}
+		} else if (ret[i] == ".") {
+			ret.erase(ret.begin() + i);
+			i--;
+		}
+	}
+	for (std::string s : ret) {
+		result += s + "/";
+	}
+	return result;
+}
+
 void getMethod(Request &request) {
 
     std::string concatenateWithRoot , locationUsed;
@@ -278,6 +317,18 @@ void getMethod(Request &request) {
     if (uri.find('?') != std::string::npos) {
         parseQueriesInURI(request, uri);
     }
+
+
+	//uri : /../../tmp/ll.txt
+	//concatenateWithRoot : /Users/sizgunan/
+	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
+	if (result.find(concatenateWithRoot) == std::string::npos) {
+		request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
+            throw "403 Security"; 
+	}
     // std::cout << "AFTER URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
     concatenateWithRoot += uri;
