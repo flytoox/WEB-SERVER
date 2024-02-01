@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <pair>
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -148,3 +149,6 @@ void multipartContentType(Request &request);
 void urlencodedContentType(Request &request);
 
 
+
+//GetConfig
+std::vector<std::string> splitWithChar(std::string s, char delim);
