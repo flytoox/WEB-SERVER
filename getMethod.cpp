@@ -75,6 +75,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
     // std::map<std::string, std::string> directives = request.getDirectives();
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
+
     mapConstIterator it = directives.find("index");
 
     std::string absolutePath = root;
@@ -282,16 +283,8 @@ std::vector<std::string> splitWithChar(std::string s, char delim) {
 }
 
 std::string CheckPathForSecurity(std::string path) {
-    std::cout << "|path " << path << std::endl;
 	std::vector<std::string> ret = splitWithChar(path, '/');
 	std::string result = "";
-
-
-    bool last = false;
-    if (path.find(path.size() - 1) == '/') {
-        std::cout << "jkgjkgrwkngwr\n";
-        last = true;
-    }
 
 	for (int i = 0; i < (int)ret.size(); i++) {
 		if (ret[i] == "..") {
@@ -310,11 +303,9 @@ std::string CheckPathForSecurity(std::string path) {
 		}
 	}
 	for (std::string s : ret) {
-		result += s + "/";
+		result += "/" + s;
 	}
-    if (!last)
-        result.erase(path.size());
-    std::cout << "|RSULT " << result << "|" << std::endl;
+
 	return result;
 }
 
@@ -377,8 +368,10 @@ void getMethod(Request &request) {
     // std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
+            std::cout << "IT'S FILE\n";
             requestTypeFile(concatenateWithRoot, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
+            std::cout << "IT'S DIRECTORY\n";
             requestTypeDirectory(concatenateWithRoot, uri, request);
         } else {
             request.response = responseBuilder()
