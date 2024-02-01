@@ -19,7 +19,7 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
 
         // std::string res = "";
     (void)readsd; (void)writesd;
-        std::cout << "*********KOKOKOKOKOOKOKOK***********\n";
+        // std::cout << "*********KOKOKOKOKOOKOKOK***********\n";
 
         // FD_CLR(i, &readsd); 
         // FD_SET(i, &writesd);
@@ -95,10 +95,10 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         std::map<int, Request>::iterator it = simultaneousRequests.find(i); 
         simultaneousRequests.erase(it);
 
-        for (auto it: simultaneousRequests)
-            std::cout << "fds = " << it.first << std::endl;
+        // for (auto it: simultaneousRequests)
+        //     std::cout << "fds = " << it.first << std::endl;
         
-        std::cout << "****POPOPOPOPOPoPoPOP**********\n";
+        // std::cout << "****POPOPOPOPOPoPoPOP**********\n";
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {

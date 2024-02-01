@@ -97,7 +97,7 @@ void getMethod(Request &request) {
         if (it->first == "root") {
             concatenateWithRoot = root = it->second;
         }
-        if (it->first == "location match" ) {
+        if (it->first == "location" ) {
             locationUsed = root = it->second;
         }
     }

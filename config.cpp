@@ -21,8 +21,11 @@
 
 using namespace std;
 
-//TODO: Omar check index value if it has something; if not , set the value to index.html
-//TODO: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
+//TODO: Omar check index value if it has something; if not , set the value to index.html in the directives server block
+//TODO: Omar check location match if it's duplicated , error -> exit
+//TODO: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
+//TODO: Omar don't remove /// in location -> DONNNNNN'T
+//DONE: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
 
 
 
@@ -219,8 +222,8 @@ vector<Server> parsingFile(string s) {
 	// set index.html if index is empty, and remove autoindex if it's off
 	for (size_t i = 0; i < servers.size(); i++) {
 		for (size_t j = 0; j < servers[i].locationsBlock.size(); j++) {
-			if (!servers[i].locationsBlock[j].count("index"))
-				servers[i].locationsBlock[j]["index"] = "index.html";
+			// if (!servers[i].locationsBlock[j].count("index"))
+			// 	servers[i].locationsBlock[j]["index"] = "index.html";
 			if (servers[i].locationsBlock[j].count("autoindex") && servers[i].locationsBlock[j]["autoindex"] == "off")
 				servers[i].locationsBlock[j].erase("autoindex");
 		}

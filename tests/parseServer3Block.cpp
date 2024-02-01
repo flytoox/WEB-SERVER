@@ -15,7 +15,7 @@ void    adjustServer3DirectivesMap(std::map<std::string, std::string> &serverDir
 
 void    adjustServer3LocationBlockMap1(std::map<std::string, std::string> &serverLocationDirectives) {
 
-    serverLocationDirectives["location match"] = "/";
+    serverLocationDirectives["location"] = "/";
     serverLocationDirectives["root"] = "/Users/sizgunan";
     serverLocationDirectives["autoindex"] = "on";
     // serverLocationDirectives["return"] = "Server1 Success";
@@ -24,7 +24,7 @@ void    adjustServer3LocationBlockMap1(std::map<std::string, std::string> &serve
 
 void    adjustServer3LocationBlockMap2(std::map<std::string, std::string> &serverLocationDirectives) {
 
-    serverLocationDirectives["location match"] = "/Documents";
+    serverLocationDirectives["location"] = "/Documents";
     serverLocationDirectives["root"] = "/Users/sizgunan";
     serverLocationDirectives["autoindex"] = "on";
     // serverLocationDirectives["return"] = "Server3 : Location : /Documents";
@@ -33,7 +33,7 @@ void    adjustServer3LocationBlockMap2(std::map<std::string, std::string> &serve
 
 void    adjustServer3LocationBlockMap3(std::map<std::string, std::string> &serverLocationDirectives) {
 
-    serverLocationDirectives["location match"] = "/Desktop";
+    serverLocationDirectives["location"] = "/Desktop";
     serverLocationDirectives["autoindex"] = "on";
     // serverLocationDirectives["return"] = "Server3 : Location : /Desktop";
 }

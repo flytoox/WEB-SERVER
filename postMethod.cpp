@@ -238,7 +238,7 @@ oo();
             throw "403 Security"; 
 	}
     absolutePath = result;
-    std::cout << "------>|" << absolutePath << "|\n";
+    // std::cout << "HAL3aaaaar|" << absolutePath << "|\n";
 
     // std::string absolutePath = root + uri;
 
