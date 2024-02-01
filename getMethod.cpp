@@ -212,6 +212,57 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
     }
 }
 
+
+void parseQueriesInURI(Request &request,std::string &uri) {
+
+   // uri = /?username=sana&password=123
+
+    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123
+    std::map<std::string, std::string> mapTopush;
+    int keyValue = 0;
+
+    for (size_t i = 0; i < queriesString.length(); i++) {
+        if (queriesString[i] == '=')
+            keyValue++;
+    }
+
+    size_t dividerPos = queriesString.find('&');
+
+    std::string firstKeyValue = queriesString.substr(0, dividerPos);
+    size_t equalSignPos = firstKeyValue.find('=');
+    pair firstPair = std::make_pair(firstKeyValue.substr(0, equalSignPos), firstKeyValue.substr(equalSignPos + 1));
+    mapTopush.insert(firstPair); 
+    queriesString.erase(0, dividerPos + 1);
+
+    std::cout << "NOW|" << queriesString << "|\n";
+
+    while (--keyValue) {
+    
+        std::vector<std::string> keyValueVector = splitString(queriesString, '&');
+
+        // size_t dividerPos = queriesString.find('&');
+        // std::string secondKeyValue = queriesString.substr(dividerPos + 1, queriesString.length() - 1);
+        // equalSignPos = secondKeyValue.find('=');
+        // pair secondPair = std::make_pair(secondKeyValue.substr(0, equalSignPos), secondKeyValue.substr(equalSignPos + 1));
+        // mapTopush.insert(secondPair);
+
+
+
+    }
+
+    request.setUrlencodedResponse(mapTopush);
+
+
+    std::cout << "---TRY-----\n";
+    for (auto it : mapTopush ) {
+        std::cout << it.first << "|\t|" << it.second << "|\n";
+    }
+    std::cout << "---TRY-----\n";
+    // Remove queries from uri 
+    uri.erase(uri.find('?'));
+
+}
+
 void getMethod(Request &request) {
 
     std::string concatenateWithRoot , locationUsed;
@@ -239,10 +290,14 @@ void getMethod(Request &request) {
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call 
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    std::cout << "URI |" << uri << "|\n";
+    std::cout << "BEFORE URI |" << uri << "|\n";
+    if (uri.find('?') != std::string::npos) {
+        parseQueriesInURI(request, uri);
+    }
+    std::cout << "AFTER URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
     concatenateWithRoot += uri;
-    std::cout << "ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
+    std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
 
 
     const char *path = concatenateWithRoot.c_str();

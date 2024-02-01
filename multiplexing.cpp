@@ -1,7 +1,7 @@
 #include "webserve.hpp"
 #include <sys/errno.h>
 
-bool reCheck = false;
+// bool reCheck = false;
 
 void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<int> &allSocketsVector) {
 
@@ -270,10 +270,10 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
                             std::string header = (simultaneousRequests[i]).getRequestHeader();
                             // std::cout << "PRI|"  << ((simultaneousRequests[i]).getRequestHeader()) << std::endl;
-                            //TODO: this unction must check the server only once! 
-                            if (reCheck != true) {
+                            //DONE1: this unction must check the server only once! 
+                            if ((simultaneousRequests[i]).reCheck != true) {
                                 //* Fix this 
-                                reCheck = true;
+                                (simultaneousRequests[i]).reCheck = true;
                                 reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             }
                             parseAndSetRequestHeader(simultaneousRequests[i]);

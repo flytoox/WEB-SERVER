@@ -9,7 +9,8 @@ Request::Request() :
     requestBody(""),
     requestBodyChunk(false),
     requestOutputTest("20000000000000000000"),
-    saveLastBS(false) {}
+    saveLastBS(false),
+    reCheck(false) {}
 
 //* GETTERS
 

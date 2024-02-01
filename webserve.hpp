@@ -121,6 +121,7 @@ void checkRequestedHttpMethod(Request &request);
 
 //! getMethod.cpp
 
+void parseQueriesInURI(Request &request,std::string &uri);
 
 void getMethod(Request &request);
 
