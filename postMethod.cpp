@@ -183,7 +183,7 @@ void postMethod(Request &request) {
 
     std::cout << "------>|" << absolutePath << "|\n";
 
-    //TODO: http://localhost:1111/../../tmp/ll.txt check the uri if it bypasses the root dir
+    //WORKING: http://localhost:1111/../../tmp/ll.txt check the uri if it bypasses the root dir
     //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
     //DONE: seperate uri with queries /uri?ljsl=lsls&ddo=oo
 

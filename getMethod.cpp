@@ -262,6 +262,7 @@ std::vector<std::string> splitWithChar(std::string s, char delim) {
 }
 
 std::string CheckPathForSecurity(std::string path) {
+    std::cout << "|path " << path << std::endl;
 	std::vector<std::string> ret = splitWithChar(path, '/');
 	std::string result = "";
 	for (int i = 0; i < (int)ret.size(); i++) {
@@ -283,6 +284,7 @@ std::string CheckPathForSecurity(std::string path) {
 	for (std::string s : ret) {
 		result += s + "/";
 	}
+    std::cout << "|RSULT " << result << std::endl;
 	return result;
 }
 
@@ -330,8 +332,9 @@ void getMethod(Request &request) {
             throw "403 Security"; 
 	}
     // std::cout << "AFTER URI |" << uri << "|\n";
-    // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
-    concatenateWithRoot += uri;
+    // std::cout << "ROOT |" << concatenateWithRoot << "|\n";
+    // concatenateWithRoot += uri;
+    concatenateWithRoot = result;
     std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
 
 
