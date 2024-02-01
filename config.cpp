@@ -21,6 +21,10 @@
 
 using namespace std;
 
+//TODO: Omar check index value if it has something; if not , set the value to index.php
+//TODO: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
+
+
 
 void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 	if (key == "")
