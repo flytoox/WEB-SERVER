@@ -108,6 +108,7 @@ void pureBinary(Request &request, std::string &image, std::string &destination) 
     std::ofstream outputFile(absolutePath);
 
     std::cout << "FILENAME|" << filename << "|\n";
+    //std::cerr << request.getRequestBody() << "|\n";
 
     if (!outputFile.is_open()) {
         request.response = responseBuilder()

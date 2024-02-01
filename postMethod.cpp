@@ -172,7 +172,11 @@ void postMethod(Request &request) {
     std::string uri = request.getUri();
     std::string absolutePath = root + uri;
 
-    std::cout << "------>|" << root << "|\n";
+    std::cout << "------>|" << absolutePath << "|\n";
+
+    //TODO: http://localhost:1111/../../tmp/ll.txt check the uri if it bypasses the root dir
+    //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
+    //TODO: seperate uri with queries /uri?ljsl=lsls&ddo=oo
 
     const char *path = absolutePath.c_str(); 
     struct stat fileStat;
