@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/02/01 12:54:45 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/02/01 16:13:10 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 using namespace std;
 
-//TODO: Omar check index value if it has something; if not , set the value to index.php
+//TODO: Omar check index value if it has something; if not , set the value to index.html
 //TODO: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
 
 
@@ -216,10 +216,15 @@ vector<Server> parsingFile(string s) {
 		servers.erase(servers.begin()+1, servers.begin() + servers.size());
 		break ;
 	}
-	// for (auto &i: servers) {
-	// 	std::cerr << "-->" << i.duplicated << endl;
-	// }
-	std::cout << "LENGTH: |" << servers.size() << "|\n";
+	// set index.html if index is empty, and remove autoindex if it's off
+	for (size_t i = 0; i < servers.size(); i++) {
+		for (size_t j = 0; j < servers[i].locationsBlock.size(); j++) {
+			if (!servers[i].locationsBlock[j].count("index"))
+				servers[i].locationsBlock[j]["index"] = "index.html";
+			if (servers[i].locationsBlock[j].count("autoindex") && servers[i].locationsBlock[j]["autoindex"] == "off")
+				servers[i].locationsBlock[j].erase("autoindex");
+		}
+	}
 	return (servers);
 }
 
