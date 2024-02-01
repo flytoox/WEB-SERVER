@@ -1,12 +1,5 @@
 #include "webserve.hpp"
 
-// static bool cgiRun(Request &request) {
-
-//     (void)request ;
-//     return (false);
-// }
-
-void hey() {}
 
 static void uploadRequestBody(Request &request) {
 
@@ -29,14 +22,44 @@ static void uploadRequestBody(Request &request) {
 
     std::map<std::string, std::string>::const_iterator itContentType;
 
-    itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+    // itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
 
-    if ( itContentType != (request.getHttpRequestHeaders()).end() ) {
+    // if ( itContentType != (request.getHttpRequestHeaders()).end() ) {
+
+    //     std::string value = itContentType->second;
+
+    //     if ( value == "multipart/form-data;" ) {
+    //         hey();
+    //         multipartContentType(request);
+    //         request.response = responseBuilder()
+    //         .addStatusLine("200")
+    //         .addContentType("text/html");
+
+    //         request.response = responseBuilder()
+    //         .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
+    //         throw "201" ;
+    //     }
+
+    // }
+
+    // std::cout << "[][][][][][][]\n";
+    // for (auto it : (request.getHttpRequestHeaders())) {
+    //     std::cout << "|" << it.first << "|  |" << it.second << "\n";
+    // }
+    // std::cout << "[][][][][][][]\n";
+    // exit (0);
+    itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+    if ( itContentType != (request.getHttpRequestHeaders()).end()) {
 
         std::string value = itContentType->second;
 
-        if ( value == "multipart/form-data;" ) {
-            hey();
+        if (value == "text/plain") {
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("txt");
+
+            textContentType(request);
+        } else if ( value == "multipart/form-data;" ) {
             multipartContentType(request);
             request.response = responseBuilder()
             .addStatusLine("200")
@@ -45,48 +68,51 @@ static void uploadRequestBody(Request &request) {
             request.response = responseBuilder()
             .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
             throw "201" ;
+        } else if (value == "application/x-www-form-urlencoded") {
+            std::cout << "111\n";
+            urlencodedContentType(request);
+        } else {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                throw "400 CT";
         }
-
     }
-
 
 }
 
-
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
-    (void)absolutePath;
     std::string response;
 
     std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
-
     std::string file = uri.erase(0, pos);
-
 
     if ( file.find('.') != std::string::npos ) {
 
         std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+
 
         if ( extension == ".php" || extension == ".py") {
             //! RUN POST CGI !
             // response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
             // response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
 
-            std::cout << "***INFORMATION YOU NEED****\n";
-            std::map<std::string, std::string> toUSE = request.getUrlencodedResponse();
-            for (auto it : toUSE) {
-                std::cout << it.first << "|\t|" << it.second << "|\n";
-            }
-            std::cout << "***INFORMATION YOU NEED****\n";
+            std::map<std::string, std::string> postData = request.getUrlencodedResponse();
 
-            // throw "POST CGI";
+            std::string phpInterpreter = "/usr/bin/php";
+            std::string phpResponse = handle_cgi_post(postData, phpInterpreter, absolutePath);
 
+            std::cout << "RESPONSE |" << phpResponse << "|\n";
             request.response = responseBuilder()
                 .addStatusLine("200")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>POST CGI</h1></html>");
-                throw "POST CGI";
+                .addResponseBody(phpResponse);
+
+            // throw "POST CGI";
+            throw "POST CGI";
 
         }
     }
@@ -142,9 +168,12 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
 }
 
 
-
+void oo() {}
 void postMethod(Request &request) {
 
+oo();
+    //CHECK: I added this function to check the body type
+    uploadRequestBody(request);
 
     //std::cout << "GOT HERE\n";
     //* if_location_support_upload()
@@ -186,17 +215,26 @@ void postMethod(Request &request) {
 
     std::string uri = request.getUri();
 
-    std::cout << "POST : BEFORE URI|" << uri << "|\n";
+    // std::cout << "POST : BEFORE URI|" << uri << "|\n";
 
     if (uri.find('?') != std::string::npos) {
         parseQueriesInURI(request, uri);
     }
 
-    std::cout << "POST : BEFORE URI|" << uri << "|\n";
-
-    std::string absolutePath = root + uri;
-
+    // std::cout << "POST : BEFORE URI|" << uri << "|\n";
+    std::string absolutePath;
+    std::string result =  CheckPathForSecurity(root+uri);
+	if (result.find(root) == std::string::npos) {
+		request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
+            throw "403 Security";
+	}
+    absolutePath = result;
     std::cout << "------>|" << absolutePath << "|\n";
+
+    // std::string absolutePath = root + uri;
 
     //WORKING: http://localhost:1111/../../tmp/ll.txt check the uri if it bypasses the root dir
     //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
@@ -209,7 +247,7 @@ void postMethod(Request &request) {
 
         if (S_ISREG(fileStat.st_mode)) {
             std::cout << "FILE\n";
-            requestTypeFilePost(root, uri, request);
+            requestTypeFilePost(absolutePath, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
              std::cout << "DIRECTORY\n";
             requestTypeDirectoryPost(root, uri, request);

@@ -120,6 +120,7 @@ void parseRequestBody(Request &request);
 void checkRequestedHttpMethod(Request &request);
 
 //! getMethod.cpp
+std::string CheckPathForSecurity(std::string path);
 
 void parseQueriesInURI(Request &request,std::string &uri);
 
@@ -152,8 +153,9 @@ void urlencodedContentType(Request &request);
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
 
+
 //! cgi.cpp
 
-void handle_cgi_get(const std::string& file, std::string& response);
-bool handle_cgi_post(const std::string& file, const std::string& postData, std::string& response);
+std::string handle_cgi_get(const std::string& file, const std::string& interpreterPath);
+std::string handle_cgi_post(const std::map<std::string, std::string>& postData, const std::string& interpreter, const std::string& scriptFilePath);
 

@@ -82,7 +82,7 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
             //std::cout << " res : " << res.length() << "|\t sd : |" << sd << "|\n";
         } 
 
-        std::cout << "---> |" << i << "|\n";
+        // std::cout << "---> |" << i << "|\n";
 
 
         // (void)allsd;
