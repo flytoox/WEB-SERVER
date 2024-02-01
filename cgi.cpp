@@ -167,4 +167,3 @@ bool handle_cgi_post(const std::string& file, const std::string& postData, std::
         return false;
     }
 }
-

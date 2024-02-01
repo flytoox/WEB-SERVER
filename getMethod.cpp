@@ -1,5 +1,6 @@
 #include "webserve.hpp"
 #include <fstream>
+#include <string>
 
 // static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
 
@@ -37,24 +38,24 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
-        std::cout << "Error: cannot open the file/directory\n"; 
+        std::cout << "Error: cannot open the file/directory\n";
         exit (1);
     }
 
     response += "<html><head><title>Index of " + request.getUri() + "</title></head><body><h1>Index \
-         of " + request.getUri() + "</h1><hr><pre>"; 
+         of " + request.getUri() + "</h1><hr><pre>";
 
     while ( (read_dir = readdir(dir_ptr)) != NULL ) {
         std::string link = read_dir->d_name;
         if (read_dir->d_type == DT_REG || read_dir->d_type == DT_DIR) {
-            response += "<a href=" + link + "> "+ read_dir->d_name + "/ </a>\r\n" ; 
+            response += "<a href=" + link + "> "+ read_dir->d_name + "/ </a>\r\n" ;
         }
     }
 
     response += "</pre><hr></body></html>";
     request.response = responseBuilder().addResponseBody(response);
     if (closedir(dir_ptr) == -1) {
-        std::cout << "Error: cannot close the directory" << std::endl; 
+        std::cout << "Error: cannot close the directory" << std::endl;
         throw "Error: closedir()";
     }
     throw "200 autoindex";
@@ -64,7 +65,6 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request) {
 
     if ( ! request.getSaveLastBS() ) {
-        std::cout << "I'mHERE\n";
         request.response = responseBuilder()
         .addStatusLine("301")
         .addContentType("text/html") //* COOL
@@ -79,7 +79,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
     std::string absolutePath = root;
 
-    //* Index file if it exists 
+    //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
         std::string extension = indexFile.substr(indexFile.find('.'), ( indexFile.length() - indexFile.find('.')) );
@@ -93,7 +93,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
         absolutePath += '/' + indexFile;
         std::fstream file(absolutePath);
 
-    
+
         if ( file.good() ) {
 
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
@@ -109,13 +109,14 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             .addStatusLine("400")
             .addContentType("text/html");
             request.response = responseBuilder().addResponseBody("<html><h1>400 Bad Request</h1></html>");
-            throw "400";
+            throw "4001";
         }
-    } else {
-        //TODO: check this else below if it is valid
-        std::cout << "Error: open indexFile has failed\n";
-        //throw "502";
     }
+    // else {
+    //     //TODO: check this else below if it is valid
+    //     std::cout << "Error: open indexFile has failed\n";
+    //     //throw "502";
+    // }
 
     //* Index File doesn't exist && check autoindex
     //TODO : check if the '/' must be added to the absolute path;
@@ -147,21 +148,36 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
     std::string file = uri.erase(0, pos);
 
     {
-        if (file.find('.') != std::string::npos) {
-            std::string extension = file.substr(file.find_last_of('.'));
 
-            if (extension == ".php" || extension == ".py") {
-                handle_cgi_get(absolutePath, response);
+        // if ( file.find('.') != std::string::npos ) {
 
-                // Set the initial HTTP response headers
-                request.response = responseBuilder()
-                .addStatusLine("200")
-                .addContentType("text/html")
-                .addResponseBody(response);
-                throw ("CGI");
+        //     std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+
+        //     if ( extension == ".php" || extension == ".py") {
+        //         //! RUN CGI !
+        //         response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+        //         response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+        //         throw "CGI";
+        //     }
+
+        // }
+
+            if (file.find('.') != std::string::npos) {
+
+                std::string extension = file.substr(file.find_last_of('.'));
+
+                if (extension == ".php" || extension == ".py") {
+                    handle_cgi_get(absolutePath, response);
+
+                    // Set the initial HTTP response headers
+                    request.response = responseBuilder()
+                    .addStatusLine("200")
+                    .addContentType("text/html")
+                    .addResponseBody(response);
+                    throw ("CGI");
             }
         }
-    
+
         std::fstream file(absolutePath);
 
         //TODO: FIX IF THE CONETENT IS VIDEO
@@ -192,7 +208,7 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
             throw "200";
         }
-    } 
+    }
 }
 
 
@@ -209,6 +225,87 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
             locationUsed = it->second;
         }
     }
+}
+
+
+void parseQueriesInURI(Request &request,std::string &uri) {
+
+   // uri = /?username=sana&password=123
+
+    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123
+    std::map<std::string, std::string> mapTopush;
+
+    std::vector<std::string> keyValueVector = splitString(queriesString, "&");
+
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        if (signPos != std::string::npos) {
+            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+            mapTopush.insert(pair);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            throw "400";
+        }
+    }
+
+
+    // std::cout << "***INFORMATION YOU NEED****\n";
+    // for (auto it : mapTopush) {
+    //     std::cout << it.first << "|\t|" << it.second << "|\n";
+    // }
+    // std::cout << "***INFORMATION YOU NEED****\n";
+
+
+    request.setUrlencodedResponse(mapTopush);
+
+    // Remove queries from uri
+    uri.erase(uri.find('?'));
+}
+
+
+std::vector<std::string> splitWithChar(std::string s, char delim) {
+	std::vector<std::string> result;
+	std::stringstream ss (s);
+	std::string item;
+
+	while (getline (ss, item, delim)) {
+		result.push_back (item);
+	}
+
+	return result;
+}
+
+std::string CheckPathForSecurity(std::string path) {
+    std::cout << "|path " << path << std::endl;
+	std::vector<std::string> ret = splitWithChar(path, '/');
+	std::string result = "";
+
+	for (int i = 0; i < (int)ret.size(); i++) {
+		if (ret[i] == "..") {
+			if (i) {
+				ret.erase(ret.begin() + i);
+				ret.erase(ret.begin() + i - 1);
+				i -= 2;
+			}
+			else {
+				ret.erase(ret.begin());
+				i--;
+			}
+		} else if (ret[i] == ".") {
+			ret.erase(ret.begin() + i);
+			i--;
+		}
+	}
+	for (std::string s : ret) {
+		result += "/" + s;
+	}
+    
+    std::cout << "|RSULT " << result << "|" << std::endl;
+	return result;
 }
 
 void getMethod(Request &request) {
@@ -235,20 +332,37 @@ void getMethod(Request &request) {
 
     }
 
-    //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call 
+    //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    std::cout << "URI |" << uri << "|\n";
-    // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
-    concatenateWithRoot += uri;
+    // std::cout << "BEFORE URI |" << uri << "|\n";
+    if (uri.find('?') != std::string::npos) {
+        parseQueriesInURI(request, uri);
+    }
 
-    // std::cout << "BECOMES  |" << concatenateWithRoot << "|\n";
+
+	//uri : /../../tmp/ll.txt
+	//concatenateWithRoot : /Users/sizgunan/
+	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
+	if (result.find(concatenateWithRoot) == std::string::npos) {
+		request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
+            throw "403 Security";
+	}
+    // std::cout << "AFTER URI |" << uri << "|\n";
+    // std::cout << "ROOT |" << concatenateWithRoot << "|\n";
+    // concatenateWithRoot += uri;
+    concatenateWithRoot = result;
+    std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
+
 
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;
 
     // std::cout << "--> absolutePath |" << concatenateWithRoot << "|\n";
-    // std::cout << "--> uri |" << uri << "|\n"; 
+    // std::cout << "--> uri |" << uri << "|\n";
 
     // std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {
@@ -261,15 +375,15 @@ void getMethod(Request &request) {
             .addStatusLine("502")
             .addContentType("text/html")
             .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
-            throw "502"; 
+            throw "502";
         }
     } else {
-        
+
         request.response = responseBuilder()
         .addStatusLine("404")
         .addContentType("text/html")
         .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-        throw "4041"; 
+        throw "4041";
     }
 
 }

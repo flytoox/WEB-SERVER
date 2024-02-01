@@ -170,7 +170,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         std::string location_match = mapIterator["location match"];
 
         if ( location_match == directoryUri )
-            found = (mapIterator); break ;
+            found = (mapIterator);break ;
 
     }
 
@@ -216,16 +216,20 @@ void validateRequest(Request &request) {
     
     }
 
-    std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); int contentLength = std::atoi(contentLenghStr.c_str());
+    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); 
+    // int contentLength = std::atoi(contentLenghStr.c_str());
+
+    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
+
     std::string method = request.getHttpVerb();
-    if (method == "POST" && contentLength == 0 && transferEncoding.empty()) {
+    if (method == "POST" && contentLengh == httpRequestHeaders.end() ) {
 
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
             .addResponseBody("<html><h1>400 Bad Request</h1></html>");
 
-        throw "400" ;        
+        throw "40018" ;        
     }
 
     std::string uri = request.getUri();
@@ -252,6 +256,7 @@ void validateRequest(Request &request) {
     //request.setAllowRequestBodyChunk(true);
     request.setRequestBodyChunk(true);
     std::map<std::string, std::string> directives = request.getDirectives();
+
 
     unsigned long clientMaxBody = std::atoi((directives["client_max_body_size"]).c_str());
 
@@ -290,8 +295,15 @@ void validateRequest(Request &request) {
     
     } else if (  request.getLocationBlockWillBeUsed().empty() ) {
 
+        std::cout << "GET HERE\n";
+
         std::map<std::string, std::string> defaultLocation = request.getDirectives();
+
+        for (auto it : defaultLocation) {
+            std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
+        }
         request.setLocationBlockWillBeUsed(defaultLocation);
+        location = request.getLocationBlockWillBeUsed();
 
     } else {
 
@@ -302,11 +314,17 @@ void validateRequest(Request &request) {
         throw "4042";  
     }
 
+
     if ( directives.find("return") != directives.end() ) {
 
+     std::string changeLocation = directives["return"];
 
-        std::string changeLocation = directives["return"];
-        if (changeLocation.length() && changeLocation[0] != '/' ) {
+        //TODO:this must be split; the first string must contain 301 and the second strign is the one saved as a value for directives["return"]
+
+        if ( changeLocation.length() ) {
+            if (changeLocation.substr(0, 8) != "https://") {
+                changeLocation.insert(0, "https://");
+            }
             request.response = responseBuilder()
             .addStatusLine("301")
             .addLocation(changeLocation)
@@ -314,6 +332,14 @@ void validateRequest(Request &request) {
             .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
     
             throw "301";
+        } else {
+
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
+    
+            throw "200";
         }
 
         std::map<std::string, std::string> directives = request.getDirectives();
@@ -331,9 +357,17 @@ void validateRequest(Request &request) {
 
     }
 
-    //TODO: this is a mqp which containes notAllowd methods ; must be split and checked !
+
+    //DONE: this is a mqp which containes notAllowd methods ; must be split and checked !
+    //TODO : Omar this a string not a word to override everytime
     if ( location.find("allowedMethods") != location.end()) {
-        if (location["allowedMethods"] != request.getHttpVerb()) {
+
+        std::string input = location["allowedMethods"];
+        std::vector<std::string> theAllowedMethods = splitString(input, " ");
+        const_vector_it itAllowedMethods = std::find(theAllowedMethods.begin(), theAllowedMethods.end(), request.getHttpVerb());
+
+
+        if (itAllowedMethods == theAllowedMethods.end()) {
 
             request.response = responseBuilder()
             .addStatusLine("405")
@@ -343,8 +377,5 @@ void validateRequest(Request &request) {
             throw "405";            
         }
     }
-
-
-
 
 }

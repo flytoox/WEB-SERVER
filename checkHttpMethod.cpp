@@ -3,6 +3,7 @@
 
 void checkRequestedHttpMethod(Request &request) {
 
+    
     std::string httpMethod;
     httpMethod = request.getHttpVerb();
 
@@ -15,5 +16,6 @@ void checkRequestedHttpMethod(Request &request) {
     else {
         deleteMethod(request);
     }
+
 
 }

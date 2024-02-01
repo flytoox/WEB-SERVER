@@ -40,10 +40,10 @@
 
 
 // //DONE: Create the socket
-// //TODO: Identify the socket
-// //TODO: On the server, wait for a connection
-// //TODO: Send and receive messages
-// //TODO: Close the sockets
+// //DONE: Identify the socket
+// //DONE: On the server, wait for a connection
+// //DONE: Send and receive messages
+// //DONE: Close the sockets
 
 // void fatal(std::string error) {
 //     std::cerr << error << std::endl;
