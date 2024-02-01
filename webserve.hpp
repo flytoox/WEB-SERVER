@@ -148,3 +148,12 @@ void multipartContentType(Request &request);
 void urlencodedContentType(Request &request);
 
 
+
+//GetConfig
+std::vector<std::string> splitWithChar(std::string s, char delim);
+
+//! cgi.cpp
+
+void handle_cgi_get(const std::string& file, std::string& response);
+bool handle_cgi_post(const std::string& file, const std::string& postData, std::string& response);
+

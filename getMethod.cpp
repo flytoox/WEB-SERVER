@@ -151,19 +151,35 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
     {
 
-        if ( file.find('.') != std::string::npos ) {
+        // if ( file.find('.') != std::string::npos ) {
 
-            std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+        //     std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
 
-            if ( extension == ".php" || extension == ".py") {
-                //! RUN CGI !
-                response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-                response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
-                throw "CGI";
-            }
+        //     if ( extension == ".php" || extension == ".py") {
+        //         //! RUN CGI !
+        //         response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+        //         response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+        //         throw "CGI";
+        //     }
 
-        }
+        // }
     
+            if (file.find('.') != std::string::npos) {
+    
+                std::string extension = file.substr(file.find_last_of('.'));
+
+                if (extension == ".php" || extension == ".py") {
+                    handle_cgi_get(absolutePath, response);
+
+                    // Set the initial HTTP response headers
+                    request.response = responseBuilder()
+                    .addStatusLine("200")
+                    .addContentType("text/html")
+                    .addResponseBody(response);
+                    throw ("CGI");
+            }
+        }
+
         std::fstream file(absolutePath);
 
         //TODO: FIX IF THE CONETENT IS VIDEO
