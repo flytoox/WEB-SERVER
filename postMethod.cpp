@@ -70,9 +70,24 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
         if ( extension == ".php" || extension == ".py") {
             //! RUN POST CGI !
-            response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-            response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
-            throw "CGI";
+            // response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+            // response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+
+            std::cout << "***INFORMATION YOU NEED****\n";
+            std::map<std::string, std::string> toUSE = request.getUrlencodedResponse(); 
+            for (auto it : toUSE) {
+                std::cout << it.first << "|\t|" << it.second << "|\n";
+            }
+            std::cout << "***INFORMATION YOU NEED****\n";
+
+            // throw "POST CGI";
+
+            request.response = responseBuilder()
+                .addStatusLine("200")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>POST CGI</h1></html>");
+                throw "POST CGI";
+
         } 
     }
 

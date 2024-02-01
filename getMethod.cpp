@@ -255,7 +255,11 @@ void parseQueriesInURI(Request &request,std::string &uri) {
     }
 
 
-    // std::cout << "***TRY****"
+    // std::cout << "***INFORMATION YOU NEED****\n";
+    // for (auto it : mapTopush) {
+    //     std::cout << it.first << "|\t|" << it.second << "|\n";
+    // }
+    // std::cout << "***INFORMATION YOU NEED****\n";
 
 
     request.setUrlencodedResponse(mapTopush);
@@ -281,6 +285,14 @@ std::string CheckPathForSecurity(std::string path) {
     std::cout << "|path " << path << std::endl;
 	std::vector<std::string> ret = splitWithChar(path, '/');
 	std::string result = "";
+
+
+    bool last = false;
+    if (path.find(path.size() - 1) == '/') {
+        std::cout << "jkgjkgrwkngwr\n";
+        last = true;
+    }
+
 	for (int i = 0; i < (int)ret.size(); i++) {
 		if (ret[i] == "..") {
 			if (i) {
@@ -300,7 +312,9 @@ std::string CheckPathForSecurity(std::string path) {
 	for (std::string s : ret) {
 		result += s + "/";
 	}
-    std::cout << "|RSULT " << result << std::endl;
+    if (!last)
+        result.erase(path.size());
+    std::cout << "|RSULT " << result << "|" << std::endl;
 	return result;
 }
 
