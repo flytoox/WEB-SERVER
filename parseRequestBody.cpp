@@ -30,7 +30,44 @@ std::vector<std::string> splitString(const std::string& input, const std::string
     return result;
 }
 
-int hexaToDec(std::string &res) {
+
+static std::vector<std::string> splitChunkedBody(const std::string& input, const std::string& delimiter) {
+    std::vector<std::string> result;
+
+    size_t start = 0;
+    size_t pos = input.find(delimiter);
+
+    while (pos != std::string::npos) {
+        result.push_back(input.substr(start, pos - start));
+        start = pos + delimiter.length();
+        pos = input.find(delimiter, start);
+    }
+
+    result.push_back(input.substr(start));
+
+    return result;
+}
+
+static bool characterNotAllowed(std::string &hexadecimal) {
+
+    std::string allowedCharacters = "ABCDEFabcdef0123456789";
+
+    for (size_t i = 0; i < hexadecimal.length(); i++) {
+        if (allowedCharacters.find(hexadecimal[i]) == std::string::npos )
+            return true;
+    }
+    return false;
+}
+
+int hexaToDec(Request &request, std::string &res) {
+
+    if ( characterNotAllowed(res) ) {
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            throw "400 CHUNKED";
+    }
 
     std::stringstream ss(res);
     int decimal;
@@ -46,34 +83,39 @@ void chunkedRequest(Request &request) {
 
     //std::cout << requestBody;
     
-    std::vector<std::string> res = splitString(requestBody, "\\r\\n\r\n");
+    std::vector<std::string> res = splitChunkedBody(requestBody, "\r\n");
     std::vector<std::string> output; unsigned long preSize ;
-
-    // for (auto i : res) {
-    //     std::cout << "|" << i << "|" << std::endl;
-    // }
-    
 
     //* Original
     for (size_t i = 0; i < res.size() - 1; i++) {
 
-        preSize = hexaToDec(res[i]);
+        preSize = hexaToDec(request, res[i]);
 
-        if (res[i + 1].length() == preSize) {
-
+        //std::cout << "WHAT |" << res[i] << "|\n";
+        if (!preSize && i == res.size() - 1)
+            break ;
+        if (i + 1 <= res.size() && res[i + 1].length() == preSize) {
             // output.push_back(res[i]);
             output.push_back(res[++i]);
 
-        } else if ( preSize != 0) {
-            std::cout << "501 Bad Gateway" << std::endl;
-            output.clear(); break ;
+        } else {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+                throw "400 CHUNKED";
         }
     }
-    // for (auto i : output) {
-    //     std::cout << "|" << i << "|";
-    // }
 
-    request.setChunkedResponse(output);
+
+    std::string ret;
+    for (auto i : output) {
+        ret += i;
+    }
+
+    request.setRequestBody(ret);
+
+    // request.setChunkedResponse(output);
 }
 
 
@@ -304,7 +346,9 @@ void parseRequestBody(Request &request) {
         //     throw "500";
 
         // }
+        std::cout << "Transfer-Encoding\n";
         chunkedRequest(request);
+
     }
 
 

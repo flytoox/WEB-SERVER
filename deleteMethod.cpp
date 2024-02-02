@@ -8,7 +8,7 @@ static bool checkCGI(Request &request) {
 
     for (vectorToMapIterator it = request.getLocationsBlock().begin(); it != request.getLocationsBlock().end(); ++it) {
         std::map<std::string, std::string> location = (*it);
-        if ( location["location match"] == "/cgi-bin") {
+        if ( location["location"] == "/cgi-bin") {
             request.setCgiDirectives(location);
             return (true);
         }
@@ -247,7 +247,7 @@ void deleteMethod(Request &request) {
             .addStatusLine("502")
             .addContentType("text/html")
             .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
-            throw "502"; 
+            throw "DELETE 502"; 
         }
     } else {
 

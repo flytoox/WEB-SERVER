@@ -18,7 +18,7 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<in
 static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
 
         // std::string res = "";
-    (void)readsd; (void)writesd;
+	(void)readsd; (void)writesd;
         // std::cout << "*********KOKOKOKOKOOKOKOK***********\n";
 
         // FD_CLR(i, &readsd);
@@ -95,8 +95,8 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         std::map<int, Request>::iterator it = simultaneousRequests.find(i);
         simultaneousRequests.erase(it);
 
-        for (auto it: simultaneousRequests)
-            std::cout << "fds = " << it.first << std::endl;
+        // for (auto it: simultaneousRequests)
+        //     std::cout << "fds = " << it.first << std::endl;
 
         // std::cout << "****POPOPOPOPOPoPoPOP**********\n";
 }
@@ -297,7 +297,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
 
                             throw "400";
 
-                        //}
+                        //
                     } } catch (const char *err) {
                         functionToSend(max, i, readsd, writesd, allsd, simultaneousRequests);
                         std::cout << "Error From Request Header : " << err << std::endl;

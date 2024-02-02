@@ -78,6 +78,10 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
     mapConstIterator it = directives.find("index");
 
+    for (auto it : directives) {
+        std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
+    }
+    // exit (0);
     std::string absolutePath = root;
 
     //* Index file if it exists
@@ -366,10 +370,10 @@ void getMethod(Request &request) {
             requestTypeDirectory(concatenateWithRoot, uri, request);
         } else {
             request.response = responseBuilder()
-            .addStatusLine("502")
+            .addStatusLine("500")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
-            throw "502";
+            .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
+            throw "500";
         }
     } else {
 

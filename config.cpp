@@ -6,13 +6,15 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/02/01 12:54:45 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/02/02 20:09:08 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "configFile.hpp"
 #include "webserve.hpp"
+#include <stdexcept>
+#include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -21,6 +23,50 @@
 
 using namespace std;
 
+//Done: Omar check location if it's duplicated , error -> exit
+//Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
+//Done: Omar don't remove /// in location -> DONNNNNN'T
+//DONE: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
+static vector<string> split(string s) {
+	stringstream ss(s);
+	vector<string> v;
+	string word;
+	while (ss >> word)
+		v.push_back(word);
+	return (v);
+}
+
+bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
+	for (size_t i = 0; i < locationsBlock.size(); i++) {
+		if (!locationsBlock[i].count("return"))
+			continue;
+		std::string returnStr = locationsBlock[i]["return"];
+		vector<string> v = split(returnStr);
+		if (v.size() != 2)
+			return (false);
+		int statusCode = stoi(v[0]);
+		if (statusCode < 100 || statusCode > 599)
+			return (false);
+	}
+	return (true);
+}
+
+bool checkDuplicateLocation(vector<map<string, string> > &locationsBlock) {
+	set<string> locationSet;
+	for (size_t i = 0; i < locationsBlock.size(); i++) {
+		if (locationSet.count(locationsBlock[i]["location"])) {
+			return (true);
+		}
+		locationSet.insert(locationsBlock[i]["location"]);
+	}
+	return (false);
+}
+
+bool checkPortMaxMin(int port) {
+	if (port < 0 || port > 65535)
+		return (false);
+	return (true);
+}
 
 void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 	if (key == "")
@@ -100,18 +146,6 @@ void	duplicateServerBasedOnListen(vector<Server> &servers) {
 	}
 }
 
-void alo() {
-	return ;
-}
-
-static vector<string> split(string s) {
-	stringstream ss(s);
-	vector<string> v;
-	string word;
-	while (ss >> word)
-		v.push_back(word);
-	return (v);
-}
 
 vector<Server> parsingFile(string s) {
 	stack<string> st;
@@ -121,10 +155,12 @@ vector<Server> parsingFile(string s) {
 	vector<map<string, string> > locationsBlock;
 	string line;
 	ifstream file(s);
+	int lineNum = 0;
 	if (file.is_open())
 	{
 		while (getline(file, line))
 		{
+			lineNum++;
 			vector<string> v = split(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
@@ -136,7 +172,7 @@ vector<Server> parsingFile(string s) {
 				v.back().pop_back();
 				if (v.back() == "") v.pop_back();
 				if (v.empty()) throw runtime_error("Syntax error");
-				if (v.size() == 1) {
+				if (v.size() == 1 && v[0] == "server") { // on server brackets
 					if (!st.empty()) throw runtime_error("Can't have a block inside a block");
 					st.push(v[0]);
 					locationsBlock.clear();
@@ -144,8 +180,8 @@ vector<Server> parsingFile(string s) {
 					continue;
 				}
 				if (v.size() != 2)
-					throw runtime_error("Error: too many arguments for " + v[0]);
-				st.push(v[0]);
+					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + to_string(lineNum));
+				st.push(v[0]);// on location brackets
 				if (server.directives.empty())
 					server.directives = directives;
 				directives.clear();
@@ -180,9 +216,18 @@ vector<Server> parsingFile(string s) {
 		file.close();
 	}
 	if (!st.empty())
-		return (cout << "FUCK U DONT PLAY WITH ME\n", servers);
+		throw runtime_error("Error: { without }");
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (!checkPortMaxMin(stoi(servers[i].directives["listen"])))
+			throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
+		if (checkDuplicateLocation(servers[i].locationsBlock))
+			throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
+		if (!checkReturnOnLocation(servers[i].locationsBlock))
+			throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
+	}
+
+
 	duplicateServerBasedOnListen(servers);
-	alo();
 	set<std::pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
@@ -201,7 +246,6 @@ vector<Server> parsingFile(string s) {
 		}
 		int add = 1;
 		setsockopt(servers[i].socketD, SOL_SOCKET, SO_REUSEADDR, &add, sizeof(add));
-
 		servers[i].setSocketDescriptor(servers[i].socketD);
 		//* SAVE HISTORY ( HOST & PORT )
 		if (!Check.count({servers[i].directives["listen"], servers[i].directives["host"]})) {
@@ -212,10 +256,15 @@ vector<Server> parsingFile(string s) {
 		servers.erase(servers.begin()+1, servers.begin() + servers.size());
 		break ;
 	}
-	// for (auto &i: servers) {
-	// 	std::cerr << "-->" << i.duplicated << endl;
-	// }
-	std::cout << "LENGTH: |" << servers.size() << "|\n";
+	// set index.html if index is empty, and remove autoindex if it's off
+	for (size_t i = 0; i < servers.size(); i++) {
+		for (size_t j = 0; j < servers[i].directives.size(); j++) {
+			if (!servers[i].directives.count("index"))
+				servers[i].directives["index"] = "index.html";
+			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
+				servers[i].directives.erase("autoindex");
+		}
+	}
 	return (servers);
 }
 

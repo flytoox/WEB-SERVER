@@ -48,6 +48,8 @@ static void uploadRequestBody(Request &request) {
     // }
     // std::cout << "[][][][][][][]\n";
     // exit (0);
+
+
     itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
     if ( itContentType != (request.getHttpRequestHeaders()).end()) {
 
@@ -232,7 +234,7 @@ oo();
             throw "403 Security";
 	}
     absolutePath = result;
-    std::cout << "------>|" << absolutePath << "|\n";
+    // std::cout << "HAL3aaaaar|" << absolutePath << "|\n";
 
     // std::string absolutePath = root + uri;
 
