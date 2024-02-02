@@ -154,13 +154,30 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             std::string extension = file.substr(file.find_last_of('.'));
 
             if (extension == ".php" || extension == ".py") {
-                response = handle_cgi_get(absolutePath, "/usr/bin/php");
+
+                if (request.getDirectives().count("php_cgi_path") == 0) {
+                    request.response = responseBuilder()
+                    .addStatusLine("500")
+                    .addContentType("text/html")
+                    .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
+                    throw "500";
+                }
+
+                std::string binaryPath = request.getDirectives().find("php_cgi_path")->second;
+
+                response = handle_cgi_get(absolutePath, binaryPath);
+
+                std::string contentType = "text/html";
+                std::string contentLength;
+                std::string responseBody = response;
+
+                std::cout << "RESPONSE |" << response << "|\n";
 
                 // Set the initial HTTP response headers
                 request.response = responseBuilder()
                 .addStatusLine("200")
                 .addContentType("text/html")
-                .addResponseBody(response);
+                .addResponseBody(responseBody);
                 throw ("CGI");
             }
         }
@@ -176,15 +193,6 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             // std::cout << "hhhhhere\n"    ;
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
             std::string content = str;
-            // std::cout << << content << std::endl;
-            //std::string response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-            //unsigned long number = content.size() ; std::ostringstream oss ; oss << number ; std::string result = oss.str();
-            //response = "Content-Length: "; response += result ; response += "\r\n" ; request.setResponseVector(response);
-            //response = "Content-Type: video/mp4\r\n\r\n"; request.setResponseVector(response);
-            //response = "Content-Type: text/html\r\n\r\n"; request.setResponseVector(response);
-            //response = content ; request.setResponseVector(response);
-            // std::cerr << content << std::endl;
-            //std::cout << request.getResponse << std::endl;
 
             request.response = responseBuilder()
             .addStatusLine("200")

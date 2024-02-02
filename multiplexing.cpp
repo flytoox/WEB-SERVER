@@ -19,9 +19,9 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
 
         // std::string res = "";
     (void)readsd; (void)writesd;
-        std::cout << "*********KOKOKOKOKOOKOKOK***********\n";
+        // std::cout << "*********KOKOKOKOKOOKOKOK***********\n";
 
-        // FD_CLR(i, &readsd); 
+        // FD_CLR(i, &readsd);
         // FD_SET(i, &writesd);
 
         // std::cout << "\nRESPONSE\n";
@@ -80,7 +80,7 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
 
             //std::cout << "HEADER:|" << chunk.c_str() << "|\n";
             //std::cout << " res : " << res.length() << "|\t sd : |" << sd << "|\n";
-        } 
+        }
 
         // std::cout << "---> |" << i << "|\n";
 
@@ -91,19 +91,19 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         FD_CLR(i, &allsd);
         if (i == max)
             max--;
-    
-        std::map<int, Request>::iterator it = simultaneousRequests.find(i); 
+
+        std::map<int, Request>::iterator it = simultaneousRequests.find(i);
         simultaneousRequests.erase(it);
 
         for (auto it: simultaneousRequests)
             std::cout << "fds = " << it.first << std::endl;
-        
-        std::cout << "****POPOPOPOPOPoPoPOP**********\n";
+
+        // std::cout << "****POPOPOPOPOPoPoPOP**********\n";
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
 
-    //Done: chooseTheServer that will be used 
+    //Done: chooseTheServer that will be used
     Server serverUsed;
 
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
@@ -118,7 +118,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
-    
+
     request.RePort = serverUsed.prePort;
     request.ReHost = serverUsed.preHost;
     request.setDirectives(serverDirectives);
@@ -195,7 +195,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     for (socket_iterator it = allSocketsVector.begin(); it != allSocketsVector.end(); ++it) {
         max = (*it);
         FD_SET((*it), &allsd);
-    }    
+    }
     std::cout << "VALUE |" << max << "|\n";
     int a;
 
@@ -219,7 +219,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             if ( ! FD_ISSET(i, &readsd)) {
                 continue ;
             }
-            
+
 
             socket_iterator readyToConnect = std::find(allSocketsVector.begin(), allSocketsVector.end(), i);
             if (readyToConnect != allSocketsVector.end()) {
@@ -246,11 +246,11 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 //simultaneousRequests[connectSD] = request;
 
             } else {
-            
-                std::string res; 
+
+                std::string res;
                 int recevRequestLen = recv(i , buffer, sizeof(buffer), 0);
                 functionTest(simultaneousRequests[i]);
-                
+
                 if (recevRequestLen < 0) {
                     std::cout << "Error: recev()" << std::endl;
                     close(i), FD_CLR(i, &allsd); continue ;
@@ -262,7 +262,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 // for (int i = 0; i != recevRequestLen; i++)
                 //     convert.push_back(buffer[i]);
                 // checkRightServer();
-                //* REQUEST 
+                //* REQUEST
                 if ( ! (simultaneousRequests[i].getRequestBodyChunk()) ) {
                     //! REQUEST HEADER
                     simultaneousRequests[i].setRequestHeader(convert);
@@ -270,9 +270,9 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
                             std::string header = (simultaneousRequests[i]).getRequestHeader();
                             // std::cout << "PRI|"  << ((simultaneousRequests[i]).getRequestHeader()) << std::endl;
-                            //DONE1: this unction must check the server only once! 
+                            //DONE1: this unction must check the server only once!
                             if ((simultaneousRequests[i]).reCheck != true) {
-                                //* Fix this 
+                                //* Fix this
                                 (simultaneousRequests[i]).reCheck = true;
                                 reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             }
@@ -284,7 +284,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 parseRequestBody(simultaneousRequests[i]);
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
                             }
-                            
+
                     } else if ( recevRequestLen < 1024  ) {
                         //if ( ((simultaneousRequests[i]).getRequestHeader()).empty() ) {
 
@@ -318,7 +318,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                         }
                     } catch (const char *err) {
                         functionToSend(max, i, readsd, writesd, allsd, simultaneousRequests);
-                        std::cout << "Error From Request Body : " << err << std::endl; 
+                        std::cout << "Error From Request Body : " << err << std::endl;
                     }
                 }
             }
