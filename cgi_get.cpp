@@ -50,3 +50,33 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     std::cerr << "Error executing interpreter: " << strerror(errno) << "\n";
     exit(EXIT_FAILURE);
 }
+
+std::vector<std::string> splitWithString(const std::string& s, const std::string& delimiter) {
+    std::vector<std::string> result;
+    std::size_t start = 0;
+    std::size_t found = s.find(delimiter);
+
+    while (found != std::string::npos) {
+        result.push_back(s.substr(start, found - start));
+        start = found + delimiter.length();
+        found = s.find(delimiter, start);
+    }
+
+    result.push_back(s.substr(start));
+
+    return result;
+}
+
+std::pair<std::string, std::string> splitHeadersAndBody(const std::string& response) {
+    std::string delimiter = "\r\n\r\n";
+    std::vector<std::string> splitResponse = splitWithString(response, delimiter);
+
+    std::string headers = splitResponse.empty() ? "" : splitResponse[0];
+
+    std::string body = "";
+    for (size_t i = 1; i < splitResponse.size(); ++i) {
+        body += splitResponse[i] + (i < splitResponse.size() - 1 ? "\r\n" : "");
+    }
+
+    return std::make_pair(headers, body);
+}

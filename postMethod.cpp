@@ -86,7 +86,7 @@ static void uploadRequestBody(Request &request) {
 
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
-    std::string response;
+    std::pair<std::string, std::string> response;
 
     std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
@@ -102,16 +102,28 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             // response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
             // response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
 
+
+            if (request.getDirectives().count("php_cgi_path") == 0) {
+                request.response = responseBuilder()
+                .addStatusLine("500")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
+                throw "500";
+            }
+
             std::map<std::string, std::string> postData = request.getUrlencodedResponse();
+            std::string binaryPath = request.getDirectives().find("php_cgi_path")->second;
+            response = handle_cgi_post(postData, binaryPath, absolutePath);
 
-            std::string phpInterpreter = "/usr/bin/php";
-            std::string phpResponse = handle_cgi_post(postData, phpInterpreter, absolutePath);
+            std::string headers = response.first;
+            std::string body = response.second;
 
-            std::cout << "RESPONSE |" << phpResponse << "|\n";
+            std::cout << "POST RESPONSE HEADERS |" << headers << "|\n";
+            std::cout << "POST RESPONSE BODY |" << body << "|\n";
             request.response = responseBuilder()
                 .addStatusLine("200")
                 .addContentType("text/html")
-                .addResponseBody(phpResponse);
+                .addResponseBody(body);
 
             // throw "POST CGI";
             throw "POST CGI";

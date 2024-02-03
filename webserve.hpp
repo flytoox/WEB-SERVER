@@ -156,6 +156,8 @@ std::vector<std::string> splitWithChar(std::string s, char delim);
 
 //! cgi.cpp
 
-std::string handle_cgi_get(const std::string& file, const std::string& interpreterPath);
-std::string handle_cgi_post(const std::map<std::string, std::string>& postData, const std::string& interpreter, const std::string& scriptFilePath);
-
+// std::string handle_cgi_get(const std::string& file, const std::string& interpreterPath);
+std::pair<std::string, std::string> handle_cgi_get(const std::string& file,
+                                        const std::string& interpreterPath);
+std::pair<std::string, std::string> handle_cgi_post(const std::map<std::string, std::string>& postData,
+                                        const std::string& interpreter, const std::string& scriptFilePath);

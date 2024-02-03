@@ -143,10 +143,48 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
 }
 
+std::string extractContentType(const std::string& headers) {
+    std::istringstream iss(headers);
+    std::string line;
+
+    while (std::getline(iss, line)) {
+        // Convert the line to lowercase for case-insensitive comparison
+        std::transform(line.begin(), line.end(), line.begin(), ::tolower);
+
+        // Find the line that contains "content-type:"
+        std::size_t found = line.find("content-type:");
+        if (found != std::string::npos) {
+            // Extract the value after ":"
+            std::string contentType = line.substr(found + 13);  // 13 is the length of "content-type:"
+
+            // Find the position of the semicolon
+            std::size_t semicolonPos = contentType.find(';');
+
+            // Trim leading and trailing whitespaces
+            contentType.erase(contentType.begin(), std::find_if(contentType.begin(), contentType.end(), [](int ch) {
+                return !std::isspace(ch);
+            }));
+            contentType.erase(std::find_if(contentType.rbegin(), contentType.rend(), [](int ch) {
+                return !std::isspace(ch);
+            }).base(), contentType.end());
+
+            // Extract only the content type value until the semicolon if it exists
+            if (semicolonPos != std::string::npos) {
+                contentType = contentType.substr(0, semicolonPos - 1);
+            }
+
+            return contentType;
+        }
+    }
+
+    return "";  // Return an empty string if "Content-Type" is not found
+}
+
+
 
 void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request) {
 
-    std::string response;
+    std::pair<std::string, std::string> response;
     std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
 
@@ -171,17 +209,27 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
                 response = handle_cgi_get(absolutePath, binaryPath);
 
-                std::string contentType = "text/html";
-                std::string contentLength;
-                std::string responseBody = response;
+                std::string headers = response.first;
+                std::string body = response.second;
 
-                std::cout << "RESPONSE |" << response << "|\n";
+                std::string contentType = extractContentType(headers);
+                // Extract extension from "Content-Type"
+                std::size_t lastSlashPos = contentType.rfind('/');
+                std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+
+                std::string contentLength = std::to_string(body.length());
+
+                std::cout << "contentType: " << contentType << "\n";
+                std::cout << "extension: " << extension << "\n";
+
+                std::cout << "HEADERS |" << headers << "|\n";
+                // std::cout << "BODY |" << body << "|\n";
 
                 // Set the initial HTTP response headers
                 request.response = responseBuilder()
                 .addStatusLine("200")
-                .addContentType("text/html")
-                .addResponseBody(responseBody);
+                .addContentType(extension)
+                .addResponseBody(body);
                 throw ("CGI");
             }
         }

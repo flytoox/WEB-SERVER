@@ -2,31 +2,31 @@
 
 STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
 
-    if (type == "200") 
+    if (type == "200")
         return OK;
-    if (type == "201") 
+    if (type == "201")
         return CREATED;
-    if (type == "204") 
+    if (type == "204")
         return NO_CONTENT;
-    if (type == "301") 
+    if (type == "301")
         return MOVED_PERMANETLY;
-    if (type == "400") 
+    if (type == "400")
         return BAD_REQUEST;
-    if (type == "403") 
+    if (type == "403")
         return FORBIDDEN;
-    if (type == "404") 
+    if (type == "404")
         return NOT_FOUND;
     if (type == "405")
         return METHOD_NOT_ALLOWED;
-    if (type == "409") 
+    if (type == "409")
         return CONFLICT;
-    if (type == "413") 
+    if (type == "413")
         return REQUEST_TOO_LARGE;
-    if (type == "414") 
+    if (type == "414")
         return URI_TOO_LONG;
-    if (type == "500") 
+    if (type == "500")
         return INTERNAL_SERVER_ERROR;
-    if (type == "501") 
+    if (type == "501")
         return NOT_IMPLEMENTED;
     return BAD_GATEWAY;
 }
@@ -41,6 +41,12 @@ std::string defineMimeType(const std::string &type) {
         return "image/jpeg";
     if (type == "jpeg")
         return "image/jpeg";
+    if (type == "png")
+        return "image/png";
+    // if (type == "gif")
+    //     return "image/gif";
+    if (type == "webp")
+        return "image/webp";
     if (type == "js")
         return "application/javascript";
     if (type == "zip")
@@ -147,7 +153,7 @@ responseBuilder& responseBuilder::addContentLength(const std::string &content) {
 
     oss << number ;
     headersResponses.insert(std::make_pair(CONTENT_LENGTH, oss.str()));
-    return (*this);   
+    return (*this);
 }
 
 responseBuilder& responseBuilder::addResponseBody(const std::string &responseBody) {
@@ -172,7 +178,7 @@ std::string responseBuilder::build() {
 
     if (body.length() != 0) {
         response << body << CRLF;
-    } 
+    }
 
     return response.str();
 
