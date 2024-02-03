@@ -11,7 +11,6 @@ private:
 
     std::vector<Server> servers;
 
-
 public:
 
     configFile();

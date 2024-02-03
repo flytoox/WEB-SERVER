@@ -1,4 +1,6 @@
-#include "Server.hpp"
+#include "includes/Server.hpp"
+#include <cstdio>
+#include <sys/errno.h>
 
 Server::Server() {}
 
@@ -19,7 +21,7 @@ void Server::bindSockets() {
 
     //std::cout << "socket Descriptor: " << socketD << std::endl;
     if (bind(socketD, (struct sockaddr *)&(serverAddress), sizeof(serverAddress)) < 0) {
-        std::cerr << "Error: bind() " << std::endl;
+		perror("bind()");
         exit (1);
     }
 

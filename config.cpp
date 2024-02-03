@@ -6,13 +6,13 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/02/02 20:09:08 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/02/03 20:15:12 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
-#include "configFile.hpp"
-#include "webserve.hpp"
+#include "includes/Server.hpp"
+#include "includes/configFile.hpp"
+#include "includes/webserve.hpp"
 #include <stdexcept>
 #include <string>
 #include <sys/types.h>
@@ -63,7 +63,7 @@ bool checkDuplicateLocation(vector<map<string, string> > &locationsBlock) {
 }
 
 bool checkPortMaxMin(int port) {
-	if (port < 0 || port > 65535)
+	if (port < 1024 || port > 65535)
 		return (false);
 	return (true);
 }
@@ -156,6 +156,7 @@ vector<Server> parsingFile(string s) {
 	string line;
 	ifstream file(s);
 	int lineNum = 0;
+	
 	if (file.is_open())
 	{
 		while (getline(file, line))
@@ -165,7 +166,7 @@ vector<Server> parsingFile(string s) {
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
 			if (v.size() == 1 && v[0].back() != '{' && v[0].back() != '}') {
-				throw runtime_error("Syntax error");
+				throw runtime_error("Syntax error on line " + to_string(lineNum));
 				return servers;
 			}
 			if (v.back().back() == '{') {
@@ -173,7 +174,7 @@ vector<Server> parsingFile(string s) {
 				if (v.back() == "") v.pop_back();
 				if (v.empty()) throw runtime_error("Syntax error");
 				if (v.size() == 1 && v[0] == "server") { // on server brackets
-					if (!st.empty()) throw runtime_error("Can't have a block inside a block");
+					if (!st.empty()) throw runtime_error("Can't have a block inside a block on line " + to_string(lineNum));
 					st.push(v[0]);
 					locationsBlock.clear();
 					directives.clear();
@@ -189,7 +190,7 @@ vector<Server> parsingFile(string s) {
 				continue;
 			}
 			if (v.size() == 1 && v[0] == "}") {
-				if (st.empty()) throw runtime_error("Error: } without {");
+				if (st.empty()) throw runtime_error("Error: } without { on line " + to_string(lineNum));
 				if (st.top() == "server") {
 					server.locationsBlock = locationsBlock;
 					servers.push_back(server);
@@ -204,8 +205,12 @@ vector<Server> parsingFile(string s) {
 				st.pop();
 				continue;
 			}
+			if (st.empty()) throw runtime_error("Error: No block on line " + to_string(lineNum));
 			if (v[1].back() == ';') v[1].pop_back();
-			directives[v[0]] = v[1];
+			if (v[1].empty()) throw runtime_error("Error: No value on line " + to_string(lineNum));
+			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location") 
+				directives[v[0]] += '\n';
+			else directives[v[0]] = v[1];
 			for (size_t i = 2; i < v.size(); i++) {
 				if (v[i].back() == ';')
 					v[i].pop_back();
@@ -216,16 +221,24 @@ vector<Server> parsingFile(string s) {
 		file.close();
 	}
 	if (!st.empty())
-		throw runtime_error("Error: { without }");
+		throw runtime_error("Error: { without } on line " + to_string(lineNum));
+	
 	for (size_t i = 0; i < servers.size(); i++) {
-		if (!checkPortMaxMin(stoi(servers[i].directives["listen"])))
+		int port;
+		try {
+			for (char &c : servers[i].directives["listen"])
+				if (!isdigit(c)) throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
+			port = stoi(servers[i].directives["listen"]);
+		} catch (exception &e) {
 			throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
+		}
+		if (!checkPortMaxMin(port))
+			throw runtime_error("Error: Port number should be between 1024 and 65535 on server Num " + to_string(i+1));
 		if (checkDuplicateLocation(servers[i].locationsBlock))
 			throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
 		if (!checkReturnOnLocation(servers[i].locationsBlock))
 			throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
 	}
-
 
 	duplicateServerBasedOnListen(servers);
 	set<std::pair<string, string>> Check;

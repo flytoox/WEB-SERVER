@@ -1,5 +1,5 @@
-#include "configFile.hpp"
-#include "Server.hpp"
+#include "includes/configFile.hpp"
+#include "includes/Server.hpp"
 
 
 configFile::configFile() {}
