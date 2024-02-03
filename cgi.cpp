@@ -9,11 +9,17 @@ void handleTimeout(int signal) {
 }
 
 std::pair<std::string, std::string> handle_cgi_get(const std::string& file,
-                                            const std::string& interpreterPath) {
+                                        const std::string& interpreterPath,
+                                        Request &request) {
     try {
         std::string response;
         Pipe pipe;
+        std::string Header = request.getRequestHeader();
+        std::map<std::string, std::string> envVars;
+        std::cout << "Header: " << Header << std::endl;
         pid_t pid = fork();
+
+
 
         if (pid == -1) {
             std::cerr << "Error forking process.\n";
@@ -23,6 +29,7 @@ std::pair<std::string, std::string> handle_cgi_get(const std::string& file,
         if (pid == 0) {  // Child process
             close(pipe.getReadEnd());
             redirectStdoutStderr(pipe);
+
 
             // Set up a timeout using the alarm function
             signal(SIGALRM, handleTimeout);
@@ -56,19 +63,6 @@ std::pair<std::string, std::string> handle_cgi_get(const std::string& file,
         return std::make_pair(std::string(), std::string());
     }
 }
-
-std::string readPostData() {
-    std::string postData;
-    char buffer[4096];
-    ssize_t bytesRead;
-
-    while ((bytesRead = read(STDIN_FILENO, buffer, sizeof(buffer))) > 0) {
-        postData.append(buffer, static_cast<size_t>(bytesRead));
-    }
-
-    return postData;
-}
-
 
 std::pair<std::string, std::string> handle_cgi_post(const std::map<std::string, std::string>& postData,
                                         const std::string& interpreter, const std::string& scriptFilePath) {

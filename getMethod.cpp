@@ -200,12 +200,9 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
     std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
 
-    std::cout << "URI |" << uri << "|\n";
-
     std::string file = uri.erase(0, pos);
 
     {
-
         std::cout << "locationUsed |" << locationUsed << "|\n";
         if (file.find('.') != std::string::npos) {
 
@@ -214,16 +211,8 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             std::string binaryPath;
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
-                std::map<std::string, std::string> env;
-                env = request.getHttpRequestHeaders();
-                std::cout << "ENVIRONMENT VARIABLES\n\n\n\n";
-                for (auto &i:env) {
-                    std::cout << i.first << " " << i.second << std::endl;
-                }
-                std::cout << request.getRequestHeader() << std::endl;
-                std::cout << "END\n\n\n\n";
-
-                response = handle_cgi_get(absolutePath, binaryPath);
+                std::cout << "\n\n\n\n\nCGI\n";
+                response = handle_cgi_get(absolutePath, binaryPath, request);
 
                 std::string headers = response.first;
                 std::string body = response.second;
@@ -255,10 +244,6 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
         //TODO: FIX IF THE CONETENT IS VIDEO
 
         if ( file.good() ) {
-
-            // std::cout << "GOOTOOT \n";
-
-            // std::cout << "hhhhhere\n"    ;
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
             std::string content = str;
 
@@ -267,8 +252,6 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             .addContentType(absolutePath)
             .addContentLength(content)
             .addResponseBody(content);
-
-
             throw "200";
         }
     }
