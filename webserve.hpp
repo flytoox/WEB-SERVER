@@ -152,6 +152,7 @@ void urlencodedContentType(Request &request);
 
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
+std::vector<std::string> splitWhiteSpaces(std::string s);
 
 
 //! cgi.cpp

@@ -27,7 +27,7 @@ using namespace std;
 //Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
 //Done: Omar don't remove /// in location -> DONNNNNN'T
 //DONE: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
-static vector<string> split(string s) {
+vector<string> splitWhiteSpaces(string s) {
 	stringstream ss(s);
 	vector<string> v;
 	string word;
@@ -41,7 +41,7 @@ bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 		if (!locationsBlock[i].count("return"))
 			continue;
 		std::string returnStr = locationsBlock[i]["return"];
-		vector<string> v = split(returnStr);
+		vector<string> v = splitWhiteSpaces(returnStr);
 		if (v.size() != 2)
 			return (false);
 		int statusCode = stoi(v[0]);
@@ -76,7 +76,7 @@ void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 			word.pop_back();
 		directives[key] = word;
 	}
-		
+
 }
 
 void fatal(string expression) {
@@ -108,10 +108,10 @@ string convertDomainToIPv4(string &domain)
     return "";
 }
 //TODO: cheange server_name to host
-//TODO : ALERT CHANGE THE NAMES 
+//TODO : ALERT CHANGE THE NAMES
 
 
-//TODO : if you find listen && port the same -> duplicated : true 
+//TODO : if you find listen && port the same -> duplicated : true
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
@@ -161,7 +161,7 @@ vector<Server> parsingFile(string s) {
 		while (getline(file, line))
 		{
 			lineNum++;
-			vector<string> v = split(line);
+			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
 			if (v.size() == 1 && v[0].back() != '{' && v[0].back() != '}') {
@@ -205,7 +205,9 @@ vector<Server> parsingFile(string s) {
 				continue;
 			}
 			if (v[1].back() == ';') v[1].pop_back();
-			directives[v[0]] = v[1];
+			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location")
+                directives[v[0]] += '\n' + v[1];
+			else directives[v[0]] = v[1];
 			for (size_t i = 2; i < v.size(); i++) {
 				if (v[i].back() == ';')
 					v[i].pop_back();
@@ -239,7 +241,7 @@ vector<Server> parsingFile(string s) {
 		}
 		adjustServerAddress(servers[i], servers[i].serverAddress);
 		servers[i].setServerAddress(servers[i].serverAddress);
-		
+
 
 		if (( servers[i].socketD = socket(AF_INET, SOCK_STREAM, 0) ) < 0) {
 			fatal("Error: Fail to create a Socket for Server 1");

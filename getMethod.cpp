@@ -181,31 +181,47 @@ std::string extractContentType(const std::string& headers) {
 }
 
 
+bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
+    if (!directives.count("cgi_bin")) return false;
+    std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
+    for (int i = 0; i < (int)cgiParts.size(); i++) {
+        std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
+        if (cgiConfig.size() < 2) continue;
+        if (access(cgiConfig[0].c_str(), F_OK | X_OK) == -1) continue;
+        for (int i = 1; i < (int)cgiConfig.size(); i++)
+            if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
+    }
+    return false;
+}
 
-void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request) {
+void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request, std::string &locationUsed) {
 
     std::pair<std::string, std::string> response;
     std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
 
+    std::cout << "URI |" << uri << "|\n";
+
     std::string file = uri.erase(0, pos);
 
     {
 
+        std::cout << "locationUsed |" << locationUsed << "|\n";
         if (file.find('.') != std::string::npos) {
+
             std::string extension = file.substr(file.find_last_of('.'));
+            std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+            std::string binaryPath;
 
-            if (extension == ".php" || extension == ".py") {
-
-                if (request.getDirectives().count("php_cgi_path") == 0) {
-                    request.response = responseBuilder()
-                    .addStatusLine("500")
-                    .addContentType("text/html")
-                    .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
-                    throw "500";
+            if (isValidCGI(locationBlock, extension, binaryPath)) {
+                std::map<std::string, std::string> env;
+                env = request.getHttpRequestHeaders();
+                std::cout << "ENVIRONMENT VARIABLES\n\n\n\n";
+                for (auto &i:env) {
+                    std::cout << i.first << " " << i.second << std::endl;
                 }
-
-                std::string binaryPath = request.getDirectives().find("php_cgi_path")->second;
+                std::cout << request.getRequestHeader() << std::endl;
+                std::cout << "END\n\n\n\n";
 
                 response = handle_cgi_get(absolutePath, binaryPath);
 
@@ -268,7 +284,7 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
         if (it->first == "root") {
             concatenateWithRoot = it->second;
         }
-        if (it->first == "location match" ) {
+        if (it->first == "location" ) {
             locationUsed = it->second;
         }
     }
@@ -412,7 +428,7 @@ void getMethod(Request &request) {
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
             std::cout << "IT'S FILE\n";
-            requestTypeFile(concatenateWithRoot, uri, request);
+            requestTypeFile(concatenateWithRoot, uri, request, locationUsed);
         } else if (S_ISDIR(fileStat.st_mode)) {
             std::cout << "IT'S DIRECTORY\n";
             requestTypeDirectory(concatenateWithRoot, uri, request);
