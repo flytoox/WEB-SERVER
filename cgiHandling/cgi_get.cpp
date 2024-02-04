@@ -51,6 +51,7 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     exit(EXIT_FAILURE);
 }
 
+
 std::vector<std::string> splitWithString(const std::string& s, const std::string& delimiter) {
     std::vector<std::string> result;
     std::size_t start = 0;
@@ -68,15 +69,16 @@ std::vector<std::string> splitWithString(const std::string& s, const std::string
 }
 
 std::pair<std::string, std::string> splitHeadersAndBody(const std::string& response) {
-    std::string delimiter = "\r\n\r\n";
-    std::vector<std::string> splitResponse = splitWithString(response, delimiter);
+    size_t headerEndPos = response.find("\r\n\r\n");
 
-    std::string headers = splitResponse.empty() ? "" : splitResponse[0];
-
-    std::string body = "";
-    for (size_t i = 1; i < splitResponse.size(); ++i) {
-        body += splitResponse[i] + (i < splitResponse.size() - 1 ? "\r\n" : "");
+    if (headerEndPos == std::string::npos) {
+        // No header delimiter found, treat the entire response as headers
+        return std::make_pair(std::string(), response);
     }
+
+    std::string headers = response.substr(0, headerEndPos);
+    std::string body = response.substr(headerEndPos + 4); // Skip "\r\n\r\n"
 
     return std::make_pair(headers, body);
 }
+

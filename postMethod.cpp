@@ -94,40 +94,37 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
     if ( file.find('.') != std::string::npos ) {
 
-        std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+        std::string extension = file.substr(file.find_last_of('.'));
+        std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+        std::string binaryPath;
 
-
-        if ( extension == ".php" || extension == ".py") {
-            //! RUN POST CGI !
-            // response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-            // response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
-
-
-            if (request.getDirectives().count("php_cgi_path") == 0) {
-                request.response = responseBuilder()
-                .addStatusLine("500")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
-                throw "500";
-            }
-
-            std::map<std::string, std::string> postData = request.getUrlencodedResponse();
-            std::string binaryPath = request.getDirectives().find("php_cgi_path")->second;
-            response = handle_cgi_post(postData, binaryPath, absolutePath);
+        if (isValidCGI(locationBlock, extension, binaryPath)) {
+            // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
+            std::cout << "\n\n\n\n\nCGI\n";
+            response = handle_cgi_post(absolutePath, binaryPath, request);
 
             std::string headers = response.first;
             std::string body = response.second;
 
-            std::cout << "POST RESPONSE HEADERS |" << headers << "|\n";
-            std::cout << "POST RESPONSE BODY |" << body << "|\n";
+            std::string contentType = extractContentType(headers);
+            // Extract extension from "Content-Type"
+            std::size_t lastSlashPos = contentType.rfind('/');
+            std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+
+            std::string contentLength = std::to_string(body.length());
+
+            std::cout << "contentType: " << contentType << "\n";
+            std::cout << "extension: " << extension << "\n";
+
+            std::cout << "HEADERS |" << headers << "|\n";
+            // std::cout << "BODY |" << body << "|\n";
+
+            // Set the initial HTTP response headers
             request.response = responseBuilder()
-                .addStatusLine("200")
-                .addContentType("text/html")
-                .addResponseBody(body);
-
-            // throw "POST CGI";
-            throw "POST CGI";
-
+            .addStatusLine("200")
+            .addContentType(extension)
+            .addResponseBody(body);
+            throw ("CGI");
         }
     }
 

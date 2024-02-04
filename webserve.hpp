@@ -161,5 +161,9 @@ std::vector<std::string> splitWhiteSpaces(std::string s);
 std::pair<std::string, std::string> handle_cgi_get(const std::string& file,
                                         const std::string& interpreterPath,
                                         Request &request);
-std::pair<std::string, std::string> handle_cgi_post(const std::map<std::string, std::string>& postData,
-                                        const std::string& interpreter, const std::string& scriptFilePath);
+std::pair<std::string, std::string> handle_cgi_post(const std::string& file,
+                                        const std::string& interpreterPath,
+                                        Request &request);
+
+bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath);
+std::string extractContentType(const std::string& headers);

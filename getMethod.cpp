@@ -194,7 +194,7 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
     return false;
 }
 
-void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request, std::string &locationUsed) {
+void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
     std::map<std::string, std::string> directives = request.getDirectives();
@@ -203,7 +203,6 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
     std::string file = uri.erase(0, pos);
 
     {
-        std::cout << "locationUsed |" << locationUsed << "|\n";
         if (file.find('.') != std::string::npos) {
 
             std::string extension = file.substr(file.find_last_of('.'));
@@ -411,7 +410,7 @@ void getMethod(Request &request) {
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
             std::cout << "IT'S FILE\n";
-            requestTypeFile(concatenateWithRoot, uri, request, locationUsed);
+            requestTypeFile(concatenateWithRoot, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
             std::cout << "IT'S DIRECTORY\n";
             requestTypeDirectory(concatenateWithRoot, uri, request);
