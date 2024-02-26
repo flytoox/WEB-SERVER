@@ -95,13 +95,13 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
     if ( file.find('.') != std::string::npos ) {
 
         std::string extension = file.substr(file.find_last_of('.'));
+        std::cout << "EXTENSION: " << extension << "\n";
         std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
         std::string binaryPath;
 
         if (isValidCGI(locationBlock, extension, binaryPath)) {
             // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
-            std::cout << "\n\n\n\n\nCGI\n";
-            response = handle_cgi_post(absolutePath, binaryPath, request);
+            response = handleCgiPost(absolutePath, binaryPath, request);
 
             std::string headers = response.first;
             std::string body = response.second;
@@ -117,6 +117,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             std::cout << "extension: " << extension << "\n";
 
             std::cout << "HEADERS |" << headers << "|\n";
+            std::cout << "BODY |" << body << "|\n";
             // std::cout << "BODY |" << body << "|\n";
 
             // Set the initial HTTP response headers

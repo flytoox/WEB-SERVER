@@ -3,7 +3,7 @@ NAME = webserv
 SRCS = main.cpp configFile.cpp Server.cpp multiplexing.cpp Request.cpp\
 	parseRequestHeader.cpp parseRequestBody.cpp validateRequest.cpp\
 	checkHttpMethod.cpp getMethod.cpp postMethod.cpp deleteMethod.cpp config.cpp\
-	responseBuilder.cpp cgiHandling/cgi.cpp cgiHandling/cgi_get.cpp \
+	responseBuilder.cpp cgiHandling/cgi.cpp cgiHandling/cgiParseFork.cpp cgiHandling/cgiUtils.cpp \
 
 CPP = c++
 

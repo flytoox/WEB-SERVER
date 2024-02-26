@@ -26,6 +26,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <fcntl.h>
+
 //! Typedef
 
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
@@ -157,11 +159,11 @@ std::vector<std::string> splitWhiteSpaces(std::string s);
 
 //! cgi.cpp
 
-// std::string handle_cgi_get(const std::string& file, const std::string& interpreterPath);
-std::pair<std::string, std::string> handle_cgi_get(const std::string& file,
+// std::string handleCgiGet(const std::string& file, const std::string& interpreterPath);
+std::pair<std::string, std::string> handleCgiGet(const std::string& file,
                                         const std::string& interpreterPath,
                                         Request &request);
-std::pair<std::string, std::string> handle_cgi_post(const std::string& file,
+std::pair<std::string, std::string> handleCgiPost(const std::string& file,
                                         const std::string& interpreterPath,
                                         Request &request);
 

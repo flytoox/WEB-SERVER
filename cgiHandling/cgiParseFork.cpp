@@ -51,7 +51,6 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     exit(EXIT_FAILURE);
 }
 
-
 std::vector<std::string> splitWithString(const std::string& s, const std::string& delimiter) {
     std::vector<std::string> result;
     std::size_t start = 0;
