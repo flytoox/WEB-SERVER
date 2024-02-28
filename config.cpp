@@ -1,17 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   test.cpp                                           :+:      :+:    :+:   */
+/*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2023/12/18 10:31:38 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/02/01 16:13:10 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "configFile.hpp"
+#include "webserve.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -19,6 +20,19 @@
 #include <set>
 
 using namespace std;
+
+//TODO: Omar check index value if it has something; if not , set the value to index.html in the directives server block
+//TODO: Omar check location match if it's duplicated , error -> exit
+//TODO: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
+//TODO: Omar don't remove /// in location -> DONNNNNN'T
+//DONE: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
+
+//TODO: you need to put the value of directives 
+//TODO :, then override them if they exist within that location block that you are parsing ; skip these three values :
+//TODO: server_name, host, listen 
+
+//TODO: set [upload_store] [/Users/sizgunan/goinfre/upload] -> if [upload_enable] == [on]
+
 
 
 void	GetDirectives(string &word, map<string, string> &directives, string &key) {
@@ -84,24 +98,9 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
     serverAddress.sin_port = htons(port);
 }
 
-vector<string> ft_split(string s, char c) {
-	vector<string> v;
-	string tmp;
-	for (size_t i = 0; i < s.size(); i++) {
-		if (s[i] == c) {
-			v.push_back(tmp);
-			tmp.clear();
-		}
-		else
-			tmp += s[i];
-	}
-	if (tmp.size())
-		v.push_back(tmp);
-	return (v);
-}
 void	duplicateServerBasedOnListen(vector<Server> &servers) {
 	for (size_t i = 0; i < servers.size(); i++) {
-			vector<string> listen = ft_split(servers[i].directives["listen"], ',');
+			vector<string> listen = splitWithChar(servers[i].directives["listen"], ',');
 			if (listen.size() == 1)
 				continue;
 			for (size_t j = 0; j < listen.size(); j++) {
@@ -114,73 +113,81 @@ void	duplicateServerBasedOnListen(vector<Server> &servers) {
 	}
 }
 
+void alo() {
+	return ;
+}
+
+static vector<string> split(string s) {
+	stringstream ss(s);
+	vector<string> v;
+	string word;
+	while (ss >> word)
+		v.push_back(word);
+	return (v);
+}
+
 vector<Server> parsingFile(string s) {
 	stack<string> st;
 	vector<Server> servers;
 	Server server;
 	map<string, string> directives;
-	map<string, string> serverDirectives;
 	vector<map<string, string> > locationsBlock;
 	string line;
 	ifstream file(s);
-	string WordWorking;
 	if (file.is_open())
 	{
 		while (getline(file, line))
 		{
-			stringstream ss(line);
-			string word, key="";
-			while (ss >> word) {
-				if (word == "location") {
-					st.push(word);
-					WordWorking = word;
-					directives.clear();
-					if (ss >> word)
-						directives["location match"] = word;
-					continue;
-				}
-				if (st.empty()) {
-					st.push(word);
-					WordWorking = word;
-					continue;
-				}
-				if (word == "{") {
-					st.push(word);
-					continue;
-				}
-				if (word == "}") {
-					if (!st.empty())
-							st.pop();
-					if (!st.empty() && st.top() == "server") {
-						server.locationsBlock = locationsBlock;
-						server.directives = serverDirectives;
-						servers.push_back(server);
-						server.directives.clear();
-						server.locationsBlock.clear();
-						directives.clear();
-						serverDirectives.clear();
-						locationsBlock.clear();
-						if (!st.empty())
-							st.pop();
-					}
-					if (!st.empty() && st.top() == "location") {
-						locationsBlock.push_back(directives);
-						directives.clear();
-						if (!st.empty())
-							st.pop();
-					}
-					continue;
-				}
-				if (WordWorking == "server") {
-					GetDirectives(word, serverDirectives, key);
-					continue;
-				}
-				if (WordWorking == "location") {
-					GetDirectives(word, directives, key);
-					continue;
-				}
-				cout << "ERROR MOTHER FUCKER\n";
+			vector<string> v = split(line);
+			if (v.size() == 0 || v[0][0] == '#')
+				continue;
+			if (v.size() == 1 && v[0].back() != '{' && v[0].back() != '}') {
+				throw runtime_error("Syntax error");
 				return servers;
+			}
+			if (v.back().back() == '{') {
+				v.back().pop_back();
+				if (v.back() == "") v.pop_back();
+				if (v.empty()) throw runtime_error("Syntax error");
+				if (v.size() == 1) {
+					if (!st.empty()) throw runtime_error("Can't have a block inside a block");
+					st.push(v[0]);
+					locationsBlock.clear();
+					directives.clear();
+					continue;
+				}
+				if (v.size() != 2)
+					throw runtime_error("Error: too many arguments for " + v[0]);
+				st.push(v[0]);
+				if (server.directives.empty())
+					server.directives = directives;
+				directives.clear();
+				directives[v[0]] = v[1];
+				continue;
+			}
+			if (v.size() == 1 && v[0] == "}") {
+				if (st.empty()) throw runtime_error("Error: } without {");
+				if (st.top() == "server") {
+					server.locationsBlock = locationsBlock;
+					servers.push_back(server);
+					directives.clear();
+					locationsBlock.clear();
+					server.directives.clear();
+					server.locationsBlock.clear();
+				} else if (st.top() == "location") {
+					locationsBlock.push_back(directives);
+					directives.clear();
+				}
+				st.pop();
+				continue;
+			}
+			if (v[1].back() == ';') v[1].pop_back();
+			directives[v[0]] = v[1];
+			for (size_t i = 2; i < v.size(); i++) {
+				if (v[i].back() == ';')
+					v[i].pop_back();
+				if (v[i] == "") continue;
+				directives[v[0]] += " " + v[i];
 			}
 		}
 		file.close();
@@ -188,7 +195,8 @@ vector<Server> parsingFile(string s) {
 	if (!st.empty())
 		return (cout << "FUCK U DONT PLAY WITH ME\n", servers);
 	duplicateServerBasedOnListen(servers);
-	set<pair<string, string>> Check;
+	alo();
+	set<std::pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		for (size_t j = 0; j < servers.size(); j++) {
@@ -214,9 +222,17 @@ vector<Server> parsingFile(string s) {
 			servers[i].listenToIncomingConxs();
 			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
 		}
+		// servers.erase(servers.begin()+1, servers.begin() + servers.size());
+		// break ;
 	}
-	for (auto &i: servers) {
-		std::cerr << "-->" << i.duplicated << endl;
+	// set index.html if index is empty, and remove autoindex if it's off
+	for (size_t i = 0; i < servers.size(); i++) {
+		for (size_t j = 0; j < servers[i].locationsBlock.size(); j++) {
+			// if (!servers[i].locationsBlock[j].count("index"))
+			// 	servers[i].locationsBlock[j]["index"] = "index.html";
+			if (servers[i].locationsBlock[j].count("autoindex") && servers[i].locationsBlock[j]["autoindex"] == "off")
+				servers[i].locationsBlock[j].erase("autoindex");
+		}
 	}
 	return (servers);
 }

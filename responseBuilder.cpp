@@ -85,6 +85,9 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
     }
 
+    // std::cout << "TYPE |" << type << "|\n";
+    // std::cout << "REPONSE HTTP/1.1|" << ret << "|\n";
+
     resultMsg = ret;
 }
 
@@ -119,6 +122,8 @@ responseBuilder& responseBuilder::addStatusLine(const std::string &type) {
 }
 
 responseBuilder& responseBuilder::addContentType(const std::string &extension) {
+    // std::cout << "HA L3AAAAR|" << extension << "|\n";
+    // exit (0);
     defineContentType(extension);
     return (*this);
 }
@@ -164,6 +169,7 @@ std::string responseBuilder::build() {
 
     response << HTTP_VERSION << " " << resultMsg << CRLF;
 
+
     for (auto it : headersResponses) {
         response << it.first << it.second << CRLF;
     }
@@ -174,6 +180,7 @@ std::string responseBuilder::build() {
         response << body << CRLF;
     } 
 
+    std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();
 
 }

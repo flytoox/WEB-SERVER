@@ -27,7 +27,7 @@ void Server::bindSockets() {
 
 void Server::listenToIncomingConxs() {
 
-    if (listen(socketD, 15) < 0) {
+    if (listen(socketD, SOMAXCONN) < 0) {
         std::cerr << "Error: listen() " << std::endl;
         exit (1);
     }

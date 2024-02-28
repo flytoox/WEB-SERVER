@@ -120,7 +120,9 @@ void parseRequestBody(Request &request);
 void checkRequestedHttpMethod(Request &request);
 
 //! getMethod.cpp
+std::string CheckPathForSecurity(std::string path);
 
+void parseQueriesInURI(Request &request,std::string &uri);
 
 void getMethod(Request &request);
 
@@ -137,4 +139,23 @@ void postMethod(Request &request);
 
 void deleteMethod(Request &request);
 
- 
+//! parseRequestBody.cpp
+
+int hexaToDec(std::string &res);
+void chunkedRequest(Request &request);
+void textContentType(Request &request);
+void pureBinary(std::string &image, std::string &destination);
+void multipartContentType(Request &request);
+void urlencodedContentType(Request &request);
+
+
+
+//GetConfig
+std::vector<std::string> splitWithChar(std::string s, char delim);
+
+
+//! cgi.cpp
+
+void handle_cgi_get(const std::string& file, std::string& response);
+bool handle_cgi_post(const std::string& file, const std::string& postData, std::string& response);
+

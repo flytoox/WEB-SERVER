@@ -9,7 +9,8 @@ Request::Request() :
     requestBody(""),
     requestBodyChunk(false),
     requestOutputTest("20000000000000000000"),
-    saveLastBS(false) {}
+    saveLastBS(false),
+    reCheck(false) {}
 
 //* GETTERS
 
@@ -116,7 +117,12 @@ void Request::setBoundary(std::string &setter) {
 }
 
 void Request::setRequestBody(std::string &setter) {
-    this->requestBody += setter;
+    for (size_t i = 0; i != static_cast<size_t>(setter.length()); i++)
+        this->requestBody.push_back(setter[i]);
+    //this->requestBody.append(setter);
+
+    //this->requestBody += setter;
+    // std::cerr << this->requestBody.length() << std::endl;
 }
 
 void Request::setRequestHeader(std::string &setter) {

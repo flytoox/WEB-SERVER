@@ -1,5 +1,6 @@
 #include "webserve.hpp"
 #include <fstream>
+#include <string>
 
 // static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
 
@@ -31,10 +32,6 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
     absolutePath += '/';
     std::string response = "";
 
-    request.response = responseBuilder()
-    .addStatusLine("200")
-    .addContentType("text/html"); //* COOL
-
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
         std::cout << "Error: cannot open the file/directory\n"; 
@@ -52,11 +49,15 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
     }
 
     response += "</pre><hr></body></html>";
-    request.response = responseBuilder().addResponseBody(response);
     if (closedir(dir_ptr) == -1) {
         std::cout << "Error: cannot close the directory" << std::endl; 
         throw "Error: closedir()";
     }
+
+    request.response = responseBuilder()
+    .addStatusLine("200")
+    .addContentType("text/html")
+    .addResponseBody(response);
     throw "200 autoindex";
 
 }
@@ -64,7 +65,6 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request) {
 
     if ( ! request.getSaveLastBS() ) {
-        std::cout << "I'mHERE\n";
         request.response = responseBuilder()
         .addStatusLine("301")
         .addContentType("text/html") //* COOL
@@ -75,8 +75,13 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
     // std::map<std::string, std::string> directives = request.getDirectives();
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
+
     mapConstIterator it = directives.find("index");
 
+    for (auto it : directives) {
+        std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
+    }
+    // exit (0);
     std::string absolutePath = root;
 
     //* Index file if it exists 
@@ -109,13 +114,14 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             .addStatusLine("400")
             .addContentType("text/html");
             request.response = responseBuilder().addResponseBody("<html><h1>400 Bad Request</h1></html>");
-            throw "400";
+            throw "4001";
         }
-    } else {
-        //TODO: check this else below if it is valid
-        std::cout << "Error: open indexFile has failed\n";
-        //throw "502";
-    }
+    } 
+    // else {
+    //     //TODO: check this else below if it is valid
+    //     std::cout << "Error: open indexFile has failed\n";
+    //     //throw "502";
+    // }
 
     //* Index File doesn't exist && check autoindex
     //TODO : check if the '/' must be added to the absolute path;
@@ -150,19 +156,35 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
     {
 
-        if ( file.find('.') != std::string::npos ) {
+        // if ( file.find('.') != std::string::npos ) {
 
-            std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+        //     std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
 
-            if ( extension == ".php" || extension == ".py") {
-                //! RUN CGI !
-                response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-                response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
-                throw "CGI";
-            }
+        //     if ( extension == ".php" || extension == ".py") {
+        //         //! RUN CGI !
+        //         response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
+        //         response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+        //         throw "CGI";
+        //     }
 
-        }
+        // }
     
+            if (file.find('.') != std::string::npos) {
+    
+                std::string extension = file.substr(file.find_last_of('.'));
+
+                if (extension == ".php" || extension == ".py") {
+                    handle_cgi_get(absolutePath, response);
+
+                    // Set the initial HTTP response headers
+                    request.response = responseBuilder()
+                    .addStatusLine("200")
+                    .addContentType("text/html")
+                    .addResponseBody(response);
+                    throw ("CGI");
+            }
+        }
+
         std::fstream file(absolutePath);
 
         //TODO: FIX IF THE CONETENT IS VIDEO
@@ -206,10 +228,89 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
         if (it->first == "root") {
             concatenateWithRoot = it->second;
         }
-        if (it->first == "location match" ) {
+        if (it->first == "location" ) {
             locationUsed = it->second;
         }
     }
+}
+
+
+void parseQueriesInURI(Request &request,std::string &uri) {
+
+   // uri = /?username=sana&password=123
+
+    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123
+    std::map<std::string, std::string> mapTopush;
+
+    std::vector<std::string> keyValueVector = splitString(queriesString, "&");
+
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        if (signPos != std::string::npos) {
+            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+            mapTopush.insert(pair);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            throw "400";
+        }
+    }
+
+
+    // std::cout << "***INFORMATION YOU NEED****\n";
+    // for (auto it : mapTopush) {
+    //     std::cout << it.first << "|\t|" << it.second << "|\n";
+    // }
+    // std::cout << "***INFORMATION YOU NEED****\n";
+
+
+    request.setUrlencodedResponse(mapTopush);
+
+    // Remove queries from uri 
+    uri.erase(uri.find('?'));
+}
+
+
+std::vector<std::string> splitWithChar(std::string s, char delim) {
+	std::vector<std::string> result;
+	std::stringstream ss (s);
+	std::string item;
+
+	while (getline (ss, item, delim)) {
+		result.push_back (item);
+	}
+
+	return result;
+}
+
+std::string CheckPathForSecurity(std::string path) {
+	std::vector<std::string> ret = splitWithChar(path, '/');
+	std::string result = "";
+
+	for (int i = 0; i < (int)ret.size(); i++) {
+		if (ret[i] == "..") {
+			if (i) {
+				ret.erase(ret.begin() + i);
+				ret.erase(ret.begin() + i - 1);
+				i -= 2;
+			}
+			else {
+				ret.erase(ret.begin());
+				i--;
+			}
+		} else if (ret[i] == ".") {
+			ret.erase(ret.begin() + i);
+			i--;
+		}
+	}
+	for (std::string s : ret) {
+		result += "/" + s;
+	}
+
+	return result;
 }
 
 void getMethod(Request &request) {
@@ -239,11 +340,30 @@ void getMethod(Request &request) {
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call 
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    std::cout << "URI |" << uri << "|\n";
-    // std::cout << "ROOT |" << concatenateWithRoot << "|\n"; 
-    concatenateWithRoot += uri;
+    // std::cout << "BEFORE URI |" << uri << "|\n";
+    if (uri.find('?') != std::string::npos) {
+        parseQueriesInURI(request, uri);
+    }
 
-    // std::cout << "BECOMES  |" << concatenateWithRoot << "|\n";
+
+	//uri : /../../tmp/ll.txt
+	//concatenateWithRoot : /Users/sizgunan/
+	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
+    // std::cout << "WHAT ROOT|" << concatenateWithRoot << "|\n";
+    // std::cout << "WHAT CHECK|" << result << "|\n";
+	if (result.find(concatenateWithRoot) == std::string::npos) {
+		request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
+            throw "403 Security"; 
+	}
+    // std::cout << "AFTER URI |" << uri << "|\n";
+    // std::cout << "ROOT |" << concatenateWithRoot << "|\n";
+    // concatenateWithRoot += uri;
+    concatenateWithRoot = result;
+    // std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
+
 
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;
@@ -254,15 +374,17 @@ void getMethod(Request &request) {
     // std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
+            std::cout << "IT'S FILE\n";
             requestTypeFile(concatenateWithRoot, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
+            std::cout << "IT'S DIRECTORY\n";
             requestTypeDirectory(concatenateWithRoot, uri, request);
         } else {
             request.response = responseBuilder()
-            .addStatusLine("502")
+            .addStatusLine("500")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
-            throw "502"; 
+            .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
+            throw "500"; 
         }
     } else {
         

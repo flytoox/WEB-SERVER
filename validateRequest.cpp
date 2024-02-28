@@ -66,7 +66,7 @@ static std::string fetchTheExactDirectory(const std::string uri) {
 static void removeLastOccurrence(std::string &str) {
 
     size_t pos = str.rfind('/');
-    std::cout << "i: |" << pos << "|\n";
+    // std::cout << "i: |" << pos << "|\n";
 
     if (pos == 0 && pos != std::string::npos) {
         str = str[0];
@@ -99,6 +99,9 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 {
     //! erase all the backslashes at the end of URI
     //TODO : /////////////////
+    //* WE remove it for stat function and then we check if it exsits
+    //* if yes and it's a directory, then handle it without moving 301 Permenatntly
+    //* if no it's a directory , add '/' to move permenantly
     if (uri.length() != 1) {
         while (1) {
             if (uri[uri.length() - 1] == '/')
@@ -149,10 +152,10 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
         for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
             std::map<std::string, std::string> mapIterator = (*it);
-            if (mapIterator["location match"] == uri) {
+            if (mapIterator["location"] == uri) {
                 found = mapIterator ;
             } 
-            // else if (mapIterator["location match"] == "/") {
+            // else if (mapIterator["location"] == "/") {
             //     defaultLocation = mapIterator ;
             // }
         }
@@ -167,10 +170,10 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
 
         std::map<std::string, std::string> mapIterator = (*it);
-        std::string location_match = mapIterator["location match"];
+        std::string location_match = mapIterator["location"];
 
         if ( location_match == directoryUri )
-            found = (mapIterator); break ;
+            found = (mapIterator);break ;
 
     }
 
@@ -187,7 +190,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
 
             std::map<std::string, std::string> mapIterator = (*it);
-            std::string location_match = mapIterator["location match"];
+            std::string location_match = mapIterator["location"];
 
             if ( location_match == substrUri ) {
                 found = (mapIterator) ;
@@ -216,16 +219,20 @@ void validateRequest(Request &request) {
     
     }
 
-    std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); int contentLength = std::atoi(contentLenghStr.c_str());
+    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); 
+    // int contentLength = std::atoi(contentLenghStr.c_str());
+
+    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
+
     std::string method = request.getHttpVerb();
-    if (method == "POST" && contentLength == 0 && transferEncoding.empty()) {
+    if (method == "POST" && contentLengh == httpRequestHeaders.end() ) {
 
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
             .addResponseBody("<html><h1>400 Bad Request</h1></html>");
 
-        throw "400" ;        
+        throw "40018" ;        
     }
 
     std::string uri = request.getUri();
@@ -250,8 +257,16 @@ void validateRequest(Request &request) {
     }     
 
     //request.setAllowRequestBodyChunk(true);
-    request.setRequestBodyChunk(true);
+
+    //checkSolution
+    std::string test = request.getRequestHeader();
+    // std::cout << "|" << test << "|\n";
+    if (test.find("\r\n\r\n") != std::string::npos) {
+        request.setRequestBodyChunk(true);
+    }
+
     std::map<std::string, std::string> directives = request.getDirectives();
+
 
     unsigned long clientMaxBody = std::atoi((directives["client_max_body_size"]).c_str());
 
@@ -270,13 +285,6 @@ void validateRequest(Request &request) {
     //! Skipped: if => no location match the request uri
     std::map<std::string, std::string> location = fetchSuitableLocationBlock(request, uri);
 
-    //std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
-
-    // for (auto it : location) {
-    //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
-    // }
-    // exit (0);
-
     // std::string root;
 
     // mapConstIterator it = request.getDirectives().find("root");
@@ -290,8 +298,15 @@ void validateRequest(Request &request) {
     
     } else if (  request.getLocationBlockWillBeUsed().empty() ) {
 
+        // std::cout << "GET HERE\n";
+
         std::map<std::string, std::string> defaultLocation = request.getDirectives();
+
+        // for (auto it : defaultLocation) {
+        //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
+        // }
         request.setLocationBlockWillBeUsed(defaultLocation);
+        location = request.getLocationBlockWillBeUsed();
 
     } else {
 
@@ -302,27 +317,54 @@ void validateRequest(Request &request) {
         throw "4042";  
     }
 
-    if ( directives.find("return") != directives.end() ) {
+
+    std::cout << "*************TESTING***********************\n";
+    std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
+
+    // for (auto it : location) {
+    //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
+    // }
+    std::cout << "*************TESTING***********************\n";
+    // exit (0);
 
 
-        std::string changeLocation = directives["return"];
-        if (changeLocation.length() && changeLocation[0] != '/' ) {
+    if ( location.find("return") != location.end() ) {
+
+     std::string changeLocation = location["return"];
+    std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
+    changeLocation = *(vectorReturn.end() - 1); 
+        std::cout << "CORRECT ? |" << changeLocation << "|\n";
+        //TODO:this must be split; the first string must contain 301 and the second strign is the one saved as a value for directives["return"]
+
+        if ( changeLocation.length() ) {
+            if (changeLocation.substr(0, 8) != "https://") {
+                changeLocation.insert(0, "https://");
+            }
             request.response = responseBuilder()
-            .addStatusLine("301")
+            .addStatusLine(*vectorReturn.begin())
             .addLocation(changeLocation)
             .addContentType("text/html")
-            .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
+            .addResponseBody("<html><h1>" + (*vectorReturn.begin()) + "</h1></html>");
     
-            throw "301";
-        }
+            throw "return directive";
+        } 
+        // else {
+
+        //     request.response = responseBuilder()
+        //     .addStatusLine("200")
+        //     .addContentType("text/html")
+        //     .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
+    
+        //     throw "200";
+        // }
 
         std::map<std::string, std::string> directives = request.getDirectives();
         std::string returnCheck = directives["return"];
         std::vector<std::map<std::string, std::string> > allLocations = request.getLocationsBlock();
         for (vectorToMapIterator it = allLocations.begin(); it != allLocations.end(); it++) {
             std::map<std::string, std::string> locations = *it;
-            if ( locations["location match"] == returnCheck  ) {
-                if ( directives["location match"] != returnCheck )
+            if ( locations["location"] == returnCheck  ) {
+                if ( directives["location"] != returnCheck )
                     request.setUri(returnCheck);
                     request.setLocationBlockWillBeUsed(locations);
                     break ;
@@ -331,9 +373,20 @@ void validateRequest(Request &request) {
 
     }
 
-    //TODO: this is a mqp which containes notAllowd methods ; must be split and checked !
+
+    //DONE: this is a mqp which containes notAllowd methods ; must be split and checked !
+    //DONE : Omar this a string not a word to override everytime
     if ( location.find("allowedMethods") != location.end()) {
-        if (location["allowedMethods"] != request.getHttpVerb()) {
+
+        std::string input = location["allowedMethods"];
+        std::vector<std::string> theAllowedMethods = splitString(input, " ");
+        for (auto it : theAllowedMethods) {
+            std::cout << "|" << it << "|\n";
+        }
+        const_vector_it itAllowedMethods = std::find(theAllowedMethods.begin(), theAllowedMethods.end(), request.getHttpVerb());
+
+
+        if (itAllowedMethods == theAllowedMethods.end()) {
 
             request.response = responseBuilder()
             .addStatusLine("405")
@@ -343,8 +396,5 @@ void validateRequest(Request &request) {
             throw "405";            
         }
     }
-
-
-
 
 }

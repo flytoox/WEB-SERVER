@@ -61,6 +61,7 @@ public:
 
     bool dup = false;
 	std::string result;
+    bool reCheck;
     //* GETTERS
 
     const std::map<std::string, std::string> &getDirectives() const;
