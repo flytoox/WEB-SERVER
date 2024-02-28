@@ -26,7 +26,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-//! Typedef 
+#include <fcntl.h>
+//! Typedef
 
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
@@ -153,9 +154,14 @@ void urlencodedContentType(Request &request);
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
 
-
 //! cgi.cpp
 
-void handle_cgi_get(const std::string& file, std::string& response);
-bool handle_cgi_post(const std::string& file, const std::string& postData, std::string& response);
+std::pair<std::string, std::string> handleCgiGet(const std::string& file,
+                                        const std::string& interpreterPath,
+                                        Request &request);
+std::pair<std::string, std::string> handleCgiPost(const std::string& file,
+                                        const std::string& interpreterPath,
+                                        Request &request);
 
+bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath);
+std::string extractContentType(const std::string& headers);

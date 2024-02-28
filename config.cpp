@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/02/03 20:15:12 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/02/28 16:01:40 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "includes/Server.hpp"
-#include "includes/configFile.hpp"
-#include "includes/webserve.hpp"
+#include "Server.hpp"
+#include "configFile.hpp"
+#include "webserve.hpp"
 #include <stdexcept>
 #include <string>
 #include <sys/types.h>
@@ -76,7 +76,7 @@ void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 			word.pop_back();
 		directives[key] = word;
 	}
-		
+
 }
 
 void fatal(string expression) {
@@ -108,10 +108,10 @@ string convertDomainToIPv4(string &domain)
     return "";
 }
 //TODO: cheange server_name to host
-//TODO : ALERT CHANGE THE NAMES 
+//TODO : ALERT CHANGE THE NAMES
 
 
-//TODO : if you find listen && port the same -> duplicated : true 
+//TODO : if you find listen && port the same -> duplicated : true
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
@@ -156,7 +156,7 @@ vector<Server> parsingFile(string s) {
 	string line;
 	ifstream file(s);
 	int lineNum = 0;
-	
+
 	if (file.is_open())
 	{
 		while (getline(file, line))
@@ -208,7 +208,7 @@ vector<Server> parsingFile(string s) {
 			if (st.empty()) throw runtime_error("Error: No block on line " + to_string(lineNum));
 			if (v[1].back() == ';') v[1].pop_back();
 			if (v[1].empty()) throw runtime_error("Error: No value on line " + to_string(lineNum));
-			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location") 
+			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location")
 				directives[v[0]] += '\n';
 			else directives[v[0]] = v[1];
 			for (size_t i = 2; i < v.size(); i++) {
@@ -222,7 +222,7 @@ vector<Server> parsingFile(string s) {
 	}
 	if (!st.empty())
 		throw runtime_error("Error: { without } on line " + to_string(lineNum));
-	
+
 	for (size_t i = 0; i < servers.size(); i++) {
 		int port;
 		try {
@@ -252,7 +252,7 @@ vector<Server> parsingFile(string s) {
 		}
 		adjustServerAddress(servers[i], servers[i].serverAddress);
 		servers[i].setServerAddress(servers[i].serverAddress);
-		
+
 
 		if (( servers[i].socketD = socket(AF_INET, SOCK_STREAM, 0) ) < 0) {
 			fatal("Error: Fail to create a Socket for Server 1");

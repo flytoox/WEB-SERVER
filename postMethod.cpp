@@ -38,8 +38,8 @@ static void uploadRequestBody(Request &request) {
     //         request.response = responseBuilder()
     //         .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
     //         throw "201" ;
-    //     } 
-    
+    //     }
+
     // }
 
     // std::cout << "[][][][][][][]\n";
@@ -87,42 +87,47 @@ static void uploadRequestBody(Request &request) {
 
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
-    (void)absolutePath;
-    std::string response;
+    std::pair<std::string, std::string> response;
 
     std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
-
     std::string file = uri.erase(0, pos);
 
-
-    std::cout << "FILE NAME |" << file << "|\n";
     if ( file.find('.') != std::string::npos ) {
 
-        std::string extension = file.substr(file.find('.'), ( file.length() - file.find('.')) );
+        std::string extension = file.substr(file.find_last_of('.'));
+        std::cout << "EXTENSION: " << extension << "\n";
+        std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+        std::string binaryPath;
 
+        if (isValidCGI(locationBlock, extension, binaryPath)) {
+            // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
+            response = handleCgiPost(absolutePath, binaryPath, request);
 
-        if ( extension == ".php" || extension == ".py") {
-            //! RUN POST CGI !
-            // response = "HTTP/1.1 200 OK \r\n"; request.setResponseVector(response);
-            // response = "Content-type: text/html; charset=UTF-8\r\n\r\n"; request.setResponseVector(response);
+            std::string headers = response.first;
+            std::string body = response.second;
 
-            std::cout << "***INFORMATION YOU NEED****\n";
-            std::map<std::string, std::string> toUSE = request.getUrlencodedResponse(); 
-            for (auto it : toUSE) {
-                std::cout << it.first << "|\t|" << it.second << "|\n";
-            }
-            std::cout << "***INFORMATION YOU NEED****\n";
+            std::string contentType = extractContentType(headers);
+            // Extract extension from "Content-Type"
+            std::size_t lastSlashPos = contentType.rfind('/');
+            std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
 
-            // throw "POST CGI";
+            std::string contentLength = std::to_string(body.length());
 
+            std::cout << "contentType: " << contentType << "\n";
+            std::cout << "extension: " << extension << "\n";
+
+            std::cout << "HEADERS |" << headers << "|\n";
+            std::cout << "BODY |" << body << "|\n";
+            // std::cout << "BODY |" << body << "|\n";
+
+            // Set the initial HTTP response headers
             request.response = responseBuilder()
-                .addStatusLine("200")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>POST CGI</h1></html>");
-                throw "POST CGI";
-
-        } 
+            .addStatusLine("200")
+            .addContentType(extension)
+            .addResponseBody(body);
+            throw ("CGI");
+        }
     }
 
     request.response = responseBuilder()
@@ -152,7 +157,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     std::string absolutePath = root;
     std::string response;
 
-    //* Index file if it exists 
+    //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
         std::string extension = indexFile.substr(indexFile.find('.'), ( indexFile.length() - indexFile.find('.')) );
@@ -164,7 +169,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
             .addContentType("text/html")
             .addResponseBody(requestBody);
             throw "CGI";
-        } 
+        }
 
     }
 
@@ -180,7 +185,7 @@ void oo() {}
 void postMethod(Request &request) {
 
 oo();
-    //CHECK: I added this function to check the body type 
+    //CHECK: I added this function to check the body type
     uploadRequestBody(request);
 
     //std::cout << "GOT HERE\n";
@@ -188,9 +193,9 @@ oo();
     // for (vectorToMapIterator it = request.getLocationsBlock().begin(); it != request.getLocationsBlock().end(); ++it) {
     //     std::map<std::string, std::string> locationBlock = (*it);
     //     if ( locationBlock["upload_enable"] == "on" ) {
-    //         if  ( uploadRequestBody(request) ) 
-    //             throw "201" ;  
-    //     } 
+    //         if  ( uploadRequestBody(request) )
+    //             throw "201" ;
+    //     }
     // }
 
     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
@@ -237,7 +242,7 @@ oo();
             .addStatusLine("403")
             .addContentType("text/html")
             .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
-            throw "403 Security"; 
+            throw "403 Security";
 	}
     absolutePath = result;
     // std::cout << "HAL3aaaaar|" << absolutePath << "|\n";
@@ -248,11 +253,11 @@ oo();
     //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
     //DONE: seperate uri with queries /uri?ljsl=lsls&ddo=oo
 
-    const char *path = absolutePath.c_str(); 
+    const char *path = absolutePath.c_str();
     struct stat fileStat;
 
     if (stat(path, &fileStat ) == 0) {
-    
+
         if (S_ISREG(fileStat.st_mode)) {
             std::cout << "FILE\n";
             requestTypeFilePost(root, uri, request);
@@ -266,12 +271,12 @@ oo();
             .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
         }
     } else {
-        
+
         request.response = responseBuilder()
         .addStatusLine("404")
         .addContentType("text/html")
         .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-        
+
         throw "404 here";
     }
 
