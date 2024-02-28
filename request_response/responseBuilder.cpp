@@ -1,4 +1,4 @@
-#include "webserve.hpp"
+#include "../includes/webserve.hpp"
 
 STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
 
@@ -180,7 +180,7 @@ std::string responseBuilder::build() {
         response << body << CRLF;
     } 
 
-    std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
+    // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();
 
 }

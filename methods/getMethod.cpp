@@ -1,6 +1,4 @@
-#include "webserve.hpp"
-#include <fstream>
-#include <string>
+#include "../includes/webserve.hpp"
 
 // static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
 
@@ -78,9 +76,9 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
     mapConstIterator it = directives.find("index");
 
-    for (auto it : directives) {
-        std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
-    }
+    // for (auto it : directives) {
+    //     std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
+    // }
     // exit (0);
     std::string absolutePath = root;
 
@@ -91,7 +89,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
         if ( extension != ".html") {
             //! RUN CGI !
-            throw "CGI";
+            throw " GETCGI";
         }
 
 
@@ -190,8 +188,10 @@ static std::vector<std::string> splitWhiteSpaces(std::string s) {
 }
 
 bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
+    std::cout << "BEFORE COUNT\n";
     if (!directives.count("cgi_bin")) return false;
     std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
+    std::cout << "AFTER COUNT\n";
     for (int i = 0; i < (int)cgiParts.size(); i++) {
         std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
         if (cgiConfig.size() < 2) continue;
@@ -199,6 +199,7 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
         for (int i = 1; i < (int)cgiConfig.size(); i++)
             if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
     }
+    std::cout << "END of IS VALIDCGI\n";
     return false;
 }
 
@@ -206,17 +207,19 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
 void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
-    std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
 
     std::string file = uri.erase(0, pos);
-
+    std::cout << "file " << file << std::endl;
 
     {
         if (file.find('.') != std::string::npos) {
 
             std::string extension = file.substr(file.find_last_of('.'));
             std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+            // std::cerr << "LOCATION BLOCK\n";
+            // for (auto &i : locationBlock) std::cerr << i.first << ' ' << i.second << std::endl;
+            // std::cerr << "END\n";
             std::string binaryPath;
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {

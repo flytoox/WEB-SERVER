@@ -1,8 +1,4 @@
-#include "webserve.hpp"
-#include <dirent.h>
-#include <iostream>
-#include <sys/types.h>
-#include <string>
+#include "../includes/webserve.hpp"
 
 // static bool checkCGI(Request &request) {
 

@@ -1,4 +1,4 @@
-#include "webserve.hpp"
+#include "../includes/webserve.hpp"
 
 
 static void uploadRequestBody(Request &request) {
@@ -168,7 +168,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
             .addStatusLine("200")
             .addContentType("text/html")
             .addResponseBody(requestBody);
-            throw "CGI";
+            throw " POST CGI";
         }
 
     }

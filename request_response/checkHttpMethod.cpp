@@ -1,4 +1,4 @@
-#include "webserve.hpp"
+#include "../includes/webserve.hpp"
 
 
 void checkRequestedHttpMethod(Request &request) {
@@ -16,6 +16,5 @@ void checkRequestedHttpMethod(Request &request) {
     else {
         deleteMethod(request);
     }
-
 
 }

@@ -10,16 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
-#include "configFile.hpp"
-#include "webserve.hpp"
-#include <stdexcept>
-#include <string>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <set>
+#include "../includes/webserve.hpp"
+
 
 using namespace std;
 
@@ -27,7 +19,7 @@ using namespace std;
 //Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
 //Done: Omar don't remove /// in location -> DONNNNNN'T
 //DONE: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
-static vector<string> split(string s) {
+vector<string> splitWhiteSpaces(string s) {
 	stringstream ss(s);
 	vector<string> v;
 	string word;
@@ -41,7 +33,7 @@ bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 		if (!locationsBlock[i].count("return"))
 			continue;
 		std::string returnStr = locationsBlock[i]["return"];
-		vector<string> v = split(returnStr);
+		vector<string> v = splitWhiteSpaces(returnStr);
 		if (v.size() != 2)
 			return (false);
 		int statusCode = stoi(v[0]);
@@ -63,7 +55,7 @@ bool checkDuplicateLocation(vector<map<string, string> > &locationsBlock) {
 }
 
 bool checkPortMaxMin(int port) {
-	if (port < 1024 || port > 65535)
+	if (port < 0 || port > 65535)
 		return (false);
 	return (true);
 }
@@ -156,17 +148,16 @@ vector<Server> parsingFile(string s) {
 	string line;
 	ifstream file(s);
 	int lineNum = 0;
-
 	if (file.is_open())
 	{
 		while (getline(file, line))
 		{
 			lineNum++;
-			vector<string> v = split(line);
+			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
 			if (v.size() == 1 && v[0].back() != '{' && v[0].back() != '}') {
-				throw runtime_error("Syntax error on line " + to_string(lineNum));
+				throw runtime_error("Syntax error");
 				return servers;
 			}
 			if (v.back().back() == '{') {
@@ -174,7 +165,7 @@ vector<Server> parsingFile(string s) {
 				if (v.back() == "") v.pop_back();
 				if (v.empty()) throw runtime_error("Syntax error");
 				if (v.size() == 1 && v[0] == "server") { // on server brackets
-					if (!st.empty()) throw runtime_error("Can't have a block inside a block on line " + to_string(lineNum));
+					if (!st.empty()) throw runtime_error("Can't have a block inside a block");
 					st.push(v[0]);
 					locationsBlock.clear();
 					directives.clear();
@@ -190,7 +181,7 @@ vector<Server> parsingFile(string s) {
 				continue;
 			}
 			if (v.size() == 1 && v[0] == "}") {
-				if (st.empty()) throw runtime_error("Error: } without { on line " + to_string(lineNum));
+				if (st.empty()) throw runtime_error("Error: } without {");
 				if (st.top() == "server") {
 					server.locationsBlock = locationsBlock;
 					servers.push_back(server);
@@ -205,11 +196,9 @@ vector<Server> parsingFile(string s) {
 				st.pop();
 				continue;
 			}
-			if (st.empty()) throw runtime_error("Error: No block on line " + to_string(lineNum));
 			if (v[1].back() == ';') v[1].pop_back();
-			if (v[1].empty()) throw runtime_error("Error: No value on line " + to_string(lineNum));
 			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location")
-				directives[v[0]] += '\n';
+                directives[v[0]] += '\n' + v[1];
 			else directives[v[0]] = v[1];
 			for (size_t i = 2; i < v.size(); i++) {
 				if (v[i].back() == ';')
@@ -221,24 +210,16 @@ vector<Server> parsingFile(string s) {
 		file.close();
 	}
 	if (!st.empty())
-		throw runtime_error("Error: { without } on line " + to_string(lineNum));
-
+		throw runtime_error("Error: { without }");
 	for (size_t i = 0; i < servers.size(); i++) {
-		int port;
-		try {
-			for (char &c : servers[i].directives["listen"])
-				if (!isdigit(c)) throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
-			port = stoi(servers[i].directives["listen"]);
-		} catch (exception &e) {
+		if (!checkPortMaxMin(stoi(servers[i].directives["listen"])))
 			throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
-		}
-		if (!checkPortMaxMin(port))
-			throw runtime_error("Error: Port number should be between 1024 and 65535 on server Num " + to_string(i+1));
 		if (checkDuplicateLocation(servers[i].locationsBlock))
 			throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
 		if (!checkReturnOnLocation(servers[i].locationsBlock))
 			throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
 	}
+
 
 	duplicateServerBasedOnListen(servers);
 	set<std::pair<string, string>> Check;
