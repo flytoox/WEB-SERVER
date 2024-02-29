@@ -82,7 +82,7 @@ void chunkedRequest(Request &request) {
     std::string requestBody = request.getRequestBody();
 
     //std::cout << requestBody;
-    
+
     std::vector<std::string> res = splitChunkedBody(requestBody, "\r\n");
     std::vector<std::string> output; unsigned long preSize ;
 
@@ -151,7 +151,7 @@ void pureBinary(Request &request, std::string &image, std::string &destination) 
     // std::cout << "|" << type << "|\n"; exit (0);
 
 
-    std::string absolutePath = destination + '/' + filename ; 
+    std::string absolutePath = destination + '/' + filename ;
 
     std::ofstream outputFile(absolutePath);
 
@@ -215,7 +215,7 @@ void multipartContentType(Request &request) {
         for (size_t i = 0; i < split.size(); i++) {
             pureBinary(request, split[i], destination);
         }
-    // } 
+    // }
     // else if (locations["upload_enable"] == "off") {
     //     request.response = responseBuilder()
     //     .addStatusLine("403")
@@ -249,7 +249,7 @@ void multipartContentType(Request &request) {
 //     std::string secondKeyValue = res.substr(dividerPos + 1, res.length() - 1);
 //     equalSignPos = secondKeyValue.find('=');
 //     pair secondPair = std::make_pair(secondKeyValue.substr(0, equalSignPos), secondKeyValue.substr(equalSignPos + 1));
-    
+
 //     mapTopush.insert(firstPair); mapTopush.insert(secondPair);
 //     request.setUrlencodedResponse(mapTopush);
 
@@ -319,7 +319,7 @@ void parseRequestBody(Request &request) {
 
     unsigned long sizeMax = getTheMaxsize(request);
     if ( sizeMax && request.getRequestBody().length() > sizeMax ) {
-        
+
         request.response = responseBuilder()
         .addStatusLine("413")
         .addContentType("text/html")
@@ -346,7 +346,7 @@ void parseRequestBody(Request &request) {
 
     if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() ) {
         // if (itTransferEncoding->second != "chunked") {
-        
+
         //     request.response = responseBuilder()
         //     .addStatusLine("500")
         //     .addContentType("txt");

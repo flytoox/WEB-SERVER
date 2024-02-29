@@ -35,14 +35,14 @@ static std::string fetchTheExactDirectory(const std::string uri) {
     DIR *dir_ptr; dir_ptr = opendir(uri.c_str());
     if (dir_ptr != NULL) {
         if (closedir(dir_ptr) == -1) {
-        std::cout << "Error: cannot close the directory" << std::endl; 
+        std::cout << "Error: cannot close the directory" << std::endl;
         throw "Error: closedir()"; }
         return (uri);
-    }  
+    }
 
-    //! REASON 
+    //! REASON
     // if (closedir(dir_ptr) == -1) {
-    //     std::cout << "Error: cannot close the directory" << std::endl; 
+    //     std::cout << "Error: cannot close the directory" << std::endl;
     //     throw "Error: closedir()";
     // }
 
@@ -94,7 +94,7 @@ static void removeExtraBackslashes(std::string& str) {
     str = result;
 }
 
-static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &request, std::string uri) 
+static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &request, std::string uri)
 {
     //! erase all the backslashes at the end of URI
     //TODO : /////////////////
@@ -104,7 +104,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     if (uri.length() != 1) {
         while (1) {
             if (uri[uri.length() - 1] == '/')
-            { 
+            {
                 request.setSaveLastBS(true);
                 uri.erase(uri.length() - 1);
             }
@@ -140,7 +140,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
     }
 
-    //TODO: RESET URI 
+    //TODO: RESET URI
     request.setUri(uri);
 
     std::vector<std::map<std::string, std::string>> locationsBlock = request.getLocationsBlock();
@@ -193,7 +193,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     //         }
     //     }
     // }
-    // outerLoop: 
+    // outerLoop:
 
     // return (found);
 }
@@ -211,10 +211,10 @@ void validateRequest(Request &request) {
             .addContentType("text/html")
             .addResponseBody("<html><h1>501 Not Implemented</h1></html>");
         throw "501" ;
-    
+
     }
 
-    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); 
+    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]);
     // int contentLength = std::atoi(contentLenghStr.c_str());
 
     mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
@@ -227,7 +227,7 @@ void validateRequest(Request &request) {
             .addContentType("text/html")
             .addResponseBody("<html><h1>400 Bad Request</h1></html>");
 
-        throw "40018" ;        
+        throw "40018" ;
     }
 
     std::string uri = request.getUri();
@@ -247,9 +247,9 @@ void validateRequest(Request &request) {
         .addStatusLine("414")
         .addContentType("text/html")
         .addResponseBody("<html><h1>414 Request-URI Too Long</h1></html>");
-	
+
         throw "414" ;
-    }     
+    }
 
     //request.setAllowRequestBodyChunk(true);
     request.setRequestBodyChunk(true);
@@ -283,7 +283,7 @@ void validateRequest(Request &request) {
 
     if ( ! location.empty() ) {
         request.setLocationBlockWillBeUsed(location) ;
-    
+
     } else if (  request.getLocationBlockWillBeUsed().empty() ) {
 
         std::cout << "GET HERE\n";
@@ -302,7 +302,7 @@ void validateRequest(Request &request) {
         .addStatusLine("404")
         .addContentType("text/html")
         .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-        throw "4042";  
+        throw "4042";
     }
 
 
@@ -320,7 +320,7 @@ void validateRequest(Request &request) {
 
      std::string changeLocation = location["return"];
     std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
-    changeLocation = *(vectorReturn.end() - 1); 
+    changeLocation = *(vectorReturn.end() - 1);
         std::cout << "CORRECT ? |" << changeLocation << "|\n";
         //TODO:this must be split; the first string must contain 301 and the second strign is the one saved as a value for directives["return"]
 
@@ -333,16 +333,15 @@ void validateRequest(Request &request) {
             .addLocation(changeLocation)
             .addContentType("text/html")
             .addResponseBody("<html><h1>" + (*vectorReturn.begin()) + "</h1></html>");
-    
+
             throw "return directive";
-        } 
+        }
         // else {
 
         //     request.response = responseBuilder()
         //     .addStatusLine("200")
         //     .addContentType("text/html")
         //     .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
-    
         //     throw "200";
         // }
 
@@ -381,7 +380,7 @@ void validateRequest(Request &request) {
             .addContentType("text/html")
             .addResponseBody("<html><h1>405 Method Not Allowed</h1></html>");
 
-            throw "405";            
+            throw "405";
         }
     }
 
