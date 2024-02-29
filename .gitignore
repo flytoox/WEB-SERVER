@@ -1,1 +1,2 @@
-.vscode test.conf
+.vscode/
+test.conf
