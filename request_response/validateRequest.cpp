@@ -62,18 +62,18 @@ static std::string fetchTheExactDirectory(const std::string uri) {
     return (concatenateDirectories);
 }
 
-static void removeLastOccurrence(std::string &str) {
+// static void removeLastOccurrence(std::string &str) {
 
-    size_t pos = str.rfind('/');
-    std::cout << "i: |" << pos << "|\n";
+//     size_t pos = str.rfind('/');
+//     std::cout << "i: |" << pos << "|\n";
 
-    if (pos == 0 && pos != std::string::npos) {
-        str = str[0];
-    } else if ( pos != std::string::npos ) {
-        str.erase(pos, str.length() - 1);
-    }
+//     if (pos == 0 && pos != std::string::npos) {
+//         str = str[0];
+//     } else if ( pos != std::string::npos ) {
+//         str.erase(pos, str.length() - 1);
+//     }
 
-}
+// }
 
 //! CAUTION
 static void removeExtraBackslashes(std::string& str) {
@@ -146,27 +146,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     std::vector<std::map<std::string, std::string>> locationsBlock = request.getLocationsBlock();
     std::map<std::string, std::string> found ;
 
-    std::cerr << uri << std::endl;
-    // if (backSlashcount == 1) {
-        std::cerr << "BEFORE\n";
-        for (auto &i : locationsBlock) {
-            for (auto &j : i) {
-                std::cerr << j.first << ' ' << j.second << std:: endl;
-            }
-            std::cerr << std::endl;
-        }
-        std::cerr << "END\n";
-
-
-        for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-            std::map<std::string, std::string> mapIterator = (*it);
-            if (mapIterator["location"] == uri) {
-                return mapIterator;
-            } 
-            // else if (mapIterator["location"] == "/") {
-            //     defaultLocation = mapIterator ;
-            // }
-        }
 
     std::string directoryUri = fetchTheExactDirectory(uri);
 

@@ -136,10 +136,16 @@ void pureBinary(Request &request, std::string &image, std::string &destination) 
 
     std::size_t pos = image.find("filename=\"");
 
+//*PROTECT pos
+
     image.erase(0, pos + 10);
     std::string filename = image.substr(0, image.find("\""));
     pos = image.find("Content-Type: ");
     image.erase(0, pos + 14);
+    pos = image.find("\r\n\r\n");
+    image.erase(0, pos);
+    image.erase(image.end() - 2, image.end());
+
 
     // std::string type = image.substr('/');
     // std::cout << "|" << type << "|\n"; exit (0);

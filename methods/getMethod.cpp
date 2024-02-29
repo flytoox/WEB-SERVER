@@ -104,14 +104,14 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
             request.response = responseBuilder()
             .addStatusLine("200")
-            .addContentType(absolutePath);
-            request.response = responseBuilder().addResponseBody(content);
+            .addContentType(absolutePath)
+            .addResponseBody(content);
             throw "200";
         } else {
             request.response = responseBuilder()
             .addStatusLine("400")
-            .addContentType("text/html");
-            request.response = responseBuilder().addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
             throw "4001";
         }
     }
