@@ -120,14 +120,14 @@ void chunkedRequest(Request &request) {
 
 
 
-void textContentType(Request &request) {
+// void textContentType(Request &request) {
 
-    std::string ret = request.getRequestBody();
+//     std::string ret = request.getRequestBody();
 
-    request.response = responseBuilder()
-    .addResponseBody(ret);
+//     request.response = responseBuilder()
+//     .addResponseBody(ret);
 
-}
+// }
 
 void pureBinary(Request &request, std::string &image, std::string &destination) {
 

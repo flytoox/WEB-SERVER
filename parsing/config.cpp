@@ -15,6 +15,8 @@
 
 using namespace std;
 
+//TODO: if |autoindex|     |off| -> remove the autoindex directory
+
 //Done: Omar check location if it's duplicated , error -> exit
 //Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
 //Done: Omar don't remove /// in location -> DONNNNNN'T
