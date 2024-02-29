@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 18:00:04 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/02/26 18:02:58 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/02/29 13:35:35 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,10 @@ std::map<std::string, std::string> parseHeaders(const std::string& headers) {
                 && key != "AUTH_TYPE" && key != "REMOTE_USER"
                 && key != "REMOTE_IDENT") {
                 key = "HTTP_" + key;
+            }
+
+            if (key == "CONTENT_TYPE") {
+                std::cout << ">>>>>>>>>>>>>>>>>>>>>Content-Type: " << value << std::endl;
             }
 
             headerMap[key] = value;
