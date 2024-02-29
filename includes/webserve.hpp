@@ -26,6 +26,7 @@
 #include <vector>
 #include <cstring>
 #include <unistd.h>
+#include<algorithm>
 #include <sys/wait.h>
 #include <signal.h>
 

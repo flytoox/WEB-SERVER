@@ -212,28 +212,18 @@ static void parseTransferEncoding(std::vector<std::string> &headerSplitVector, R
 
 void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &request) {
 
-
-    std::vector<std::string>::iterator it = headerSplitVector.begin();
-
-    std::string track = (*it);
-
-    if ( ( track.find("GET") == std::string::npos ) && 
-        ( track.find("POST") == std::string::npos ) && 
-        ( track.find("DELETE") == std::string::npos ) ) {
-
-        if (track.find(':') == std::string::npos) {
-
-            request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
-            throw "400" ; 
-        }
-    }
+    std::string track = headerSplitVector[0];
     if ( ( track.find("GET") != std::string::npos ) || 
         ( track.find("POST") != std::string::npos ) || 
         ( track.find("DELETE") != std::string::npos ) )
         parseSingleLine(headerSplitVector, request);
+    if (request.getHttpVerb().empty()) {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            throw "400" ;
+    }
     if (track == "Host:" )
         parseHost(headerSplitVector, request);
     if (track == "Content-Type:" )

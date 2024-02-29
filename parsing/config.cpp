@@ -16,6 +16,7 @@
 using namespace std;
 
 //TODO: if |autoindex|     |off| -> remove the autoindex directory
+//TODO: insert by default these parameters: root, upload_store, index, autoindex
 
 //Done: Omar check location if it's duplicated , error -> exit
 //Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
@@ -254,12 +255,8 @@ vector<Server> parsingFile(string s) {
 	}
 	// set index.html if index is empty, and remove autoindex if it's off
 	for (size_t i = 0; i < servers.size(); i++) {
-		for (size_t j = 0; j < servers[i].directives.size(); j++) {
-			if (!servers[i].directives.count("index"))
-				servers[i].directives["index"] = "index.html";
-			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
-				servers[i].directives.erase("autoindex");
-		}
+		if (!servers[i].directives.count("index"))
+			servers[i].directives["index"] = "index.html";
 	}
 	return (servers);
 }
