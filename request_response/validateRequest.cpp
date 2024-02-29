@@ -146,27 +146,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     std::vector<std::map<std::string, std::string>> locationsBlock = request.getLocationsBlock();
     std::map<std::string, std::string> found ;
 
-    std::cerr << uri << std::endl;
-    // if (backSlashcount == 1) {
-        std::cerr << "BEFORE\n";
-        for (auto &i : locationsBlock) {
-            for (auto &j : i) {
-                std::cerr << j.first << ' ' << j.second << std:: endl;
-            }
-            std::cerr << std::endl;
-        }
-        std::cerr << "END\n";
-
-
-        for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-            std::map<std::string, std::string> mapIterator = (*it);
-            if (mapIterator["location"] == uri) {
-                return mapIterator;
-            }
-            // else if (mapIterator["location"] == "/") {
-            //     defaultLocation = mapIterator ;
-            // }
-        }
 
     std::string directoryUri = fetchTheExactDirectory(uri);
 
@@ -363,7 +342,6 @@ void validateRequest(Request &request) {
         //     .addStatusLine("200")
         //     .addContentType("text/html")
         //     .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
-
         //     throw "200";
         // }
 

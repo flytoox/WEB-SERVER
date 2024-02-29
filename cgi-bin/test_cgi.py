@@ -2,7 +2,7 @@
 
 import cgi
 
-print("Content-Type: text/html\n")
+print("Content-Type: text/html\r\n\r\n")
 print("<html><body>")
 print("<h1>CGI Test</h1>")
 

@@ -100,7 +100,6 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
         if (isValidCGI(locationBlock, extension, binaryPath)) {
             // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
-            std::cout << "====FILE: " << uri << "\n";
             response = handleCgiPost(absolutePath, binaryPath, request);
 
             std::string headers = response.first;
