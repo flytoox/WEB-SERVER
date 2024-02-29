@@ -224,6 +224,7 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
                 std::cout << "\n\n\n\n\nCGI\n";
+                std::cout << "FILE: " << absolutePath << "\n";
                 response = handleCgiGet(absolutePath, binaryPath, request);
 
                 std::string headers = response.first;

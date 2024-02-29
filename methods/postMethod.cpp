@@ -88,8 +88,6 @@ static void uploadRequestBody(Request &request) {
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
-
-    std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
     std::string file = uri.erase(0, pos);
 
@@ -102,6 +100,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
         if (isValidCGI(locationBlock, extension, binaryPath)) {
             // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
+            std::cout << "====FILE: " << uri << "\n";
             response = handleCgiPost(absolutePath, binaryPath, request);
 
             std::string headers = response.first;
@@ -260,7 +259,7 @@ oo();
 
         if (S_ISREG(fileStat.st_mode)) {
             std::cout << "FILE\n";
-            requestTypeFilePost(root, uri, request);
+            requestTypeFilePost(absolutePath, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
              std::cout << "DIRECTORY\n";
             requestTypeDirectoryPost(root, uri, request);
