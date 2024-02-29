@@ -6,27 +6,37 @@
 #include "multiplexing.hpp"
 #include "responseBuilder.hpp"
 #include "macros.hpp"
+#include "cgi.hpp"
 
-#include <iostream>
 #include <exception>
-#include <stdexcept>
 #include <string>
-#include <vector>
 #include <map>
+#include <fstream>
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/_endian.h>
+#include <stdexcept>
+#include <sys/types.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <set>
+#include <iostream>
+#include <sstream>
+#include <vector>
 #include <cstring>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #include <cstdio>
 #include <sys/errno.h>
 
 #include <dirent.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
-//! Typedef 
+#include <fcntl.h>
+//! Typedef
 
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
@@ -153,9 +163,14 @@ void urlencodedContentType(Request &request);
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
 
-
 //! cgi.cpp
 
-void handle_cgi_get(const std::string& file, std::string& response);
-bool handle_cgi_post(const std::string& file, const std::string& postData, std::string& response);
+std::pair<std::string, std::string> handleCgiGet(const std::string& file,
+                                        const std::string& interpreterPath,
+                                        Request &request);
+std::pair<std::string, std::string> handleCgiPost(const std::string& file,
+                                        const std::string& interpreterPath,
+                                        Request &request);
 
+bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath);
+std::string extractContentType(const std::string& headers);

@@ -26,7 +26,7 @@ public:
     bool duplicated = false;
     struct sockaddr_in serverAddress;
     std::map<std::string, std::string> directives;
-    std::vector<std::map<std::string, std::string>> locationsBlock;
+    std::vector<std::map<std::string, std::string> > locationsBlock;
     Server();
 
 

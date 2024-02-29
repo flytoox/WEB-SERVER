@@ -1,11 +1,11 @@
 NAME = webserv
 
-SRCS = $(wildcard *.cpp)
+SRCS = $(wildcard *.cpp */*.cpp)
 
 CPP = c++
 
-HEADERS = $(wildcard includes/*.hpp)
-CPPFLAGS = -Wall -Wextra -Werror -g -std=c++11 -fsanitize=address
+HEADERS = $(wildcard *.hpp */*.hpp)
+CPPFLAGS = -Wall -Wextra -Werror -g -std=c++11 #-fsanitize=address
 
 OBJS = $(SRCS:.cpp=.o)
 
