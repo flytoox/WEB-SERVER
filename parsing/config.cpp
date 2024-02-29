@@ -3,23 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/02/02 20:09:08 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/02/28 16:01:40 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
-#include "configFile.hpp"
-#include "webserve.hpp"
-#include <stdexcept>
-#include <string>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <set>
+#include "../includes/webserve.hpp"
+
 
 using namespace std;
 
@@ -269,4 +261,3 @@ vector<Server> parsingFile(string s) {
 	}
 	return (servers);
 }
-

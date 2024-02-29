@@ -1,6 +1,4 @@
-#include "webserve.hpp"
-#include <sys/types.h>
-#include <dirent.h>
+#include "../includes/webserve.hpp"
 
 static bool characterNotAllowed(std::string &uri) {
 
@@ -28,6 +26,7 @@ std::vector<std::string> splitUri(const std::string& input, const std::string& d
     return tokens;
 }
 
+
 static std::string fetchTheExactDirectory(const std::string uri) {
 
     //? Example: /root/etc/bin/index.html -> location_match_directory = /root/etc/bin/
@@ -36,14 +35,14 @@ static std::string fetchTheExactDirectory(const std::string uri) {
     DIR *dir_ptr; dir_ptr = opendir(uri.c_str());
     if (dir_ptr != NULL) {
         if (closedir(dir_ptr) == -1) {
-        std::cout << "Error: cannot close the directory" << std::endl; 
+        std::cout << "Error: cannot close the directory" << std::endl;
         throw "Error: closedir()"; }
         return (uri);
-    }  
+    }
 
-    //! REASON 
+    //! REASON
     // if (closedir(dir_ptr) == -1) {
-    //     std::cout << "Error: cannot close the directory" << std::endl; 
+    //     std::cout << "Error: cannot close the directory" << std::endl;
     //     throw "Error: closedir()";
     // }
 
@@ -63,18 +62,18 @@ static std::string fetchTheExactDirectory(const std::string uri) {
     return (concatenateDirectories);
 }
 
-static void removeLastOccurrence(std::string &str) {
+// static void removeLastOccurrence(std::string &str) {
 
-    size_t pos = str.rfind('/');
-    std::cout << "i: |" << pos << "|\n";
+//     size_t pos = str.rfind('/');
+//     std::cout << "i: |" << pos << "|\n";
 
-    if (pos == 0 && pos != std::string::npos) {
-        str = str[0];
-    } else if ( pos != std::string::npos ) {
-        str.erase(pos, str.length() - 1);
-    }
+//     if (pos == 0 && pos != std::string::npos) {
+//         str = str[0];
+//     } else if ( pos != std::string::npos ) {
+//         str.erase(pos, str.length() - 1);
+//     }
 
-}
+// }
 
 //! CAUTION
 static void removeExtraBackslashes(std::string& str) {
@@ -95,7 +94,7 @@ static void removeExtraBackslashes(std::string& str) {
     str = result;
 }
 
-static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &request, std::string uri) 
+static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &request, std::string uri)
 {
     //! erase all the backslashes at the end of URI
     //TODO : /////////////////
@@ -105,7 +104,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     if (uri.length() != 1) {
         while (1) {
             if (uri[uri.length() - 1] == '/')
-            { 
+            {
                 request.setSaveLastBS(true);
                 uri.erase(uri.length() - 1);
             }
@@ -115,7 +114,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     } else {
         request.setSaveLastBS(true);
     }
-
+    std::cerr << uri << std::endl;
     //! erase the double slash and count how many for saving the uri if it's only /regular
     int backSlashcount = 0;
     // for (size_t i = 0; i < uri.size(); i++) {
@@ -141,66 +140,83 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
     }
 
-    //TODO: RESET URI 
+    //TODO: RESET URI
     request.setUri(uri);
 
-    std::vector<std::map<std::string, std::string> > locationsBlock = request.getLocationsBlock();
+    std::vector<std::map<std::string, std::string>> locationsBlock = request.getLocationsBlock();
     std::map<std::string, std::string> found ;
 
+    std::cerr << uri << std::endl;
     // if (backSlashcount == 1) {
+        std::cerr << "BEFORE\n";
+        for (auto &i : locationsBlock) {
+            for (auto &j : i) {
+                std::cerr << j.first << ' ' << j.second << std:: endl;
+            }
+            std::cerr << std::endl;
+        }
+        std::cerr << "END\n";
 
 
         for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
             std::map<std::string, std::string> mapIterator = (*it);
             if (mapIterator["location"] == uri) {
-                found = mapIterator ;
-            } 
+                return mapIterator;
+            }
             // else if (mapIterator["location"] == "/") {
             //     defaultLocation = mapIterator ;
             // }
         }
-        if ( ! found.empty() )
-            return (found);
-        //return (defaultLocation)
-    // }
 
     std::string directoryUri = fetchTheExactDirectory(uri);
 
-    //! Aren't the same ?
-    for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-
-        std::map<std::string, std::string> mapIterator = (*it);
-        std::string location_match = mapIterator["location"];
-
-        if ( location_match == directoryUri )
-            found = (mapIterator);break ;
-
-    }
-
-    if ( ! found.empty() )
-        return (found);
-
-    std::string substrUri = uri; unsigned long i = 0;
-
-    while (i++ < locationsBlock.size()) {
-
-
-        removeLastOccurrence(substrUri);
-
-        for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-
-            std::map<std::string, std::string> mapIterator = (*it);
-            std::string location_match = mapIterator["location"];
-
-            if ( location_match == substrUri ) {
-                found = (mapIterator) ;
-                goto outerLoop;
+    while (!directoryUri.empty()) {
+        for (auto it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
+            if (it->at("location") == directoryUri) {
+                std::cerr << "OK OK ?? " << directoryUri<< std::endl;
+                return *it;
             }
         }
+        int ind = directoryUri.find_last_of('/');
+        if (ind != -1)
+            directoryUri.erase(ind);
+        else directoryUri.clear();
     }
-    outerLoop: 
-
     return (found);
+    //! Aren't the same ?
+    // for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
+
+    //     std::map<std::string, std::string> mapIterator = (*it);
+    //     std::string location_match = mapIterator["location"];
+
+    //     if ( location_match == directoryUri )
+    //         found = (mapIterator);break ;
+
+    // }
+    // if (!found.empty() )
+    //     return (found);
+
+    // std::string substrUri = uri; unsigned long i = 0;
+
+    // while (i++ < locationsBlock.size()) {
+
+
+    //     removeLastOccurrence(substrUri);
+
+    //     for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
+
+    //         std::map<std::string, std::string> mapIterator = (*it);
+    //         std::string location_match = mapIterator["location"];
+
+    //         if ( location_match == substrUri ) {
+    //             found = (mapIterator) ;
+    //             goto outerLoop;
+    //         }
+    //     }
+    // }
+    // outerLoop:
+
+    // return (found);
 }
 
 void validateRequest(Request &request) {
@@ -216,10 +232,10 @@ void validateRequest(Request &request) {
             .addContentType("text/html")
             .addResponseBody("<html><h1>501 Not Implemented</h1></html>");
         throw "501" ;
-    
+
     }
 
-    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]); 
+    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]);
     // int contentLength = std::atoi(contentLenghStr.c_str());
 
     mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
@@ -232,7 +248,7 @@ void validateRequest(Request &request) {
             .addContentType("text/html")
             .addResponseBody("<html><h1>400 Bad Request</h1></html>");
 
-        throw "40018" ;        
+        throw "40018" ;
     }
 
     std::string uri = request.getUri();
@@ -252,9 +268,9 @@ void validateRequest(Request &request) {
         .addStatusLine("414")
         .addContentType("text/html")
         .addResponseBody("<html><h1>414 Request-URI Too Long</h1></html>");
-	
+
         throw "414" ;
-    }     
+    }
 
     //request.setAllowRequestBodyChunk(true);
     request.setRequestBodyChunk(true);
@@ -288,7 +304,7 @@ void validateRequest(Request &request) {
 
     if ( ! location.empty() ) {
         request.setLocationBlockWillBeUsed(location) ;
-    
+
     } else if (  request.getLocationBlockWillBeUsed().empty() ) {
 
         std::cout << "GET HERE\n";
@@ -307,7 +323,7 @@ void validateRequest(Request &request) {
         .addStatusLine("404")
         .addContentType("text/html")
         .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-        throw "4042";  
+        throw "4042";
     }
 
 
@@ -325,7 +341,7 @@ void validateRequest(Request &request) {
 
      std::string changeLocation = location["return"];
     std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
-    changeLocation = *(vectorReturn.end() - 1); 
+    changeLocation = *(vectorReturn.end() - 1);
         std::cout << "CORRECT ? |" << changeLocation << "|\n";
         //TODO:this must be split; the first string must contain 301 and the second strign is the one saved as a value for directives["return"]
 
@@ -338,16 +354,16 @@ void validateRequest(Request &request) {
             .addLocation(changeLocation)
             .addContentType("text/html")
             .addResponseBody("<html><h1>" + (*vectorReturn.begin()) + "</h1></html>");
-    
+
             throw "return directive";
-        } 
+        }
         // else {
 
         //     request.response = responseBuilder()
         //     .addStatusLine("200")
         //     .addContentType("text/html")
         //     .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
-    
+
         //     throw "200";
         // }
 
@@ -386,7 +402,7 @@ void validateRequest(Request &request) {
             .addContentType("text/html")
             .addResponseBody("<html><h1>405 Method Not Allowed</h1></html>");
 
-            throw "405";            
+            throw "405";
         }
     }
 

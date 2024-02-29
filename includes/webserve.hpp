@@ -6,28 +6,36 @@
 #include "multiplexing.hpp"
 #include "responseBuilder.hpp"
 #include "macros.hpp"
+#include "cgi.hpp"
 
-#include <iostream>
 #include <exception>
-#include <stdexcept>
 #include <string>
-#include <vector>
 #include <map>
+#include <fstream>
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/_endian.h>
+#include <stdexcept>
+#include <sys/types.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <set>
+#include <iostream>
+#include <sstream>
+#include <vector>
 #include <cstring>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #include <cstdio>
 #include <sys/errno.h>
 
 #include <dirent.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <fcntl.h>
-
 //! Typedef
 
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
@@ -154,12 +162,9 @@ void urlencodedContentType(Request &request);
 
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
-std::vector<std::string> splitWhiteSpaces(std::string s);
-
 
 //! cgi.cpp
 
-// std::string handleCgiGet(const std::string& file, const std::string& interpreterPath);
 std::pair<std::string, std::string> handleCgiGet(const std::string& file,
                                         const std::string& interpreterPath,
                                         Request &request);

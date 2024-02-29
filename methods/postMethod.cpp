@@ -1,4 +1,4 @@
-#include "webserve.hpp"
+#include "../includes/webserve.hpp"
 
 
 static void uploadRequestBody(Request &request) {
@@ -65,9 +65,9 @@ static void uploadRequestBody(Request &request) {
             multipartContentType(request);
             request.response = responseBuilder()
             .addStatusLine("200")
-            .addContentType("text/html");
+            .addContentType("text/html")
 
-            request.response = responseBuilder()
+            // request.response = responseBuilder()
             .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
             throw "201" ;
         } else if (value == "application/x-www-form-urlencoded") {
@@ -83,6 +83,7 @@ static void uploadRequestBody(Request &request) {
     }
 
 }
+
 
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
@@ -167,7 +168,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
             .addStatusLine("200")
             .addContentType("text/html")
             .addResponseBody(requestBody);
-            throw "CGI";
+            throw " POST CGI";
         }
 
     }
@@ -248,7 +249,7 @@ oo();
 
     // std::string absolutePath = root + uri;
 
-    //WORKING: http://localhost:1111/../../tmp/ll.txt check the uri if it bypasses the root dir
+    //DONE: http://localhost:1111/../../tmp/ll.txt check the uri if it bypasses the root dir
     //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
     //DONE: seperate uri with queries /uri?ljsl=lsls&ddo=oo
 
@@ -259,7 +260,7 @@ oo();
 
         if (S_ISREG(fileStat.st_mode)) {
             std::cout << "FILE\n";
-            requestTypeFilePost(absolutePath, uri, request);
+            requestTypeFilePost(root, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
              std::cout << "DIRECTORY\n";
             requestTypeDirectoryPost(root, uri, request);

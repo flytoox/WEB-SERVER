@@ -1,6 +1,4 @@
-#include "webserve.hpp"
-#include <fstream>
-#include <string>
+#include "../includes/webserve.hpp"
 
 // static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
 
@@ -32,10 +30,6 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
     absolutePath += '/';
     std::string response = "";
 
-    request.response = responseBuilder()
-    .addStatusLine("200")
-    .addContentType("text/html"); //* COOL
-
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
         std::cout << "Error: cannot open the file/directory\n";
@@ -53,11 +47,15 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
     }
 
     response += "</pre><hr></body></html>";
-    request.response = responseBuilder().addResponseBody(response);
     if (closedir(dir_ptr) == -1) {
         std::cout << "Error: cannot close the directory" << std::endl;
         throw "Error: closedir()";
     }
+
+    request.response = responseBuilder()
+    .addStatusLine("200")
+    .addContentType("text/html")
+    .addResponseBody(response);
     throw "200 autoindex";
 
 }
@@ -78,9 +76,9 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
     mapConstIterator it = directives.find("index");
 
-    for (auto it : directives) {
-        std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
-    }
+    // for (auto it : directives) {
+    //     std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
+    // }
     // exit (0);
     std::string absolutePath = root;
 
@@ -91,7 +89,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
         if ( extension != ".html") {
             //! RUN CGI !
-            throw "CGI";
+            throw " GETCGI";
         }
 
 
@@ -180,10 +178,20 @@ std::string extractContentType(const std::string& headers) {
     return "";  // Return an empty string if "Content-Type" is not found
 }
 
+static std::vector<std::string> splitWhiteSpaces(std::string s) {
+	std::stringstream ss(s);
+	std::vector<std::string> v;
+	std::string word;
+	while (ss >> word)
+		v.push_back(word);
+	return (v);
+}
 
 bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
+    std::cout << "BEFORE COUNT\n";
     if (!directives.count("cgi_bin")) return false;
     std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
+    std::cout << "AFTER COUNT\n";
     for (int i = 0; i < (int)cgiParts.size(); i++) {
         std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
         if (cgiConfig.size() < 2) continue;
@@ -191,22 +199,27 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
         for (int i = 1; i < (int)cgiConfig.size(); i++)
             if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
     }
+    std::cout << "END of IS VALIDCGI\n";
     return false;
 }
+
 
 void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
-    std::map<std::string, std::string> directives = request.getDirectives();
     size_t pos = uri.rfind('/');
 
     std::string file = uri.erase(0, pos);
+    std::cout << "file " << file << std::endl;
 
     {
         if (file.find('.') != std::string::npos) {
 
             std::string extension = file.substr(file.find_last_of('.'));
             std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+            // std::cerr << "LOCATION BLOCK\n";
+            // for (auto &i : locationBlock) std::cerr << i.first << ' ' << i.second << std::endl;
+            // std::cerr << "END\n";
             std::string binaryPath;
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
@@ -347,6 +360,7 @@ std::string CheckPathForSecurity(std::string path) {
 	for (std::string s : ret) {
 		result += "/" + s;
 	}
+
 	return result;
 }
 
@@ -386,6 +400,8 @@ void getMethod(Request &request) {
 	//uri : /../../tmp/ll.txt
 	//concatenateWithRoot : /Users/sizgunan/
 	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
+    // std::cout << "WHAT ROOT|" << concatenateWithRoot << "|\n";
+    // std::cout << "WHAT CHECK|" << result << "|\n";
 	if (result.find(concatenateWithRoot) == std::string::npos) {
 		request.response = responseBuilder()
             .addStatusLine("403")
@@ -397,7 +413,7 @@ void getMethod(Request &request) {
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n";
     // concatenateWithRoot += uri;
     concatenateWithRoot = result;
-    std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
+    // std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
 
 
     const char *path = concatenateWithRoot.c_str();

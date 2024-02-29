@@ -1,4 +1,4 @@
-#include "cgi.hpp"
+#include "../includes/cgi.hpp"
 
 std::pair<std::string, std::string> handleCgiGet(const std::string& file,
                                         const std::string& interpreterPath,

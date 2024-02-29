@@ -11,7 +11,7 @@ class Request {
 
 private:
 
-
+    
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
 
@@ -97,7 +97,7 @@ public:
     bool getRequestBodyChunk(void) const;
    //  bool getResponseChunk(void) const;
 
-    //! Responses
+    //! Responses 
 
     const std::vector<std::string> &getChunkedResponse() const ;
     const std::string &getTextResponse() const ;
@@ -118,7 +118,7 @@ public:
     void setRequestBody(std::string &setter);
 
 
-    void setHttpRequestHeaders(pair &setPair);
+    void setHttpRequestHeaders(pair &setPair);    
 
     void setHttpVerb(std::string &setter);
     void setUri(std::string &setter);
@@ -147,7 +147,7 @@ public:
     void setrequestOutputTest(std::string &setter);
     const std::string &getrequestOutputTest(void) const;
 
-    //! Responses
+    //! Responses 
 
     void setChunkedResponse(std::vector<std::string> &setter);
     void setTextResponse(std::string &setter);

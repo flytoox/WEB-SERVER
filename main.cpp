@@ -1,11 +1,12 @@
-#include "webserve.hpp"
-#include <stdexcept>
-#include <vector>
+#include "includes/webserve.hpp"
 
-
-void parseConfigFile(configFile &configurationServers) {
+void parseConfigFile(configFile &configurationServers, std::string path) {
 	try {
-		std::vector<Server> servers = parsingFile("test.conf");
+		std::vector<Server> servers = parsingFile(path);
+		if (servers.empty()) {
+			std::cerr << "FILE HAS NO SERVER in it\n";
+			exit(1);
+		}
     	configurationServers.setTheVector(servers);
 	} catch (std::runtime_error &e) {
 		std::cerr << e.what() << std::endl;
@@ -13,21 +14,27 @@ void parseConfigFile(configFile &configurationServers) {
 	}
 
     funcMultiplexingBySelect(configurationServers);
-
 }
 
-int main(void) {
+void checkBasicErrors(std::string path) {
+	if (path.size() < 5 || strcmp(path.c_str() + path.size() - 5, ".conf")) {
+		std::cerr << "Error: invalid file extension" << std::endl;
+		exit(1);
+	}
+	if (access(path.c_str(), F_OK | R_OK) == -1) {
+		std::cerr << "Error: file does not exist or is not readable" << std::endl;
+		exit(1);
+	}
+} 
 
+int main(int argc, char **argv) {
 
-    configFile configurationServers;
-
-    // try {
-    
-        parseConfigFile(configurationServers);
-
-    // } catch (std::bad_exception &e) {
-    //     std::cout << e.what() << std::endl;
-    // }
-
-
+    configFile	configurationServers;
+	if (argc != 2) {
+		std::cerr << "Error: invalid number of arguments" << std::endl;
+		exit(1);
+	}
+	checkBasicErrors(argv[1]);
+	parseConfigFile(configurationServers, argv[1]);
+	return 0;
 }

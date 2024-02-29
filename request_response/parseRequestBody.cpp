@@ -1,4 +1,4 @@
-#include "webserve.hpp"
+#include "../includes/webserve.hpp"
 
 //TODO: Change the response data structure is a vector container
 
@@ -154,9 +154,9 @@ void pureBinary(Request &request, std::string &image, std::string &destination) 
 
     if (!outputFile.is_open()) {
         request.response = responseBuilder()
-        .addStatusLine("403")
+        .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><body><h1>400 CANNOT Request</h1></body></html>");
+        .addResponseBody("<html><body><h1>400 Bad Request1</h1></body></html>");
         throw "403";
     }
 
@@ -164,9 +164,9 @@ void pureBinary(Request &request, std::string &image, std::string &destination) 
 
     if (outputFile.fail()) {
         request.response = responseBuilder()
-        .addStatusLine("403")
+        .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><body><h1>400 CANNOT fail </h1></body></html>");
+        .addResponseBody("<html><body><h1>400 Bad Request2</h1></body></html>");
         throw "403";
     }
 
@@ -188,11 +188,12 @@ void multipartContentType(Request &request) {
     std::vector<std::string> split = splitString(request.getRequestBody(), boundary);
 
     if (split.size() > 2) {
-        split.erase(split.begin());  split.erase(split.end() - 1);
+        split.erase(split.begin());
+        split.erase(split.end() - 1);
     }
     else {
-        std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
-        std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
+        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
+        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
         std::cerr << "ERROR: what are u doing kid!!" << std::endl;
     }
     // for (auto it : split) {
@@ -202,6 +203,7 @@ void multipartContentType(Request &request) {
 
 
     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
+    //TODO: get back the if else statement -> [upload_enable"] == "on")
     // if (locations["upload_enable"] == "on") {
         std::string destination = locations["upload_store"];
         for (size_t i = 0; i < split.size(); i++) {

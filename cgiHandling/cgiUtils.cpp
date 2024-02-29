@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cgi.hpp"
+#include "../includes/cgi.hpp"
 
 void handleTimeout(int signal) {
     // Handle timeout signal

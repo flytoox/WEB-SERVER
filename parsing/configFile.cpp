@@ -1,5 +1,4 @@
-#include "configFile.hpp"
-#include "Server.hpp"
+#include "../includes/webserve.hpp"
 
 
 configFile::configFile() {}

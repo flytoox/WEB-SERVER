@@ -1,4 +1,4 @@
-#include "cgi.hpp"
+#include "../includes/cgi.hpp"
 
 void redirectStdoutStderr(Pipe& pipe) {
     dup2(pipe.getWriteEnd(), STDOUT_FILENO);
