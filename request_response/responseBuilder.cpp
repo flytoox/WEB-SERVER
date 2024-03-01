@@ -89,9 +89,6 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
     }
 
-    // std::cout << "TYPE |" << type << "|\n";
-    // std::cout << "REPONSE HTTP/1.1|" << ret << "|\n";
-
     resultMsg = ret;
 }
 

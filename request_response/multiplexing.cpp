@@ -124,7 +124,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
         char buffer[1024] = {0};
         if (select(maxD + 1, &readsd, 0, 0, 0) < 0) {
             std::cerr << "Error: select() fail" << std::endl;
-            exit (1);
+            // exit (1);
         }
         for (int i = 0; i <= maxD; i++) {
 
@@ -178,31 +178,51 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             }
                             parseAndSetRequestHeader(simultaneousRequests[i]);
-                            if ( recevRequestLen < 1024 ) {
+                            (simultaneousRequests[i].setRequestBodyChunk(true));
+                            std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
+                            std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
+                            (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
+                            if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
+                                std::cout << "REACHED THIS>>>>>>>>>>|" << simultaneousRequests[i].reachedBodyLength << "|\n";
+                            // if ( recevRequestLen < 1024 ) {
+                                std::cout << "REAAALY}}}}}}}}}}}}}}}}}}}}\n";
                                 parseRequestBody(simultaneousRequests[i]);
+                                // getMethod(simultaneousRequests[i]);
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
                             }
+                            }
+                            
+                    //  else if ( recevRequestLen < 1024  ) {
 
-                    } else if ( recevRequestLen < 1024  ) {
+                    //         (simultaneousRequests[i]).response = responseBuilder()
+                    //         .addStatusLine("400")
+                    //         .addContentType("text/html")
+                    //         .addResponseBody("<html><h1>400 Bad Request</h1></html>");
 
-                            (simultaneousRequests[i]).response = responseBuilder()
-                            .addStatusLine("400")
-                            .addContentType("text/html")
-                            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                    //         throw "400"; }
 
-                            throw "400";
-
-                    } } catch (const char *err) {
+                         } catch (const char *err) {
                         functionToSend(maxD, i, readsd, writesd, allsd, simultaneousRequests);
                         std::cout << "Error From Request Header : " << err << std::endl;
                     }
                 } else {
                     //! REQUEST BODY
+                    std::cout << "0- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
                     simultaneousRequests[i].setRequestBody(convert);
 
+                    (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
+
+                    std::cout << "WHY |" << convert << "|\n";
+                    std::cout << "1- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
+
                     //TODO: here insert the max here check length
+                    //TODO: 
                     try {
                         if (recevRequestLen < 1024) {
+                            std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
+                            std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
+
+                        // if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
                             parseRequestBody((simultaneousRequests[i]));
                             checkRequestedHttpMethod(simultaneousRequests[i]);
                         }

@@ -177,6 +177,7 @@ static void parseContentLength(std::vector<std::string> &headerSplitVector, Requ
 
 
     std::string headerValue = headerSplitVector[1];
+    request.realContentLength = std::atoi(headerValue.c_str());
     pair contentLength = std::make_pair(std::string("Content-Length:"), headerValue);
     request.setHttpRequestHeaders(contentLength);
 
@@ -228,8 +229,9 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
         parseHost(headerSplitVector, request);
     if (track == "Content-Type:" )
         parseContentType(headerSplitVector, request);
-    if (track == "Content-Length:" )
+    if (track == "Content-Length:" ) {
         parseContentLength(headerSplitVector, request);
+    }
     if (track == "Transfer-Encoding:" )
         parseTransferEncoding(headerSplitVector, request);
     return ;
@@ -277,5 +279,6 @@ void parseAndSetRequestHeader(Request &request) {
     }
 
     validateRequest(request);
+    // request.setRequestBodyChunk(true);
 
 }
