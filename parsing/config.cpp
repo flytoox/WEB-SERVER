@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/02/28 16:01:40 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/01 12:49:57 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,6 @@
 
 
 using namespace std;
-
-//TODO: if |autoindex|     |off| -> remove the autoindex directory
-//TODO: insert by default these parameters: root, upload_store, index, autoindex
 
 //Done: Omar check location if it's duplicated , error -> exit
 //Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
@@ -126,23 +123,8 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
     serverAddress.sin_port = htons(port);
 }
 
-void	duplicateServerBasedOnListen(vector<Server> &servers) {
-	for (size_t i = 0; i < servers.size(); i++) {
-			vector<string> listen = splitWithChar(servers[i].directives["listen"], ',');
-			if (listen.size() == 1)
-				continue;
-			for (size_t j = 0; j < listen.size(); j++) {
-				Server tmp = servers[i];
-				tmp.directives["listen"] = listen[j];
-				servers.push_back(tmp);
-			}
-			servers.erase(servers.begin() + i);
-			i--;
-	}
-}
 
-
-vector<Server> parsingFile(string s) {
+vector<Server> Server::parsingFile(string s) {
 	stack<string> st;
 	vector<Server> servers;
 	Server server;
@@ -222,9 +204,6 @@ vector<Server> parsingFile(string s) {
 		if (!checkReturnOnLocation(servers[i].locationsBlock))
 			throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
 	}
-
-
-	duplicateServerBasedOnListen(servers);
 	set<std::pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
@@ -255,8 +234,12 @@ vector<Server> parsingFile(string s) {
 	}
 	// set index.html if index is empty, and remove autoindex if it's off
 	for (size_t i = 0; i < servers.size(); i++) {
-		if (!servers[i].directives.count("index"))
-			servers[i].directives["index"] = "index.html";
+		for (size_t j = 0; j < servers[i].directives.size(); j++) {
+			if (!servers[i].directives.count("index"))
+				servers[i].directives["index"] = "index.html";
+			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
+				servers[i].directives.erase("autoindex");
+		}
 	}
 	return (servers);
 }

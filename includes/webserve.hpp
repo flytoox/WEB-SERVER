@@ -45,8 +45,6 @@ typedef std::vector<std::map<std::string, std::string> >::const_iterator vectorT
 
 //! config.cpp
 
-std::vector<Server> parsingFile(std::string s);
-
 
 //! parseServer1Block.cpp
 void    adjustServer1DirectivesMap(std::map<std::string, std::string> &serverDirectives);
