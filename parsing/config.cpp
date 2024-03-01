@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/01 12:49:57 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/01 12:59:37 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
+#include <stdexcept>
 
 
 using namespace std;
@@ -133,10 +134,8 @@ vector<Server> Server::parsingFile(string s) {
 	string line;
 	ifstream file(s);
 	int lineNum = 0;
-	if (file.is_open())
-	{
-		while (getline(file, line))
-		{
+	if (file.is_open()) {
+		while (getline(file, line)) {
 			lineNum++;
 			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
@@ -158,6 +157,8 @@ vector<Server> Server::parsingFile(string s) {
 				}
 				if (v.size() != 2)
 					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + to_string(lineNum));
+				if (st.empty())
+					throw runtime_error("Error: The location on line "+ to_string(lineNum)+" block should be inside server Block");
 				st.push(v[0]);// on location brackets
 				if (server.directives.empty())
 					server.directives = directives;
