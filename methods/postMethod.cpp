@@ -12,43 +12,8 @@ static void uploadRequestBody(Request &request) {
     //     .addContentType("text/html")
     //     .addResponseBody("");
 
-    //     // std::string response = "HTTP/1.1 201 Created\r\n"; request.setResponseVector(response);
-    //     // response = "Content-Length: 0\r\n"; request.setResponseVector(response);
-    //     // response = "\r\n"; request.setResponseVector(response);
-
-    // }
-
-    // return ( true );
 
     std::map<std::string, std::string>::const_iterator itContentType;
-
-    // itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
-
-    // if ( itContentType != (request.getHttpRequestHeaders()).end() ) {
-
-    //     std::string value = itContentType->second;
-
-    //     if ( value == "multipart/form-data;" ) {
-    //         hey();
-    //         multipartContentType(request);
-    //         request.response = responseBuilder()
-    //         .addStatusLine("200")
-    //         .addContentType("text/html");
-
-    //         request.response = responseBuilder()
-    //         .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
-    //         throw "201" ;
-    //     }
-
-    // }
-
-    // std::cout << "[][][][][][][]\n";
-    // for (auto it : (request.getHttpRequestHeaders())) {
-    //     std::cout << "|" << it.first << "|  |" << it.second << "\n";
-    // }
-    // std::cout << "[][][][][][][]\n";
-    // exit (0);
-
 
     itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
     if ( itContentType != (request.getHttpRequestHeaders()).end()) {
@@ -64,17 +29,17 @@ static void uploadRequestBody(Request &request) {
             throw("textContentType");
             // textContentType(request);
         } else if ( value == "multipart/form-data;" ) {
-            multipartContentType(request);
-            request.response = responseBuilder()
-            .addStatusLine("200")
-            .addContentType("text/html")
-
+            // multipartContentType(request);
             // request.response = responseBuilder()
-            .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
-            throw "201" ;
+            // .addStatusLine("200")
+            // .addContentType("text/html")
+
+            // // request.response = responseBuilder()
+            // .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
+            // throw "201" ;
         } else if (value == "application/x-www-form-urlencoded") {
             std::cout << "111\n";
-            
+
             urlencodedContentType(request);
         } else {
             request.response = responseBuilder()
@@ -181,11 +146,8 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     throw ("403");
 }
 
-
-void oo() {}
 void postMethod(Request &request) {
 
-oo();
     //CHECK: I added this function to check the body type
     uploadRequestBody(request);
 
@@ -200,32 +162,38 @@ oo();
     // }
 
     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
-    if (locations["upload_enable"] == "on") {
-        uploadRequestBody(request) ;
+    std::string value = (request.getHttpRequestHeaders()).find("Content-Type:")->second;
+    if (locations["upload_enable"] == "on" && value == "multipart/form-data;") {
+            multipartContentType(request);
+            request.response = responseBuilder()
+                .addStatusLine("200")
+                .addContentType("text/html")
+                .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
+            throw "201" ;
+        // uploadRequestBody(request);
     }
-
 
     //* get_requested_resource()
     std::string root, locationUsed;
     retrieveRootAndUri(request, root, locationUsed);
 
-    if ( root.empty() ) {
+    // if ( root.empty() ) {
 
-        mapConstIterator it = request.getDirectives().find("root");
-        if (it == (request.getDirectives()).end()) {
+        // mapConstIterator it = request.getDirectives().find("root");
+        // if (it == (request.getDirectives()).end()) {
 
 
-            request.response = responseBuilder()
-            .addStatusLine("200")
-            .addContentType("text/html")
-            .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
+        //     request.response = responseBuilder()
+        //     .addStatusLine("200")
+        //     .addContentType("text/html")
+        //     .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
 
-            throw "No Root: 200";
-        }
-        else
-            root = it->second;
+        //     throw "No Root: 200";
+        // }
+        // else
+            root =  request.getDirectives().find("root")->second;
 
-    }
+    // }
 
     std::string uri = request.getUri();
 
