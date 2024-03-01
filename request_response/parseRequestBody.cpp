@@ -191,16 +191,32 @@ void multipartContentType(Request &request) {
     // std::cout << "REQUEST|" << request.getRequestBody() << "|\n";
 
     // std::cerr << request.getRequestBody() << std::endl;
-    std::vector<std::string> split = splitString(request.getRequestBody(), boundary);
+    try {
+        std::vector<std::string> split = splitString(request.getRequestBody(), boundary);
 
-    if (split.size() > 2) {
-        split.erase(split.begin());
-        split.erase(split.end() - 1);
-    }
-    else {
-        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
-        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
-        std::cerr << "ERROR: what are u doing kid!!" << std::endl;
+        if (split.size() > 2) {
+            split.erase(split.begin());
+            split.erase(split.end() - 1);
+        }
+        else {
+            std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
+            std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
+            std::cerr << "ERROR: what are u doing kid!!" << std::endl;
+        }
+
+        std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
+        //TODO: get back the if else statement -> [upload_enable"] == "on")
+        // if (locations["upload_enable"] == "on") {
+        std::string destination = locations["upload_store"];
+        for (size_t i = 0; i < split.size(); i++) {
+            pureBinary(request, split[i], destination);
+        }
+    } catch (std::exception &e) {
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+        throw "400";
     }
     // for (auto it : split) {
     //     std::cout << "|" << it << "|\n";
@@ -208,13 +224,7 @@ void multipartContentType(Request &request) {
     // }
 
 
-    std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
-    //TODO: get back the if else statement -> [upload_enable"] == "on")
-    // if (locations["upload_enable"] == "on") {
-        std::string destination = locations["upload_store"];
-        for (size_t i = 0; i < split.size(); i++) {
-            pureBinary(request, split[i], destination);
-        }
+
     // }
     // else if (locations["upload_enable"] == "off") {
     //     request.response = responseBuilder()
