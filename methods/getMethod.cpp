@@ -125,11 +125,10 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
     //TODO : check if the '/' must be added to the absolute path;
 
     // absolutePath = root ;
-    mapConstIterator autoIn = directives.find("autoindex");
+    // mapConstIterator autoIn = directives.find("autoindex");
+    // if autoIn.seconf == o
 
-    std::string response;
-
-    if (autoIn != directives.end() ) {
+    if (directives["autoindex"] == "on") {
         autoIndexFunction(root, request);
     } else {
         request.response = responseBuilder()

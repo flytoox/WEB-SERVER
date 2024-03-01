@@ -2,10 +2,9 @@
 
 void parseConfigFile(configFile &configurationServers, std::string path) {
 	try {
-		std::vector<Server> servers = parsingFile(path);
+		std::vector<Server> servers = Server::parsingFile(path);
 		if (servers.empty()) {
-			std::cerr << "FILE HAS NO SERVER in it\n";
-			exit(1);
+			throw std::runtime_error("Error: file has no server in it");
 		}
     	configurationServers.setTheVector(servers);
 	} catch (std::runtime_error &e) {
@@ -25,7 +24,7 @@ void checkBasicErrors(std::string path) {
 		std::cerr << "Error: file does not exist or is not readable" << std::endl;
 		exit(1);
 	}
-} 
+}
 
 int main(int argc, char **argv) {
 

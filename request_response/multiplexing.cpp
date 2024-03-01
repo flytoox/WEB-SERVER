@@ -80,9 +80,12 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
                     break ;
                 }
             }
-
-
     } } catch (std::exception &e) {
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "400";
         std::cout << e.what() << std::endl;
     }
 
@@ -108,23 +111,22 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     getAllTheConfiguredSockets(configurationServers, allSocketsVector);
 
     FD_ZERO(&allsd);
-    int max = 0;
+    int maxD = 0;
 
     for (socket_iterator it = allSocketsVector.begin(); it != allSocketsVector.end(); ++it) {
-        max = (*it);
+        maxD = (*it);
         FD_SET((*it), &allsd);
     }    
 
-    int a;
 
     for (FOREVER) {
         readsd = allsd;
         char buffer[1024] = {0};
-        if ((a = select(max + 1, &readsd, 0, 0, 0)) < 0) {
+        if (select(maxD + 1, &readsd, 0, 0, 0) < 0) {
             std::cerr << "Error: select() fail" << std::endl;
             exit (1);
         }
-        for (int i = 0; i <= max; i++) {
+        for (int i = 0; i <= maxD; i++) {
 
             if ( ! FD_ISSET(i, &readsd)) {
                 continue ;
@@ -142,12 +144,9 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 };
 
                 FD_SET(connectSD, &allsd);
-                if (connectSD > max) {
-                    max = connectSD ;
-                }
+                maxD = std::max(connectSD, maxD);
 
                 Request request;
-
 
                 configureRequestClass(request, configurationServers, i);
                 simultaneousRequests.insert(std::make_pair(connectSD, request));
@@ -194,7 +193,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             throw "400";
 
                     } } catch (const char *err) {
-                        functionToSend(max, i, readsd, writesd, allsd, simultaneousRequests);
+                        functionToSend(maxD, i, readsd, writesd, allsd, simultaneousRequests);
                         std::cout << "Error From Request Header : " << err << std::endl;
                     }
                 } else {
@@ -208,7 +207,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             checkRequestedHttpMethod(simultaneousRequests[i]);
                         }
                     } catch (const char *err) {
-                        functionToSend(max, i, readsd, writesd, allsd, simultaneousRequests);
+                        functionToSend(maxD, i, readsd, writesd, allsd, simultaneousRequests);
                         std::cerr << "Error From Request Body : " << err << std::endl; 
                     }
                 }

@@ -16,28 +16,28 @@
 
 class Server {
 
+private:
+
+    int socketD;
+    struct sockaddr_in serverAddress;
+    std::map<std::string, std::string> directives;
+    std::vector<std::map<std::string, std::string> > locationsBlock;
+
+
 public:
 
     std::string preHost;
     std::string prePort;
-
-
-    int socketD;
     bool duplicated = false;
-    struct sockaddr_in serverAddress;
-    std::map<std::string, std::string> directives;
-    std::vector<std::map<std::string, std::string> > locationsBlock;
+
     Server();
-
-
     void bindSockets();
     void listenToIncomingConxs();
 
     int getSocketDescriptor() const;
-    std::string getServerName() const;  
+    std::string getServerName() const;
     std::map<std::string, std::string> const& getdirectives(void) const ;
     std::vector<std::map<std::string, std::string> > const& getlocationsBlock(void) const;
-
 
 
     void setServerAddress(struct sockaddr_in &eachServerAddress);
@@ -45,7 +45,7 @@ public:
     void setDirectives(std::map<std::string, std::string> &newDirectives);
     void setLocationBlock(std::vector<std::map<std::string, std::string> > &newLocDirectives);
 
-    
-    ~Server();
+    static std::vector<Server> parsingFile(std::string s);
 
+    ~Server();
 };
