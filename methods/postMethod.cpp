@@ -56,11 +56,13 @@ static void uploadRequestBody(Request &request) {
         std::string value = itContentType->second;
 
         if (value == "text/plain") {
+            std::string ret = request.getRequestBody();
             request.response = responseBuilder()
             .addStatusLine("200")
-            .addContentType("txt");
-
-            textContentType(request);
+            .addContentType("text/html")
+            .addResponseBody(ret);
+            throw("textContentType");
+            // textContentType(request);
         } else if ( value == "multipart/form-data;" ) {
             multipartContentType(request);
             request.response = responseBuilder()
@@ -72,6 +74,7 @@ static void uploadRequestBody(Request &request) {
             throw "201" ;
         } else if (value == "application/x-www-form-urlencoded") {
             std::cout << "111\n";
+            
             urlencodedContentType(request);
         } else {
             request.response = responseBuilder()
