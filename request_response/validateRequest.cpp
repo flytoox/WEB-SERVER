@@ -360,7 +360,6 @@ void validateRequest(Request &request) {
 
     }
 
-
     //DONE: this is a mqp which containes notAllowd methods ; must be split and checked !
     //DONE : Omar this a string not a word to override everytime
     if ( location.find("allowedMethods") != location.end()) {

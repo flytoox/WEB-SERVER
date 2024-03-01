@@ -74,12 +74,6 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
         std::string Header = request.getRequestHeader();
 
         std::map<std::string, std::string> mapHeaders = request.getHttpRequestHeaders();
-        std::cout << "\n\n Heades MAp=========================\n";
-        for (auto it = mapHeaders.begin(); it != mapHeaders.end(); ++it) {
-            std::cout << it->first << ": " << it->second << "\n";
-        }
-        std::cout << "\n\n Heades MAp=========================\n";
-
         std::map<std::string, std::string> headers = parseHeaders(Header);
         std::map<std::string, std::string> envVars;
 
@@ -127,7 +121,7 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             envVars["SCRIPT_NAME"] = file;
             envVars["SCRIPT_FILENAME"] = file;
             envVars["REQUEST_METHOD"] = "POST";
-            // envVars["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+            envVars["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
             envVars["CONTENT_LENGTH"] = std::to_string(postData.length());
 
             executeChildProcess(interpreterPath, file, envVars);

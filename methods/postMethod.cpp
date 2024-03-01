@@ -162,7 +162,14 @@ void postMethod(Request &request) {
     // }
 
     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
-    std::string value = (request.getHttpRequestHeaders()).find("Content-Type:")->second;
+
+    std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+    std::string value = "";
+    if (itContentType != (request.getHttpRequestHeaders()).end()) {
+        value = itContentType->second;
+    }
+
+
     if (locations["upload_enable"] == "on" && value == "multipart/form-data;") {
             multipartContentType(request);
             request.response = responseBuilder()
@@ -172,6 +179,7 @@ void postMethod(Request &request) {
             throw "201" ;
         // uploadRequestBody(request);
     }
+
 
     //* get_requested_resource()
     std::string root, locationUsed;
