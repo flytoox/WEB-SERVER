@@ -114,7 +114,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     } else {
         request.setSaveLastBS(true);
     }
-    std::cerr << uri << std::endl;
     //! erase the double slash and count how many for saving the uri if it's only /regular
     int backSlashcount = 0;
     // for (size_t i = 0; i < uri.size(); i++) {
@@ -146,6 +145,16 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     std::vector<std::map<std::string, std::string>> locationsBlock = request.getLocationsBlock();
     std::map<std::string, std::string> found ;
 
+    for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
+
+        std::map<std::string, std::string> mapIterator = (*it);
+        std::string location_match = mapIterator["location"];
+
+        if ( location_match == uri ) {
+           return (mapIterator);
+        }
+
+    }
 
     std::string directoryUri = fetchTheExactDirectory(uri);
 
@@ -162,42 +171,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         else directoryUri.clear();
     }
     return (found);
-    //! Aren't the same ?
-    // for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-
-    //     std::map<std::string, std::string> mapIterator = (*it);
-    //     std::string location_match = mapIterator["location"];
-
-    //     if ( location_match == directoryUri )
-    //         found = (mapIterator);break ;
-
-    // }
-    // if (!found.empty() )
-    //     return (found);
-
-    // std::string substrUri = uri; unsigned long i = 0;
-
-    // while (i++ < locationsBlock.size()) {
-
-
-    //     removeLastOccurrence(substrUri);
-
-    //     for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
-
-    //         std::map<std::string, std::string> mapIterator = (*it);
-    //         std::string location_match = mapIterator["location"];
-
-    //         if ( location_match == substrUri ) {
-    //             found = (mapIterator) ;
-    //             goto outerLoop;
-    //         }
-    //     }
-    // }
-    // outerLoop:
-
-    // return (found);
 }
-
 void validateRequest(Request &request) {
 
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();

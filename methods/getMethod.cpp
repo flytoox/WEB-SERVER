@@ -80,20 +80,70 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
     //     std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
     // }
     // exit (0);
-    std::string absolutePath = root;
 
     //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
-        std::string extension = indexFile.substr(indexFile.find('.'), ( indexFile.length() - indexFile.find('.')) );
+
+        //remove extra / from root at start of root
+        for (size_t i = 0; i < root.length(); i++) {
+            if (root[i] == '/' && root[i+1] && root[i+1] == '/') {
+                root = root.erase(i, 1);
+            }
+        }
+        //if index file contains the root directory in it remove it
+        if (indexFile.find(root) != std::string::npos) {
+            indexFile = indexFile.substr(root.length());
+        }
+
+        std::string absolutePath = CheckPathForSecurity(root+'/'+indexFile);
+        std::cerr << "ABSOLUTE PATH: " << absolutePath << std::endl;
+        std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
+        std::pair<std::string, std::string> response;
 
         if ( extension != ".html") {
-            //! RUN CGI !
-            throw " GETCGI";
+            std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+            std::string binaryPath;
+
+            if (isValidCGI(locationBlock, extension, binaryPath)) {
+                std::cout << "\n\n\n\n\nCGI\n";
+                response = handleCgiGet(absolutePath, binaryPath, request);
+
+                if (response.second == "No input file specified.\n") {
+                    request.response = responseBuilder()
+                    .addStatusLine("404")
+                    .addContentType("text/html")
+                    .addResponseBody("<html><h1>404 Not Found</h1><h3>Index file not found</h3></html>");
+                    throw "404";
+                }
+
+                std::string headers = response.first;
+                std::string body = response.second;
+
+                std::string contentType = extractContentType(headers);
+                // Extract extension from "Content-Type"
+                std::size_t lastSlashPos = contentType.rfind('/');
+                std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+
+                std::string contentLength = std::to_string(body.length());
+
+                std::cout << "contentType: " << contentType << "\n";
+                std::cout << "extension: " << extension << "\n";
+
+                std::cout << "HEADERS |" << headers << "|\n";
+                // std::cout << "BODY |" << body << "|\n";
+
+                // Set the initial HTTP response headers
+                request.response = responseBuilder()
+                .addStatusLine("200")
+                .addContentType(extension)
+                .addResponseBody(body);
+                throw ("CGI");
+            }
         }
 
 
-        absolutePath += '/' + indexFile;
+        // absolutePath += '/' + indexFile;
         std::fstream file(absolutePath);
 
 
@@ -111,7 +161,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            .addResponseBody("<html><h1>400 Bad Request</h1><h3>CGI not set for the file</h3></html>");
             throw "4001";
         }
     }
@@ -224,6 +274,14 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             if (isValidCGI(locationBlock, extension, binaryPath)) {
                 std::cout << "\n\n\n\n\nCGI\n";
                 response = handleCgiGet(absolutePath, binaryPath, request);
+
+                if (response.second == "No input file specified.\n") {
+                    request.response = responseBuilder()
+                    .addStatusLine("404")
+                    .addContentType("text/html")
+                    .addResponseBody("<html><h1>404 Not Found</h1><h2>Index file not found</h2></html>");
+                    throw "404";
+                }
 
                 std::string headers = response.first;
                 std::string body = response.second;
