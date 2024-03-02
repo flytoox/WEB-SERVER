@@ -197,12 +197,12 @@ void multipartContentType(Request &request) {
     if (split.size() > 2) {
         split.erase(split.begin());
         split.erase(split.end() - 1);
-        std::cout << "Request Header |" << request.getRequestHeader() << "|\n";
-        std::cout << "NORMAAAAL |" << request.getRequestBody().size() << std::endl;
+        // std::cout << "Request Header |" << request.getRequestHeader() << "|\n";
+        // std::cout << "NORMAAAAL |" << request.getRequestBody().size() << std::endl;
     }
     else {
-        std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
-        std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
+        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
+        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
         std::cerr << "ERROR: what are u doing kid!!" << std::endl;
     }
     // for (auto it : split) {

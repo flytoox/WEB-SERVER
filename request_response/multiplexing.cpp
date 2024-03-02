@@ -179,8 +179,8 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             }
                             parseAndSetRequestHeader(simultaneousRequests[i]);
                             (simultaneousRequests[i].setRequestBodyChunk(true));
-                            std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
-                            std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
+                            // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
+                            // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
                             (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
                             if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
                                 std::cout << "REACHED THIS>>>>>>>>>>|" << simultaneousRequests[i].reachedBodyLength << "|\n";
@@ -207,22 +207,23 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     }
                 } else {
                     //! REQUEST BODY
-                    std::cout << "0- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
+                    // std::cout << "0- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
                     simultaneousRequests[i].setRequestBody(convert);
 
                     (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
 
-                    std::cout << "WHY |" << convert << "|\n";
-                    std::cout << "1- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
+                    // std::cout << "WHY |" << convert << "|\n";
+                    // std::cout << "1- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
 
                     //TODO: here insert the max here check length
                     //TODO: 
                     try {
-                        if (recevRequestLen < 1024) {
-                            std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
-                            std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
+                        // if (recevRequestLen < 1024) {
+                            // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
+                            // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
 
-                        // if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
+                        if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength || \
+                            (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:") != std::string::npos )) {
                             parseRequestBody((simultaneousRequests[i]));
                             checkRequestedHttpMethod(simultaneousRequests[i]);
                         }

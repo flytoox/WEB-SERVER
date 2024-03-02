@@ -234,6 +234,10 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
     }
     if (track == "Transfer-Encoding:" )
         parseTransferEncoding(headerSplitVector, request);
+    // if (track == "Connection:"){
+    //     pair contentLength = std::make_pair(std::string("Connection:"), "Keep-Alive");
+    //     request.setHttpRequestHeaders(contentLength);
+    // }
     return ;
 
 }

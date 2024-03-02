@@ -175,11 +175,15 @@ std::string responseBuilder::build() {
         response << it.first << it.second << CRLF;
     }
 
+    response << "Keep-Alive: timeout=5" << CRLF;
     response << CRLF;
 
     if (body.length() != 0) {
         response << body << CRLF;
     }
+
+
+    // std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
 
     // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();

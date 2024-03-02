@@ -152,10 +152,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         std::map<std::string, std::string> mapIterator = (*it);
         std::string location_match = mapIterator["location"];
 
-        std::cout << "CHECKS |" << location_match << "|\n";
-
         if ( location_match == uri ) {
-            std::cout << "HELLO FROM THE OTHET SIDE\n";
            return (mapIterator);
         }
 
@@ -166,8 +163,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
     while (!directoryUri.empty()) {
         for (auto it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
-            std::cout << "l3aar 1 |" << it->at("location") << "|\n";
-            std::cout << "l3aar 2 |" << directoryUri << "|\n";
             if (it->at("location") == directoryUri) {
                 std::cerr << "OK OK ?? " << directoryUri<< std::endl;
                 return *it;
@@ -323,13 +318,13 @@ void validateRequest(Request &request) {
 
     std::map<std::string, std::string> why = request.getLocationBlockWillBeUsed();
 
-    std::cout << "*************TESTING***********************\n";
-    std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
+    // std::cout << "*************TESTING***********************\n";
+    // std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
 
-    for (auto it : why) {
-        std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
-    }
-    std::cout << "*************TESTING***********************\n";
+    // for (auto it : why) {
+    //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
+    // }
+    // std::cout << "*************TESTING***********************\n";
     // exit (0);
 
 
