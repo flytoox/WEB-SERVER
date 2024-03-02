@@ -96,7 +96,24 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             indexFile = indexFile.substr(root.length());
         }
 
-        std::string absolutePath = CheckPathForSecurity(root+'/'+indexFile);
+        std::string absolutePath = "";
+
+        std::vector<std::string> splitedPaths;
+        //splite absolutePath with whiteSpaces
+        std::istringstream iss(indexFile);
+        std::string token;
+        while (std::getline(iss, token, ' ')) {
+            splitedPaths.push_back(token);
+        }
+
+        for (size_t i = 0; i < splitedPaths.size(); i++) {
+            std::fstream file(root+'/'+splitedPaths[i]);
+            if ( file.good() ) {
+                absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
+                break;
+            }
+        }
+
         std::cerr << "ABSOLUTE PATH: " << absolutePath << std::endl;
         std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
         std::pair<std::string, std::string> response;
@@ -108,14 +125,6 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             if (isValidCGI(locationBlock, extension, binaryPath)) {
                 std::cout << "\n\n\n\n\nCGI\n";
                 response = handleCgiGet(absolutePath, binaryPath, request);
-
-                if (response.second == "No input file specified.\n") {
-                    request.response = responseBuilder()
-                    .addStatusLine("404")
-                    .addContentType("text/html")
-                    .addResponseBody("<html><h1>404 Not Found</h1><h3>Index file not found</h3></html>");
-                    throw "404";
-                }
 
                 std::string headers = response.first;
                 std::string body = response.second;
@@ -157,13 +166,14 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             .addContentType(absolutePath)
             .addResponseBody(content);
             throw "200";
-        } else {
-            request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1><h3>CGI not set for the file</h3></html>");
-            throw "4001";
         }
+        // else {
+        //     request.response = responseBuilder()
+        //     .addStatusLine("400")
+        //     .addContentType("text/html")
+        //     .addResponseBody("<html><h1>400 Bad Request</h1><h3>CGI not set for the file</h3></html>");
+        //     throw "4001";
+        // }
     }
     // else {
     //     //TODO: check this else below if it is valid

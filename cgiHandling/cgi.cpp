@@ -80,7 +80,6 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
         std::string postData = request.getRequestBody();
         std::stringstream ss;
         ss << postData.length();
-        std::cout << "Content length: " << postData.length() << "\n";
 
         //write post data to a tmp file
         std::ofstream tmpFile("tmpFile");
@@ -122,7 +121,6 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             envVars["SCRIPT_FILENAME"] = file;
             envVars["REQUEST_METHOD"] = "POST";
             envVars["CONTENT_TYPE"] = mapHeaders["Content-Type:"];
-            std::cerr << "<<<<Content type: " << mapHeaders["Content-Type:"] << "\n";
             envVars["CONTENT_LENGTH"] = std::to_string(postData.length());
 
             executeChildProcess(interpreterPath, file, envVars);

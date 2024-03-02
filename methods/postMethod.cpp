@@ -137,10 +137,26 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
             indexFile = indexFile.substr(root.length());
         }
 
-        std::string absolutePath = CheckPathForSecurity(root+'/'+indexFile);
-        std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
+        std::string absolutePath = "";
         std::string requestBody = request.getRequestBody();
 
+        std::vector<std::string> splitedPaths;
+        //splite absolutePath with whiteSpaces
+        std::istringstream iss(indexFile);
+        std::string token;
+        while (std::getline(iss, token, ' ')) {
+            splitedPaths.push_back(token);
+        }
+
+        for (size_t i = 0; i < splitedPaths.size(); i++) {
+            std::fstream file(root+'/'+splitedPaths[i]);
+            if ( file.good() ) {
+                absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
+                break;
+            }
+        }
+
+        std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
         std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
         std::string binaryPath;
 
