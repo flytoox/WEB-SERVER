@@ -237,7 +237,7 @@ void validateRequest(Request &request) {
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            .addResponseBody("<html><h1>400 Bad Request20</h1></html>");
 
         throw "40018" ;
     }
@@ -249,7 +249,7 @@ void validateRequest(Request &request) {
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            .addResponseBody("<html><h1>400 Bad Request21</h1></html>");
         throw "414";
     }
 
@@ -318,13 +318,13 @@ void validateRequest(Request &request) {
 
     std::map<std::string, std::string> why = request.getLocationBlockWillBeUsed();
 
-    // std::cout << "*************TESTING***********************\n";
-    // std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
+    std::cout << "*************TESTING***********************\n";
+    std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
 
-    // for (auto it : why) {
-    //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
-    // }
-    // std::cout << "*************TESTING***********************\n";
+    for (auto it : why) {
+        std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
+    }
+    std::cout << "*************TESTING***********************\n";
     // exit (0);
 
 

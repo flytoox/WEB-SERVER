@@ -20,7 +20,7 @@ static std::vector<std::string> splitBySpace(Request &request, const std::string
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request3</h1></html>");
         throw "400" ;
     }
 
@@ -36,24 +36,29 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request4</h1></html>");
         throw "400";
 
     }
 
     for (const_vector_it it = headerSplitVector.begin() ; it != headerSplitVector.end(); ++it) {
 
+
         std::string value = (*it); std::string response;
         ++index;
 
         if (index == 0) {
+
+
+            std::cout << "WHYYY PROBLEM|" << value << "|\n";
+
             if ( request.getHttpVerb().empty() && ( (value == "GET") || (value == "POST") || (value == "DELETE")) ) {
                 request.setHttpVerb(value);
             } else {
                 request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                .addResponseBody("<html><h1>400 Bad Request5</h1></html>");
                 throw "400" ;
             }
         }
@@ -65,7 +70,7 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
                 request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                .addResponseBody("<html><h1>400 Bad Request6</h1></html>");
                 throw "400" ;
             }
         }
@@ -77,7 +82,7 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
                 request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                .addResponseBody("<html><h1>400 Bad Request7</h1></html>");
                 throw "400" ;
             }
         }
@@ -91,7 +96,7 @@ static void parseHost(std::vector<std::string> &headerSplitVector, Request &requ
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request8</h1></html>");
         throw "400" ;
     }
 
@@ -99,7 +104,7 @@ static void parseHost(std::vector<std::string> &headerSplitVector, Request &requ
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request9</h1></html>");
         throw "400" ;
     }
 
@@ -114,7 +119,7 @@ static void parseHost(std::vector<std::string> &headerSplitVector, Request &requ
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request10</h1></html>");
         throw "400" ;
     }
 
@@ -133,7 +138,7 @@ static void parseContentType(std::vector<std::string> &headerSplitVector, Reques
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request11</h1></html>");
         throw "400" ;
     }
 
@@ -141,7 +146,7 @@ static void parseContentType(std::vector<std::string> &headerSplitVector, Reques
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request12</h1></html>");
         throw "400" ;
     }
 
@@ -163,7 +168,7 @@ static void parseContentLength(std::vector<std::string> &headerSplitVector, Requ
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request13</h1></html>");
         throw "400" ;
     }
 
@@ -171,7 +176,7 @@ static void parseContentLength(std::vector<std::string> &headerSplitVector, Requ
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request14</h1></html>");
         throw "400" ;
     }
 
@@ -191,7 +196,7 @@ static void parseTransferEncoding(std::vector<std::string> &headerSplitVector, R
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request15</h1></html>");
         throw "400" ;
     }
 
@@ -200,7 +205,7 @@ static void parseTransferEncoding(std::vector<std::string> &headerSplitVector, R
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request16</h1></html>");
         throw "400" ;
     }
 
@@ -220,7 +225,7 @@ static void parseConnection(std::vector<std::string> &headerSplitVector, Request
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        .addResponseBody("<html><h1>400 Bad Request17</h1></html>");
         throw "400" ;
     }
 
@@ -242,7 +247,7 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
             request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            .addResponseBody("<html><h1>400 Bad Request18</h1></html>");
             throw "400" ;
     }
     if (track == "Host:" )
@@ -294,7 +299,7 @@ void parseAndSetRequestHeader(Request &request) {
                 request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                .addResponseBody("<html><h1>400 Bad Request19</h1></html>");
                 throw "400" ;
             }
             break ;

@@ -187,10 +187,10 @@ static std::vector<std::string> splitWhiteSpaces(std::string s) {
 }
 
 bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
-    std::cout << "BEFORE COUNT\n";
+    // std::cout << "BEFORE COUNT\n";
     if (!directives.count("cgi_bin")) return false;
     std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
-    std::cout << "AFTER COUNT\n";
+    // std::cout << "AFTER COUNT\n";
     for (int i = 0; i < (int)cgiParts.size(); i++) {
         std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
         if (cgiConfig.size() < 2) continue;
@@ -198,7 +198,7 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
         for (int i = 1; i < (int)cgiConfig.size(); i++)
             if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
     }
-    std::cout << "END of IS VALIDCGI\n";
+    // std::cout << "END of IS VALIDCGI\n";
     return false;
 }
 

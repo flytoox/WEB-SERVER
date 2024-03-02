@@ -27,6 +27,8 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         if ((sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
             std::cout << "Error: send()" << std::endl;
         }
+        std::map<int, Request>::iterator it = simultaneousRequests.find(i);
+        simultaneousRequests.erase(it);
     }
 
     (void)max;
@@ -39,7 +41,7 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
     // }
 
     if ((simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) {
-        std::cout << "WHAAAAT CONNECTION|" << (simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:")->second << "|\n";
+        // std::cout << "WHAAAAT CONNECTION|" << (simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:")->second << "|\n";
         if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
             close(i);
             FD_CLR(i, &allsd);
@@ -96,7 +98,7 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+            .addResponseBody("<html><h1>400 Bad Request22</h1></html>");
         throw "400";
         std::cout << e.what() << std::endl;
     }
@@ -197,7 +199,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
                                 std::cout << "REACHED THIS>>>>>>>>>>|" << simultaneousRequests[i].reachedBodyLength << "|\n";
                             // if ( recevRequestLen < 1024 ) {
-                                std::cout << "REAAALY}}}}}}}}}}}}}}}}}}}}\n";
+                                // std::cout << "REAAALY}}}}}}}}}}}}}}}}}}}}\n";
                                 parseRequestBody(simultaneousRequests[i]);
                                 // getMethod(simultaneousRequests[i]);
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
