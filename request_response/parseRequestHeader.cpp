@@ -211,6 +211,26 @@ static void parseTransferEncoding(std::vector<std::string> &headerSplitVector, R
 
 }
 
+
+static void parseConnection(std::vector<std::string> &headerSplitVector, Request &request) {
+
+    std::string response = "";
+
+    if  (headerSplitVector.size() != 2) {
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+        throw "400" ;
+    }
+
+
+    std::string connection = headerSplitVector[1];
+    pair connectionPair = std::make_pair(std::string("Connection:"), connection);
+    request.setHttpRequestHeaders(connectionPair);
+
+}
+
 void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &request) {
 
     std::string track = headerSplitVector[0];
@@ -234,10 +254,9 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
     }
     if (track == "Transfer-Encoding:" )
         parseTransferEncoding(headerSplitVector, request);
-    // if (track == "Connection:"){
-    //     pair contentLength = std::make_pair(std::string("Connection:"), "Keep-Alive");
-    //     request.setHttpRequestHeaders(contentLength);
-    // }
+    if (track == "Connection:"){
+        parseConnection(headerSplitVector, request);
+    }
     return ;
 
 }

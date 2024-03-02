@@ -25,16 +25,28 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
             chunk = res; res.clear();
         }
         if ((sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
-            std::cout << "Error: send()" << std::endl; exit (1);
+            std::cout << "Error: send()" << std::endl;
         }
     }
 
-    close(i);
-    FD_CLR(i, &allsd);
-    if (i == max)
-        max--;
-    std::map<int, Request>::iterator it = simultaneousRequests.find(i);
-    simultaneousRequests.erase(it);
+    (void)max;
+    //* Check of the connection is closed, if yes
+
+    std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
+
+    // for (auto it : all) {
+    //     std::cout << "---------------|" << it.first << "|\t|" << it.second << "|\n";
+    // }
+
+    if ((simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) {
+        std::cout << "WHAAAAT CONNECTION|" << (simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:")->second << "|\n";
+        if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
+            close(i);
+            FD_CLR(i, &allsd);
+            std::map<int, Request>::iterator it = simultaneousRequests.find(i);
+            simultaneousRequests.erase(it);
+        }
+    }
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -222,8 +234,9 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
                             // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
 
-                        if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength || \
-                            (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:") != std::string::npos )) {
+                        if (((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) || \
+                            ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
+                                (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
                             parseRequestBody((simultaneousRequests[i]));
                             checkRequestedHttpMethod(simultaneousRequests[i]);
                         }
