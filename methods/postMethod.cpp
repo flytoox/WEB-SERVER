@@ -165,13 +165,6 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
                 // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
 
                 response = handleCgiPost(absolutePath, binaryPath, request);
-                if (response.second == "No input file specified.\n") {
-                    request.response = responseBuilder()
-                    .addStatusLine("404")
-                    .addContentType("text/html")
-                    .addResponseBody("<html><h1>404 Not Found</h1><h3>Index file not found</h3></html>");
-                    throw "404";
-                }
                 std::string headers = response.first;
                 std::string body = response.second;
 

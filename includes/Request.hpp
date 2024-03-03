@@ -116,8 +116,8 @@ public:
     //* SETTERS
 
     //void setJoiningTheWholeRequest(std::string &request);
-    void setRequestHeader(std::string &setter);
-    void setRequestBody(std::string &setter);
+    void setRequestHeader(std::string setter);
+    void setRequestBody(std::string setter);
 
 
     void setHttpRequestHeaders(pair &setPair);    
@@ -134,8 +134,8 @@ public:
     // void setConnection(std::string &setter);
 
 
-    void setDirectives(std::map<std::string, std::string> &other);
-    void setLocationsBlock(std::vector<std::map<std::string, std::string> > &other);
+    void setDirectives(std::map<std::string, std::string> other);
+    void setLocationsBlock(std::vector<std::map<std::string, std::string> > other);
 
     void setLocationBlockWillBeUsed(std::map<std::string, std::string> &other);
 

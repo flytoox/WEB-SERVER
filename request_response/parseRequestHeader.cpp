@@ -29,7 +29,7 @@ static std::vector<std::string> splitBySpace(Request &request, const std::string
 
 static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request &request) {
 
-    int index = -1;
+    // int index = -1;
 
     if (headerSplitVector.size() != 3) {
 
@@ -41,52 +41,54 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
 
     }
 
-    for (const_vector_it it = headerSplitVector.begin() ; it != headerSplitVector.end(); ++it) {
+    // for (const_vector_it it = headerSplitVector.begin() ; it != headerSplitVector.end(); ++it) {
 
-
+        const_vector_it it = headerSplitVector.begin();
         std::string value = (*it); std::string response;
-        ++index;
+        // ++index;
 
-        if (index == 0) {
+        // if (index == 0) {
 
 
-            std::cout << "WHYYY PROBLEM|" << value << "|\n";
+            // std::cout << "WHYYY PROBLEM|" << value << "|\n";
 
-            if ( request.getHttpVerb().empty() && ( (value == "GET") || (value == "POST") || (value == "DELETE")) ) {
-                request.setHttpVerb(value);
-            } else {
-                request.response = responseBuilder()
-                .addStatusLine("400")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request5</h1></html>");
-                throw "400" ;
-            }
+        if ( request.getHttpVerb().empty() && ( (value == "GET") || (value == "POST") || (value == "DELETE")) ) {
+            request.setHttpVerb(value);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request5</h1></html>");
+            throw "400" ;
         }
 
-        if (index == 1) {
-            if ( (request.getUri()).empty() && value[0] == '/') {
-                request.setUri(value);
-            } else {
-                request.response = responseBuilder()
-                .addStatusLine("400")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request6</h1></html>");
-                throw "400" ;
-            }
-        }
 
-        if (index == 2) {
-            if ( (request.getHTTPVersion()).empty() && (value == "HTTP/1.1")) {
-                request.setHTTPVersion(value);
-            } else {
-                request.response = responseBuilder()
-                .addStatusLine("400")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request7</h1></html>");
-                throw "400" ;
-            }
+        value = *(++it);
+        // if (index == 1) {
+        if ( (request.getUri()).empty() && value[0] == '/') {
+            request.setUri(value);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request6</h1></html>");
+            throw "400" ;
         }
-    }
+        // }
+
+        // if (index == 2) {
+        value = *(++it);
+        if ( (request.getHTTPVersion()).empty() && (value == "HTTP/1.1")) {
+            request.setHTTPVersion(value);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>400 Bad Request7</h1></html>");
+            throw "400" ;
+        }
+        // }
+    // }
 }
 
 

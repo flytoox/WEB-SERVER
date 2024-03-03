@@ -116,7 +116,7 @@ void Request::setBoundary(std::string &setter) {
     this->boundary = setter;
 }
 
-void Request::setRequestBody(std::string &setter) {
+void Request::setRequestBody(std::string setter) {
     for (size_t i = 0; i != static_cast<size_t>(setter.length()); i++)
         this->requestBody.push_back(setter[i]);
     //this->requestBody.append(setter);
@@ -125,16 +125,16 @@ void Request::setRequestBody(std::string &setter) {
     // std::cerr << this->requestBody.length() << std::endl;
 }
 
-void Request::setRequestHeader(std::string &setter) {
+void Request::setRequestHeader(std::string setter) {
     this->requestHeader += setter;
 }
 
 
-void Request::setDirectives(std::map<std::string, std::string> &other) {
+void Request::setDirectives(std::map<std::string, std::string> other) {
     this->directives = other;
 }
 
-void Request::setLocationsBlock(std::vector<std::map<std::string, std::string> > &other) {
+void Request::setLocationsBlock(std::vector<std::map<std::string, std::string> > other) {
     this->locationsBlock = other;
 }
 
