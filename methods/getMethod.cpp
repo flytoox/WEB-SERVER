@@ -287,14 +287,6 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
                 std::cout << "\n\n\n\n\nCGI\n";
                 response = handleCgiGet(absolutePath, binaryPath, request);
 
-                if (response.second == "No input file specified.\n") {
-                    request.response = responseBuilder()
-                    .addStatusLine("404")
-                    .addContentType("text/html")
-                    .addResponseBody("<html><h1>404 Not Found</h1><h2>Index file not found</h2></html>");
-                    throw "404";
-                }
-
                 std::string headers = response.first;
                 std::string body = response.second;
 
