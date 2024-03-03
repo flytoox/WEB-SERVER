@@ -146,6 +146,60 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     throw ("403");
 }
 
+
+void parseQueriesInURI(Request &request,std::string &uri) {
+
+   // uri = /?username=sana&password=123
+
+    //* Protect the quesries if they exist
+
+    size_t pos = uri.find('?');
+    if (uri.length() == pos + 1)
+        return ;
+
+    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123&&&&&&&
+    std::map<std::string, std::string> mapTopush;
+
+    std::stringstream ss(queriesString);
+    std::vector<std::string> keyValueVector;
+    std::string token;
+
+    while (std::getline(ss, token, '&')) {
+        keyValueVector.push_back(token);
+    }
+
+    for (auto it : keyValueVector ) {
+        std::cout << "RESULT ||" << it << "||\n";
+    }
+
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        try {
+            if (signPos != std::string::npos) {
+                if (keyValue.substr(signPos + 1).empty())
+                    throw (std::runtime_error("400"));
+                pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+                mapTopush.insert(pair);
+            } else {
+                throw (std::runtime_error("400"));
+            }
+        } catch (std::exception &e) {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><body><h1>400 Bad Request123</h1></body></html>");
+            throw "400";
+        }
+    }
+
+
+    request.setUrlencodedResponse(mapTopush);
+
+    // Remove queries from uri
+    uri.erase(uri.find('?'));
+}
+
 void postMethod(Request &request) {
 
     //CHECK: I added this function to check the body type

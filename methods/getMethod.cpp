@@ -274,7 +274,6 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
     std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
 
     for (mapConstIterator it = locationBlock.begin(); it != locationBlock.end(); ++it) {
-
         if (it->first == "root") {
             concatenateWithRoot = it->second;
         }
@@ -283,46 +282,6 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
         }
     }
 }
-
-
-void parseQueriesInURI(Request &request,std::string &uri) {
-
-   // uri = /?username=sana&password=123
-
-    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123
-    std::map<std::string, std::string> mapTopush;
-
-    std::vector<std::string> keyValueVector = splitString(queriesString, "&");
-
-    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
-        std::string keyValue = (*it);
-        size_t signPos = keyValue.find('=');
-        if (signPos != std::string::npos) {
-            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
-            mapTopush.insert(pair);
-        } else {
-            request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
-            throw "400";
-        }
-    }
-
-
-    // std::cout << "***INFORMATION YOU NEED****\n";
-    // for (auto it : mapTopush) {
-    //     std::cout << it.first << "|\t|" << it.second << "|\n";
-    // }
-    // std::cout << "***INFORMATION YOU NEED****\n";
-
-
-    request.setUrlencodedResponse(mapTopush);
-
-    // Remove queries from uri
-    uri.erase(uri.find('?'));
-}
-
 
 std::vector<std::string> splitWithChar(std::string s, char delim) {
 	std::vector<std::string> result;
@@ -369,7 +328,6 @@ void getMethod(Request &request) {
 
     retrieveRootAndUri(request, concatenateWithRoot, locationUsed);
 
-
     if ( concatenateWithRoot.empty() ) {
 
         mapConstIterator it = (request.getDirectives()).find("root");
@@ -378,13 +336,11 @@ void getMethod(Request &request) {
             request.response = responseBuilder()
             .addStatusLine("200")
             .addContentType("text/html")
-            .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
+            .addResponseBody("<html><head>Welcome to Our Webserver!</head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
 
             throw "No Root: 200";
         }
-        else
-            concatenateWithRoot = it->second;
-
+        concatenateWithRoot = it->second;
     }
 
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call
@@ -392,7 +348,8 @@ void getMethod(Request &request) {
     std::string uri = request.getUri();
     // std::cout << "BEFORE URI |" << uri << "|\n";
     if (uri.find('?') != std::string::npos) {
-        parseQueriesInURI(request, uri);
+        uri.erase(uri.find('?'));
+        // parseQueriesInURI(request, uri);
     }
 
 

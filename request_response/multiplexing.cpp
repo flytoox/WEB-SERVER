@@ -15,6 +15,10 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<in
 static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
 
     (void)readsd; (void)writesd;
+
+
+    std::cout << "IT's ME WHO GOT HERE|................." << i << "|...\n";
+
     std::string res = simultaneousRequests[i].response.build();
     int sd;
     while (res.length()) {
@@ -27,8 +31,6 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         if ((sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
             std::cout << "Error: send()" << std::endl;
         }
-        std::map<int, Request>::iterator it = simultaneousRequests.find(i);
-        simultaneousRequests.erase(it);
     }
 
     (void)max;
@@ -45,10 +47,11 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
             close(i);
             FD_CLR(i, &allsd);
-            std::map<int, Request>::iterator it = simultaneousRequests.find(i);
-            simultaneousRequests.erase(it);
+
         }
-    }
+    }            
+    std::map<int, Request>::iterator it = simultaneousRequests.find(i);
+    simultaneousRequests.erase(it);
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -57,9 +60,10 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     Server serverUsed;
 
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
-
         if (it->getSocketDescriptor() == i) {
             if ( it->duplicated == true ) {
+                // std::cout << "YOU IN ???\n";
+
                 request.dup = true;
             }
             serverUsed = *it;
@@ -79,15 +83,29 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
 
     try {
         Server serverReform;
-        std::string v1 = header.substr(header.find("Host: ")); std::string hostHeader = v1.substr(0, v1.find("\n"));
-        std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1); hostValue.erase(hostValue.length() - 1);
+        std::string v1 = header.substr(header.find("Host: ")); 
+        std::string hostHeader = v1.substr(0, v1.find("\n"));
+        std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1); 
+        hostValue.erase(hostValue.length() - 1);
+
+        // std::cout << "HOST HEADER|" << hostHeader << "|\n";
+        std::cout << "HOST Value|" << hostValue << "|\n";
+
         if ( request.dup == true ) {
 
             for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
                 std::map<std::string, std::string>tmp = it->getdirectives();
+                std::cout << "CAN YOU {PLEASE} |" << tmp["server_name"] << "|\n";
+                std::cout << "LISTEN |" << tmp["listen"] << "| |" << request.RePort << "|\n";
+                std::cout << "HOST |" << tmp["host"] << "| |" << request.ReHost << "|\n";
                 if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost ) {
                     serverReform = *it;
                     std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
+
+                    for (auto it : serverDirectives) {
+                        std::cout << "l3aar |" << it.first << "| |" << it.second << "|\n";
+                    }
+                    exit (0);
                     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
                     request.setDirectives(serverDirectives);
                     request.setLocationsBlock(serverLocationsBlock);
@@ -162,6 +180,15 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
 
                 Request request;
 
+            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
+                    std::map<std::string, std::string> test = it->getdirectives();
+                    std::cout << "------------------------------------\n";
+                    for (auto ita : test) {
+                        std::cout << "WHAT |" << ita.first << "| |" << ita.second << "|\n";
+                    }
+                    std::cout << "------------------------------------\n";
+            }
+
                 configureRequestClass(request, configurationServers, i);
                 simultaneousRequests.insert(std::make_pair(connectSD, request));
 
@@ -189,6 +216,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             if ((simultaneousRequests[i]).reCheck != true) {
                                 //* Fix this
                                 (simultaneousRequests[i]).reCheck = true;
+                                std::cout << "DID YOU GET IN HERE.................|" << i << "|..\n";
                                 reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             }
                             parseAndSetRequestHeader(simultaneousRequests[i]);

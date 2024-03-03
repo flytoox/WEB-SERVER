@@ -211,7 +211,8 @@ void deleteMethod(Request &request) {
     std::string uri = request.getUri();
     // std::cout << "BEFORE URI |" << uri << "|\n";
     if (uri.find('?') != std::string::npos) {
-        parseQueriesInURI(request, uri);
+        uri.erase(uri.find('?'));
+        // parseQueriesInURI(request, uri);
     }
 
     // concatenateWithRoot += uri;

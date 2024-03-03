@@ -236,8 +236,8 @@ vector<Server> Server::parsingFile(string s) {
 	// set index.html if index is empty, and remove autoindex if it's off
 	for (size_t i = 0; i < servers.size(); i++) {
 		for (size_t j = 0; j < servers[i].directives.size(); j++) {
-			if (!servers[i].directives.count("index"))
-				servers[i].directives["index"] = "index.html";
+			// if (!servers[i].directives.count("index"))
+			// 	servers[i].directives["index"] = "index.html";
 			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
 				servers[i].directives.erase("autoindex");
 		}

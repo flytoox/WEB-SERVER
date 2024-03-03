@@ -17,3 +17,8 @@ void configFile::setTheVector( std::vector<Server> servers) {
 }
 configFile::~configFile() {}
 
+
+
+//TODO : take the directives and add them in each location block, if the directive exists in location block --> override
+//TODO: Servers a Mr.Omar don't work 
+//TODO: if all the servers don't have these [root, listen, host] -> generate an error > exit(1) 

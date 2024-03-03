@@ -131,8 +131,6 @@ void checkRequestedHttpMethod(Request &request);
 //! getMethod.cpp
 std::string CheckPathForSecurity(std::string path);
 
-void parseQueriesInURI(Request &request,std::string &uri);
-
 void getMethod(Request &request);
 
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request);
@@ -142,6 +140,7 @@ void getMethod(Request &request);
 
 //! postMethod.cpp
 
+void parseQueriesInURI(Request &request,std::string &uri);
 void postMethod(Request &request);
 
 //! deleteMEthod.cpp
