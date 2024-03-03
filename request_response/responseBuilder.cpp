@@ -89,9 +89,6 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
     }
 
-    // std::cout << "TYPE |" << type << "|\n";
-    // std::cout << "REPONSE HTTP/1.1|" << ret << "|\n";
-
     resultMsg = ret;
 }
 
@@ -178,11 +175,15 @@ std::string responseBuilder::build() {
         response << it.first << it.second << CRLF;
     }
 
+    response << "Keep-Alive: timeout=5" << CRLF;
     response << CRLF;
 
     if (body.length() != 0) {
         response << body << CRLF;
     }
+
+
+    // std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
 
     // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();

@@ -54,6 +54,8 @@ public:
     Request();
 
     responseBuilder response;
+    size_t realContentLength = 0;
+    size_t reachedBodyLength = 0;
     std::string extension;
 
     std::string RePort;
@@ -94,7 +96,7 @@ public:
     const std::map<std::string, std::string> &getLocationBlockWillBeUsed() const ;
 
     // bool getAllowRequestBodyChunk(void) const;
-    bool getRequestBodyChunk(void) const;
+    bool getRequestBodyChunk(void);
    //  bool getResponseChunk(void) const;
 
     //! Responses 

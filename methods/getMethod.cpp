@@ -80,20 +80,81 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
     //     std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
     // }
     // exit (0);
-    std::string absolutePath = root;
 
     //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
-        std::string extension = indexFile.substr(indexFile.find('.'), ( indexFile.length() - indexFile.find('.')) );
 
-        if ( extension != ".html") {
-            //! RUN CGI !
-            throw " GETCGI";
+        //remove extra / from root at start of root
+        for (size_t i = 0; i < root.length(); i++) {
+            if (root[i] == '/' && root[i+1] && root[i+1] == '/') {
+                root = root.erase(i, 1);
+            }
+        }
+        //if index file contains the root directory in it remove it
+        if (indexFile.find(root) != std::string::npos) {
+            indexFile = indexFile.substr(root.length());
+        }
+
+        std::string absolutePath = "";
+
+        std::vector<std::string> splitedPaths;
+        //splite absolutePath with whiteSpaces
+        std::istringstream iss(indexFile);
+        std::string token;
+        while (std::getline(iss, token, ' ')) {
+            splitedPaths.push_back(token);
+        }
+
+        for (size_t i = 0; i < splitedPaths.size(); i++) {
+            std::fstream file(root+'/'+splitedPaths[i]);
+            if ( file.good() ) {
+                absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
+                break;
+            }
+        }
+
+        if (!absolutePath.empty()) {
+            std::cerr << "ABSOLUTE PATH: " << absolutePath << std::endl;
+            std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
+            std::pair<std::string, std::string> response;
+
+            if ( extension != ".html") {
+                std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+                std::string binaryPath;
+
+                if (isValidCGI(locationBlock, extension, binaryPath)) {
+                    std::cout << "\n\n\n\n\nCGI\n";
+                    response = handleCgiGet(absolutePath, binaryPath, request);
+
+                    std::string headers = response.first;
+                    std::string body = response.second;
+
+                    std::string contentType = extractContentType(headers);
+                    // Extract extension from "Content-Type"
+                    std::size_t lastSlashPos = contentType.rfind('/');
+                    std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+
+                    std::string contentLength = std::to_string(body.length());
+
+                    std::cout << "contentType: " << contentType << "\n";
+                    std::cout << "extension: " << extension << "\n";
+
+                    std::cout << "HEADERS |" << headers << "|\n";
+                    // std::cout << "BODY |" << body << "|\n";
+
+                    // Set the initial HTTP response headers
+                    request.response = responseBuilder()
+                    .addStatusLine("200")
+                    .addContentType(extension)
+                    .addResponseBody(body);
+                    throw ("CGI");
+                }
+            }
         }
 
 
-        absolutePath += '/' + indexFile;
+        // absolutePath += '/' + indexFile;
         std::fstream file(absolutePath);
 
 
@@ -107,13 +168,14 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             .addContentType(absolutePath)
             .addResponseBody(content);
             throw "200";
-        } else {
-            request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request</h1></html>");
-            throw "4001";
         }
+        // else {
+        //     request.response = responseBuilder()
+        //     .addStatusLine("400")
+        //     .addContentType("text/html")
+        //     .addResponseBody("<html><h1>400 Bad Request</h1><h3>CGI not set for the file</h3></html>");
+        //     throw "4001";
+        // }
     }
     // else {
     //     //TODO: check this else below if it is valid
@@ -187,10 +249,10 @@ static std::vector<std::string> splitWhiteSpaces(std::string s) {
 }
 
 bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
-    std::cout << "BEFORE COUNT\n";
+    // std::cout << "BEFORE COUNT\n";
     if (!directives.count("cgi_bin")) return false;
     std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
-    std::cout << "AFTER COUNT\n";
+    // std::cout << "AFTER COUNT\n";
     for (int i = 0; i < (int)cgiParts.size(); i++) {
         std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
         if (cgiConfig.size() < 2) continue;
@@ -198,7 +260,7 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
         for (int i = 1; i < (int)cgiConfig.size(); i++)
             if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
     }
-    std::cout << "END of IS VALIDCGI\n";
+    // std::cout << "END of IS VALIDCGI\n";
     return false;
 }
 
@@ -224,6 +286,14 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             if (isValidCGI(locationBlock, extension, binaryPath)) {
                 std::cout << "\n\n\n\n\nCGI\n";
                 response = handleCgiGet(absolutePath, binaryPath, request);
+
+                if (response.second == "No input file specified.\n") {
+                    request.response = responseBuilder()
+                    .addStatusLine("404")
+                    .addContentType("text/html")
+                    .addResponseBody("<html><h1>404 Not Found</h1><h2>Index file not found</h2></html>");
+                    throw "404";
+                }
 
                 std::string headers = response.first;
                 std::string body = response.second;
@@ -274,7 +344,6 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
     std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
 
     for (mapConstIterator it = locationBlock.begin(); it != locationBlock.end(); ++it) {
-
         if (it->first == "root") {
             concatenateWithRoot = it->second;
         }
@@ -283,46 +352,6 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::s
         }
     }
 }
-
-
-void parseQueriesInURI(Request &request,std::string &uri) {
-
-   // uri = /?username=sana&password=123
-
-    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123
-    std::map<std::string, std::string> mapTopush;
-
-    std::vector<std::string> keyValueVector = splitString(queriesString, "&");
-
-    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
-        std::string keyValue = (*it);
-        size_t signPos = keyValue.find('=');
-        if (signPos != std::string::npos) {
-            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
-            mapTopush.insert(pair);
-        } else {
-            request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
-            throw "400";
-        }
-    }
-
-
-    // std::cout << "***INFORMATION YOU NEED****\n";
-    // for (auto it : mapTopush) {
-    //     std::cout << it.first << "|\t|" << it.second << "|\n";
-    // }
-    // std::cout << "***INFORMATION YOU NEED****\n";
-
-
-    request.setUrlencodedResponse(mapTopush);
-
-    // Remove queries from uri
-    uri.erase(uri.find('?'));
-}
-
 
 std::vector<std::string> splitWithChar(std::string s, char delim) {
 	std::vector<std::string> result;
@@ -369,7 +398,6 @@ void getMethod(Request &request) {
 
     retrieveRootAndUri(request, concatenateWithRoot, locationUsed);
 
-
     if ( concatenateWithRoot.empty() ) {
 
         mapConstIterator it = (request.getDirectives()).find("root");
@@ -378,13 +406,11 @@ void getMethod(Request &request) {
             request.response = responseBuilder()
             .addStatusLine("200")
             .addContentType("text/html")
-            .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
+            .addResponseBody("<html><head>Welcome to Our Webserver!</head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
 
             throw "No Root: 200";
         }
-        else
-            concatenateWithRoot = it->second;
-
+        concatenateWithRoot = it->second;
     }
 
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call
@@ -392,7 +418,8 @@ void getMethod(Request &request) {
     std::string uri = request.getUri();
     // std::cout << "BEFORE URI |" << uri << "|\n";
     if (uri.find('?') != std::string::npos) {
-        parseQueriesInURI(request, uri);
+        uri.erase(uri.find('?'));
+        // parseQueriesInURI(request, uri);
     }
 
 

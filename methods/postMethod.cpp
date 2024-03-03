@@ -120,23 +120,83 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
     mapConstIterator it = directives.find("index");
 
-    std::string absolutePath = root;
-    std::string response;
+    std::pair<std::string, std::string> response;
 
     //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
-        std::string extension = indexFile.substr(indexFile.find('.'), ( indexFile.length() - indexFile.find('.')) );
-        std::string requestBody = request.getRequestBody();
-        if ( extension == ".php" || extension == ".py") {
-            //! RUN POST CGI !
-            request.response = responseBuilder()
-            .addStatusLine("200")
-            .addContentType("text/html")
-            .addResponseBody(requestBody);
-            throw " POST CGI";
+
+        //remove extra / from root at start of root
+        for (size_t i = 0; i < root.length(); i++) {
+            if (root[i] == '/' && root[i+1] && root[i+1] == '/') {
+                root = root.erase(i, 1);
+            }
+        }
+        //if index file contains the root directory in it remove it
+        if (indexFile.find(root) != std::string::npos) {
+            indexFile = indexFile.substr(root.length());
         }
 
+        std::string absolutePath = "";
+        std::string requestBody = request.getRequestBody();
+
+        std::vector<std::string> splitedPaths;
+        //splite absolutePath with whiteSpaces
+        std::istringstream iss(indexFile);
+        std::string token;
+        while (std::getline(iss, token, ' ')) {
+            splitedPaths.push_back(token);
+        }
+
+        for (size_t i = 0; i < splitedPaths.size(); i++) {
+            std::fstream file(root+'/'+splitedPaths[i]);
+            if ( file.good() ) {
+                absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
+                break;
+            }
+        }
+
+        if (!absolutePath.empty()) {
+            std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
+            std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+            std::string binaryPath;
+
+            if (isValidCGI(locationBlock, extension, binaryPath)) {
+                // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
+
+                response = handleCgiPost(absolutePath, binaryPath, request);
+                if (response.second == "No input file specified.\n") {
+                    request.response = responseBuilder()
+                    .addStatusLine("404")
+                    .addContentType("text/html")
+                    .addResponseBody("<html><h1>404 Not Found</h1><h3>Index file not found</h3></html>");
+                    throw "404";
+                }
+                std::string headers = response.first;
+                std::string body = response.second;
+
+                std::string contentType = extractContentType(headers);
+                // Extract extension from "Content-Type"
+                std::size_t lastSlashPos = contentType.rfind('/');
+                std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+
+                std::string contentLength = std::to_string(body.length());
+
+                std::cout << "contentType: " << contentType << "\n";
+                std::cout << "extension: " << extension << "\n";
+
+                std::cout << "HEADERS |" << headers << "|\n";
+                std::cout << "BODY |" << body << "|\n";
+                // std::cout << "BODY |" << body << "|\n";
+
+                // Set the initial HTTP response headers
+                request.response = responseBuilder()
+                .addStatusLine("200")
+                .addContentType(extension)
+                .addResponseBody(body);
+                throw ("CGI");
+            }
+        }
     }
 
     request.response = responseBuilder()
@@ -144,6 +204,60 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     .addContentType("text/html")
     .addResponseBody("<html><h1>403 Forbidden</h1></html>");
     throw ("403");
+}
+
+
+void parseQueriesInURI(Request &request,std::string &uri) {
+
+   // uri = /?username=sana&password=123
+
+    //* Protect the quesries if they exist
+
+    size_t pos = uri.find('?');
+    if (uri.length() == pos + 1)
+        return ;
+
+    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123&&&&&&&
+    std::map<std::string, std::string> mapTopush;
+
+    std::stringstream ss(queriesString);
+    std::vector<std::string> keyValueVector;
+    std::string token;
+
+    while (std::getline(ss, token, '&')) {
+        keyValueVector.push_back(token);
+    }
+
+    for (auto it : keyValueVector ) {
+        std::cout << "RESULT ||" << it << "||\n";
+    }
+
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        try {
+            if (signPos != std::string::npos) {
+                if (keyValue.substr(signPos + 1).empty())
+                    throw (std::runtime_error("400"));
+                pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+                mapTopush.insert(pair);
+            } else {
+                throw (std::runtime_error("400"));
+            }
+        } catch (std::exception &e) {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody("<html><body><h1>400 Bad Request123</h1></body></html>");
+            throw "400";
+        }
+    }
+
+
+    request.setUrlencodedResponse(mapTopush);
+
+    // Remove queries from uri
+    uri.erase(uri.find('?'));
 }
 
 void postMethod(Request &request) {
@@ -240,7 +354,7 @@ void postMethod(Request &request) {
             requestTypeFilePost(absolutePath, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
              std::cout << "DIRECTORY\n";
-            requestTypeDirectoryPost(root, uri, request);
+            requestTypeDirectoryPost(absolutePath, uri, request);
         } else {
             request.response = responseBuilder()
             .addStatusLine("502")

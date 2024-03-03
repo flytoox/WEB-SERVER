@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
 		std::cerr << "Error: invalid number of arguments" << std::endl;
 		exit(1);
 	}
+	signal(SIGPIPE, SIG_IGN);
 	checkBasicErrors(argv[1]);
 	parseConfigFile(configurationServers, argv[1]);
 	return 0;

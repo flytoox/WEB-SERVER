@@ -194,15 +194,22 @@ void multipartContentType(Request &request) {
     try {
         std::vector<std::string> split = splitString(request.getRequestBody(), boundary);
 
-        if (split.size() > 2) {
-            split.erase(split.begin());
-            split.erase(split.end() - 1);
-        }
-        else {
-            std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
-            std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
-            std::cerr << "ERROR: what are u doing kid!!" << std::endl;
-        }
+    if (split.size() > 2) {
+        split.erase(split.begin());
+        split.erase(split.end() - 1);
+        // std::cout << "Request Header |" << request.getRequestHeader() << "|\n";
+        // std::cout << "NORMAAAAL |" << request.getRequestBody().size() << std::endl;
+    }
+    else {
+        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestHeader() << std::endl;
+        // std::cout << "PROBLEEEEEEEMMMMMMM |" << request.getRequestBody().size() << std::endl;
+        std::cerr << "ERROR: what are u doing kid!!" << std::endl;
+    }
+    // for (auto it : split) {
+    //     std::cout << "|" << it << "|\n";
+    //     std::cout << "**********************\n";
+    // }
+
 
         std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
         //TODO: get back the if else statement -> [upload_enable"] == "on")
@@ -364,7 +371,7 @@ void parseRequestBody(Request &request) {
         //     throw "500";
 
         // }
-        std::cout << "Transfer-Encoding\n";
+        // std::cout << "Transfer-Encoding\n";
         chunkedRequest(request);
 
     }

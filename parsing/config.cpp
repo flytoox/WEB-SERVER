@@ -230,14 +230,14 @@ vector<Server> Server::parsingFile(string s) {
 			servers[i].listenToIncomingConxs();
 			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
 		}
-		servers.erase(servers.begin()+1, servers.begin() + servers.size());
-		break ;
+		// servers.erase(servers.begin()+1, servers.begin() + servers.size());
+		// break ;
 	}
 	// set index.html if index is empty, and remove autoindex if it's off
 	for (size_t i = 0; i < servers.size(); i++) {
 		for (size_t j = 0; j < servers[i].directives.size(); j++) {
-			if (!servers[i].directives.count("index"))
-				servers[i].directives["index"] = "index.html";
+			// if (!servers[i].directives.count("index"))
+			// 	servers[i].directives["index"] = "index.html";
 			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
 				servers[i].directives.erase("autoindex");
 		}

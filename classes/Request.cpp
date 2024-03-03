@@ -62,7 +62,7 @@ const std::map<std::string, std::string> &Request::getLocationBlockWillBeUsed() 
 //     return (this->allowRequestBodyChunk);
 // }
 
-bool Request::getRequestBodyChunk(void) const {
+bool Request::getRequestBodyChunk(void) {
     return (this->requestBodyChunk);
 }
 
