@@ -105,7 +105,7 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
                     for (auto it : serverDirectives) {
                         std::cout << "l3aar |" << it.first << "| |" << it.second << "|\n";
                     }
-                    exit (0);
+                    // exit (0);
                     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
                     request.setDirectives(serverDirectives);
                     request.setLocationsBlock(serverLocationsBlock);
