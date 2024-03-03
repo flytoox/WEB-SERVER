@@ -204,18 +204,19 @@ void validateRequest(Request &request) {
     // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]);
     // int contentLength = std::atoi(contentLenghStr.c_str());
 
-    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
+    //! This was done to check the POST method and Transfer-Encoding and Content-Length
+    // mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
 
-    std::string method = request.getHttpVerb();
-    if (method == "POST" && contentLengh == httpRequestHeaders.end() ) {
+    // std::string method = request.getHttpVerb();
+    // if (method == "POST" && contentLengh == httpRequestHeaders.end() ) {
 
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request20</h1></html>");
+    //     request.response = responseBuilder()
+    //         .addStatusLine("400")
+    //         .addContentType("text/html")
+    //         .addResponseBody("<html><h1>400 Bad Request20</h1></html>");
 
-        throw "40018" ;
-    }
+    //     throw "40018" ;
+    // }
 
     std::string uri = request.getUri();
     //! TEST BUILDER PATTERN

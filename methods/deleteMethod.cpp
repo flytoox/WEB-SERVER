@@ -190,13 +190,6 @@ static void deleteFile(std::string &absolutePath, std::string &uri, Request &req
             .addResponseBody("<html><h1>204 No Content</h1></html>");
             throw "204";
         }
-
-    // } 
-    // else {
-    //     //! RUN CGI
-    //     throw "CGI";
-    // }
-
 }
 
 void deleteMethod(Request &request) {
