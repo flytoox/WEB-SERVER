@@ -114,40 +114,42 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             }
         }
 
-        std::cerr << "ABSOLUTE PATH: " << absolutePath << std::endl;
-        std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
-        std::pair<std::string, std::string> response;
+        if (!absolutePath.empty()) {
+            std::cerr << "ABSOLUTE PATH: " << absolutePath << std::endl;
+            std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
+            std::pair<std::string, std::string> response;
 
-        if ( extension != ".html") {
-            std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
-            std::string binaryPath;
+            if ( extension != ".html") {
+                std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+                std::string binaryPath;
 
-            if (isValidCGI(locationBlock, extension, binaryPath)) {
-                std::cout << "\n\n\n\n\nCGI\n";
-                response = handleCgiGet(absolutePath, binaryPath, request);
+                if (isValidCGI(locationBlock, extension, binaryPath)) {
+                    std::cout << "\n\n\n\n\nCGI\n";
+                    response = handleCgiGet(absolutePath, binaryPath, request);
 
-                std::string headers = response.first;
-                std::string body = response.second;
+                    std::string headers = response.first;
+                    std::string body = response.second;
 
-                std::string contentType = extractContentType(headers);
-                // Extract extension from "Content-Type"
-                std::size_t lastSlashPos = contentType.rfind('/');
-                std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+                    std::string contentType = extractContentType(headers);
+                    // Extract extension from "Content-Type"
+                    std::size_t lastSlashPos = contentType.rfind('/');
+                    std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
 
-                std::string contentLength = std::to_string(body.length());
+                    std::string contentLength = std::to_string(body.length());
 
-                std::cout << "contentType: " << contentType << "\n";
-                std::cout << "extension: " << extension << "\n";
+                    std::cout << "contentType: " << contentType << "\n";
+                    std::cout << "extension: " << extension << "\n";
 
-                std::cout << "HEADERS |" << headers << "|\n";
-                // std::cout << "BODY |" << body << "|\n";
+                    std::cout << "HEADERS |" << headers << "|\n";
+                    // std::cout << "BODY |" << body << "|\n";
 
-                // Set the initial HTTP response headers
-                request.response = responseBuilder()
-                .addStatusLine("200")
-                .addContentType(extension)
-                .addResponseBody(body);
-                throw ("CGI");
+                    // Set the initial HTTP response headers
+                    request.response = responseBuilder()
+                    .addStatusLine("200")
+                    .addContentType(extension)
+                    .addResponseBody(body);
+                    throw ("CGI");
+                }
             }
         }
 

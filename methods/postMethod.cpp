@@ -156,44 +156,46 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
             }
         }
 
-        std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
-        std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
-        std::string binaryPath;
+        if (!absolutePath.empty()) {
+            std::string extension = absolutePath.substr(absolutePath.find_last_of('.'));
+            std::map<std::string, std::string> locationBlock = request.getLocationBlockWillBeUsed();
+            std::string binaryPath;
 
-        if (isValidCGI(locationBlock, extension, binaryPath)) {
-            // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
+            if (isValidCGI(locationBlock, extension, binaryPath)) {
+                // std::map<std::string, std::string> postData = request.getUrlencodedResponse();
 
-            response = handleCgiPost(absolutePath, binaryPath, request);
-            if (response.second == "No input file specified.\n") {
+                response = handleCgiPost(absolutePath, binaryPath, request);
+                if (response.second == "No input file specified.\n") {
+                    request.response = responseBuilder()
+                    .addStatusLine("404")
+                    .addContentType("text/html")
+                    .addResponseBody("<html><h1>404 Not Found</h1><h3>Index file not found</h3></html>");
+                    throw "404";
+                }
+                std::string headers = response.first;
+                std::string body = response.second;
+
+                std::string contentType = extractContentType(headers);
+                // Extract extension from "Content-Type"
+                std::size_t lastSlashPos = contentType.rfind('/');
+                std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+
+                std::string contentLength = std::to_string(body.length());
+
+                std::cout << "contentType: " << contentType << "\n";
+                std::cout << "extension: " << extension << "\n";
+
+                std::cout << "HEADERS |" << headers << "|\n";
+                std::cout << "BODY |" << body << "|\n";
+                // std::cout << "BODY |" << body << "|\n";
+
+                // Set the initial HTTP response headers
                 request.response = responseBuilder()
-                .addStatusLine("404")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>404 Not Found</h1><h3>Index file not found</h3></html>");
-                throw "404";
+                .addStatusLine("200")
+                .addContentType(extension)
+                .addResponseBody(body);
+                throw ("CGI");
             }
-            std::string headers = response.first;
-            std::string body = response.second;
-
-            std::string contentType = extractContentType(headers);
-            // Extract extension from "Content-Type"
-            std::size_t lastSlashPos = contentType.rfind('/');
-            std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
-
-            std::string contentLength = std::to_string(body.length());
-
-            std::cout << "contentType: " << contentType << "\n";
-            std::cout << "extension: " << extension << "\n";
-
-            std::cout << "HEADERS |" << headers << "|\n";
-            std::cout << "BODY |" << body << "|\n";
-            // std::cout << "BODY |" << body << "|\n";
-
-            // Set the initial HTTP response headers
-            request.response = responseBuilder()
-            .addStatusLine("200")
-            .addContentType(extension)
-            .addResponseBody(body);
-            throw ("CGI");
         }
     }
 
