@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/03 17:11:02 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/03 21:59:52 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 		for (size_t i = 0; i < v[0].size(); i++)
 			if (!isdigit(v[0][i]))
 				return (false);
-		int statusCode = stoi(v[0]);
+		int statusCode = atoi(v[0].c_str());
 		if (statusCode < 100 || statusCode > 599)
 			return (false);
 	}
@@ -65,7 +65,7 @@ bool checkPortMaxMin(string port) {
 	for (size_t i = 0; i < port.size(); i++)
 		if (!isdigit(port[i]))
 			return (false);
-	int portInt = stoi(port);
+	int portInt = atoi(port.c_str());
 	if (portInt < 1025 || portInt > 65535)
 		return (false);
 	return (true);
@@ -140,6 +140,7 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
 
 vector<Server> Server::parsingFile(string s) {
+	stringstream lineNumStr;
 	stack<string> st;
 	vector<Server> servers;
 	Server server;
@@ -151,6 +152,7 @@ vector<Server> Server::parsingFile(string s) {
 	if (file.is_open()) {
 		while (getline(file, line)) {
 			lineNum++;
+			lineNumStr << lineNum;
 			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
@@ -170,9 +172,9 @@ vector<Server> Server::parsingFile(string s) {
 					continue;
 				}
 				if (v.size() != 2)
-					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + to_string(lineNum));
+					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + lineNumStr.str() );
 				if (st.empty())
-					throw runtime_error("Error: The location on line "+ to_string(lineNum)+" block should be inside server Block");
+					throw runtime_error("Error: The location on line "+ lineNumStr.str() +" block should be inside server Block");
 				st.push(v[0]);// on location brackets
 				if (server.directives.empty())
 					server.directives = directives;
@@ -198,7 +200,7 @@ vector<Server> Server::parsingFile(string s) {
 			}
 			if (v[1].back() == ';') v[1].pop_back();
 			if ((v[0] == "host" || v[0] == "listen" || v[0] == "server_name") && (st.top() == "location")) {
-				throw runtime_error("Error: on line " + to_string(lineNum) + " \"" +  v[0] + "\" can't be inside location block");
+				throw runtime_error("Error: on line " + lineNumStr.str()  + " \"" +  v[0] + "\" can't be inside location block");
 			}
 			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location")
                 directives[v[0]] += '\n' + v[1];
