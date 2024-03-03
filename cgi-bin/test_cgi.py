@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import cgi
 
@@ -8,8 +8,11 @@ print("<h1>CGI Test</h1>")
 
 form = cgi.FieldStorage()
 
-if "data" in form:
-    print("<p>Received POST data: {}</p>".format(form["data"].value))
+if form.list:
+    if "data" in form:
+        print("<p>Received POST data: {}</p>".format(form["data"].value))
+    else:
+        print("<p>No POST data received.</p>")
 else:
     print("<p>No POST data received.</p>")
 
