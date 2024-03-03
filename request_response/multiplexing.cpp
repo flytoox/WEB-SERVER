@@ -47,11 +47,15 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
             close(i);
             FD_CLR(i, &allsd);
+            simultaneousRequests.erase(i);
+        } else {
+            Request newRequest;
 
+            newRequest.setDirectives(simultaneousRequests[i].getDirectives());
+            newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
+            simultaneousRequests[i] = newRequest;
         }
     }            
-    std::map<int, Request>::iterator it = simultaneousRequests.find(i);
-    simultaneousRequests.erase(it);
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -95,9 +99,6 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
 
             for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
                 std::map<std::string, std::string>tmp = it->getdirectives();
-                std::cout << "CAN YOU {PLEASE} |" << tmp["server_name"] << "|\n";
-                std::cout << "LISTEN |" << tmp["listen"] << "| |" << request.RePort << "|\n";
-                std::cout << "HOST |" << tmp["host"] << "| |" << request.ReHost << "|\n";
                 if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost ) {
                     serverReform = *it;
                     std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
@@ -182,11 +183,11 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
 
             for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
                     std::map<std::string, std::string> test = it->getdirectives();
-                    std::cout << "------------------------------------\n";
-                    for (auto ita : test) {
-                        std::cout << "WHAT |" << ita.first << "| |" << ita.second << "|\n";
-                    }
-                    std::cout << "------------------------------------\n";
+                    // std::cout << "------------------------------------\n";
+                    // for (auto ita : test) {
+                    //     std::cout << "WHAT |" << ita.first << "| |" << ita.second << "|\n";
+                    // }
+                    // std::cout << "------------------------------------\n";
             }
 
                 configureRequestClass(request, configurationServers, i);
@@ -225,7 +226,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                             // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
                             (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
                             if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
-                                std::cout << "REACHED THIS>>>>>>>>>>|" << simultaneousRequests[i].reachedBodyLength << "|\n";
+                                // std::cout << "REACHED THIS>>>>>>>>>>|" << simultaneousRequests[i].reachedBodyLength << "|\n";
                             // if ( recevRequestLen < 1024 ) {
                                 // std::cout << "REAAALY}}}}}}}}}}}}}}}}}}}}\n";
                                 parseRequestBody(simultaneousRequests[i]);

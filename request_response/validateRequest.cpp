@@ -293,13 +293,13 @@ void validateRequest(Request &request) {
 
     std::map<std::string, std::string> why = request.getLocationBlockWillBeUsed();
 
-    std::cout << "*************TESTING***********************\n";
-    std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
+    // std::cout << "*************TESTING***********************\n";
+    // std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
 
-    for (auto it : why) {
-        std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
-    }
-    std::cout << "*************TESTING***********************\n";
+    // for (auto it : why) {
+    //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
+    // }
+    // std::cout << "*************TESTING***********************\n";
     // exit (0);
 
 
