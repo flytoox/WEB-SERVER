@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/01 12:59:37 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/03 21:59:52 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ vector<string> splitWhiteSpaces(string s) {
 		v.push_back(word);
 	return (v);
 }
-
 bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 	for (size_t i = 0; i < locationsBlock.size(); i++) {
 		if (!locationsBlock[i].count("return"))
@@ -37,7 +36,12 @@ bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 		vector<string> v = splitWhiteSpaces(returnStr);
 		if (v.size() != 2)
 			return (false);
-		int statusCode = stoi(v[0]);
+		if (v[0].size() > 3 || v[0].size() == 0)
+			return (false);
+		for (size_t i = 0; i < v[0].size(); i++)
+			if (!isdigit(v[0][i]))
+				return (false);
+		int statusCode = atoi(v[0].c_str());
 		if (statusCode < 100 || statusCode > 599)
 			return (false);
 	}
@@ -55,8 +59,14 @@ bool checkDuplicateLocation(vector<map<string, string> > &locationsBlock) {
 	return (false);
 }
 
-bool checkPortMaxMin(int port) {
-	if (port < 0 || port > 65535)
+bool checkPortMaxMin(string port) {
+	if (port.size() > 5 || port.size() == 0)
+		return (false);
+	for (size_t i = 0; i < port.size(); i++)
+		if (!isdigit(port[i]))
+			return (false);
+	int portInt = atoi(port.c_str());
+	if (portInt < 1025 || portInt > 65535)
 		return (false);
 	return (true);
 }
@@ -100,11 +110,15 @@ string convertDomainToIPv4(string &domain)
     freeaddrinfo(result);
     return "";
 }
-//TODO: cheange server_name to host
-//TODO : ALERT CHANGE THE NAMES
+void Server::overrideLocations(Server &s) {
+	map<string, string> ServerDirectives = s.getdirectives();
+	for (auto &i : s.locationsBlock)
+		for (auto &j : ServerDirectives) 
+			if (!i.count(j.first) && j.first != "listen" && j.first != "host")
+				i[j.first] = j.second;
+}
 
-
-//TODO : if you find listen && port the same -> duplicated : true
+//if you find listen && port the same -> duplicated : true 
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
@@ -115,8 +129,8 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 	string host= ((server.getdirectives().find("host"))->second);
 	server.preHost = host;
 	string ultimateHost = convertDomainToIPv4(host);
-	if ( ultimateHost.empty()  ) {
-		//TODO : throw expceptions
+	if (ultimateHost.empty()) {
+		//throw expceptions
 		cout << "Invalid\n"; exit (0);
 	}
     //serverAddress.sin_addr.s_addr = inet_pton(AF_INET, ultimateHost.c_str(), &serverAddress.sin_addr);
@@ -126,6 +140,7 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
 
 vector<Server> Server::parsingFile(string s) {
+	stringstream lineNumStr;
 	stack<string> st;
 	vector<Server> servers;
 	Server server;
@@ -137,6 +152,7 @@ vector<Server> Server::parsingFile(string s) {
 	if (file.is_open()) {
 		while (getline(file, line)) {
 			lineNum++;
+			lineNumStr << lineNum;
 			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
@@ -156,9 +172,9 @@ vector<Server> Server::parsingFile(string s) {
 					continue;
 				}
 				if (v.size() != 2)
-					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + to_string(lineNum));
+					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + lineNumStr.str() );
 				if (st.empty())
-					throw runtime_error("Error: The location on line "+ to_string(lineNum)+" block should be inside server Block");
+					throw runtime_error("Error: The location on line "+ lineNumStr.str() +" block should be inside server Block");
 				st.push(v[0]);// on location brackets
 				if (server.directives.empty())
 					server.directives = directives;
@@ -183,6 +199,9 @@ vector<Server> Server::parsingFile(string s) {
 				continue;
 			}
 			if (v[1].back() == ';') v[1].pop_back();
+			if ((v[0] == "host" || v[0] == "listen" || v[0] == "server_name") && (st.top() == "location")) {
+				throw runtime_error("Error: on line " + lineNumStr.str()  + " \"" +  v[0] + "\" can't be inside location block");
+			}
 			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location")
                 directives[v[0]] += '\n' + v[1];
 			else directives[v[0]] = v[1];
@@ -197,13 +216,18 @@ vector<Server> Server::parsingFile(string s) {
 	}
 	if (!st.empty())
 		throw runtime_error("Error: { without }");
-	for (size_t i = 0; i < servers.size(); i++) {
-		if (!checkPortMaxMin(stoi(servers[i].directives["listen"])))
-			throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
-		if (checkDuplicateLocation(servers[i].locationsBlock))
-			throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
-		if (!checkReturnOnLocation(servers[i].locationsBlock))
-			throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
+	try {
+		for (size_t i = 0; i < servers.size(); i++) {
+				if (!checkPortMaxMin(servers[i].directives["listen"]))
+					throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
+				if (checkDuplicateLocation(servers[i].locationsBlock))
+					throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
+				if (!checkReturnOnLocation(servers[i].locationsBlock))
+					throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
+		}
+	} catch (runtime_error &e) {
+		cerr << e.what() << endl;
+		exit(1);
 	}
 	set<std::pair<string, string>> Check;
 	for (size_t i = 0; i < servers.size(); i++)
@@ -230,17 +254,14 @@ vector<Server> Server::parsingFile(string s) {
 			servers[i].listenToIncomingConxs();
 			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
 		}
-		// servers.erase(servers.begin()+1, servers.begin() + servers.size());
-		// break ;
 	}
 	// set index.html if index is empty, and remove autoindex if it's off
 	for (size_t i = 0; i < servers.size(); i++) {
 		for (size_t j = 0; j < servers[i].directives.size(); j++) {
-			// if (!servers[i].directives.count("index"))
-			// 	servers[i].directives["index"] = "index.html";
 			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
 				servers[i].directives.erase("autoindex");
 		}
+		overrideLocations(servers[i]);
 	}
 	return (servers);
 }
