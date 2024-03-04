@@ -50,7 +50,8 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file,
             } else if (WIFSIGNALED(status)) {
                 int signalNumber = WTERMSIG(status);
                 std::cerr << "Child process terminated by signal: " << signalNumber << "\n";
-                return std::make_pair("Content-Type: text/html\r\n", "<html><h1>500 Internal Server Error</h1></html>");
+                
+                return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             } else {
                 std::cerr << "Child process terminated abnormally.\n";
             }
@@ -139,7 +140,7 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             } else if (WIFSIGNALED(status)) {
                 int signalNumber = WTERMSIG(status);
                 std::cerr << "Child process terminated by signal: " << signalNumber << "\n";
-                return std::make_pair("Content-Type: text/html\r\n", "<html><h1>500 Internal Server Error</h1></html>");
+                return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             } else {
                 std::cerr << "Child process terminated abnormally.\n";
             }

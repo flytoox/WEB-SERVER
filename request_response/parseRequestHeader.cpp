@@ -20,7 +20,7 @@ static std::vector<std::string> splitBySpace(Request &request, const std::string
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request3</h1></html>");
+        .addResponseBody(request.getPageStatus(400));
         throw "400" ;
     }
 
@@ -58,7 +58,7 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
             request.response = responseBuilder()
             .addStatusLine("405")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>405 Method Not Allowed</h1></html>");
+            .addResponseBody(request.getPageStatus(405));
             throw ("405");
         }
 
@@ -301,7 +301,7 @@ void parseAndSetRequestHeader(Request &request) {
                 request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request19</h1></html>");
+                .addResponseBody(request.getPageStatus(400));
                 throw "400" ;
             }
             break ;
