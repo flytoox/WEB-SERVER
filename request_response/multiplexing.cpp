@@ -51,7 +51,7 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
             simultaneousRequests[i] = newRequest;
         }
-    }            
+    }
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -83,9 +83,9 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
 
     try {
         Server serverReform;
-        std::string v1 = header.substr(header.find("Host: ")); 
+        std::string v1 = header.substr(header.find("Host: "));
         std::string hostHeader = v1.substr(0, v1.find("\n"));
-        std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1); 
+        std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1);
         hostValue.erase(hostValue.length() - 1);
 
         // std::cout << "HOST HEADER|" << hostHeader << "|\n";
@@ -213,9 +213,6 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             }
                             parseAndSetRequestHeader(simultaneousRequests[i]);
-                            if (simultaneousRequests[i].getHttpVerb() == "GET") {
-                                checkRequestedHttpMethod(simultaneousRequests[i]);
-                            }
                             (simultaneousRequests[i].setRequestBodyChunk(true));
                             // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
                             // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
@@ -229,7 +226,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
                             }
                         }
-                            
+
                     //  else if ( recevRequestLen < 1024  ) {
 
                     //         (simultaneousRequests[i]).response = responseBuilder()
@@ -254,7 +251,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     // std::cout << "1- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
 
                     //TODO: here insert the max here check length
-                    //TODO: 
+                    //TODO:
                     try {
                         // if (recevRequestLen < 1024) {
                             // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
