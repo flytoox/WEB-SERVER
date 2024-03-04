@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 18:00:04 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/02/29 13:35:35 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/04 17:47:44 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,10 +57,6 @@ std::map<std::string, std::string> parseHeaders(const std::string& headers) {
                 key = "HTTP_" + key;
             }
 
-            if (key == "CONTENT_TYPE") {
-                std::cout << ">>>>>>>>>>>>>>>>>>>>>Content-Type: " << value << std::endl;
-            }
-
             headerMap[key] = value;
         }
     }
@@ -99,12 +95,6 @@ std::map<std::string, std::string> fillEnv(const std::map<std::string, std::stri
             // Set REQUEST_URI and parse QUERY_STRING
             if (requestTokens.size() > 1) {
                 envVars["REQUEST_URI"] = requestTokens[1];
-
-                // Parse QUERY_STRING if it exists
-                size_t queryStringPos = envVars["REQUEST_URI"].find('?');
-                if (queryStringPos != std::string::npos) {
-                    envVars["QUERY_STRING"] = envVars["REQUEST_URI"].substr(queryStringPos + 1);
-                }
             }
 
             // Set SERVER_PROTOCOL

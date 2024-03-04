@@ -109,6 +109,9 @@ const std::map<std::string, std::string> &Request::getCgiDirectives() const  {
     return (this->cgiDirectives);
 }
 
+const std::string &Request::getQueryString() const {
+    return (this->queryString);
+}
 //* SETTERS
 
 
@@ -207,6 +210,11 @@ void Request::setRoot(std::string &setter) {
 void Request::setCgiDirectives(std::map<std::string, std::string> &setter) {
     this->cgiDirectives = setter;
 }
+
+void Request::setQueryString(std::string &setter) {
+    this->queryString = setter;
+}
+
 Request::~Request() {}
 
 
