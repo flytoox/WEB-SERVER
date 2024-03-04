@@ -13,6 +13,17 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file,
 
         std::map<std::string, std::string> headers = parseHeaders(Header);
         std::map<std::string, std::string> envVars;
+
+        // std::string checkbody = request.getRequestBody();
+        // // erase the whole body of request
+        // request.setRequestBody(std::string());
+        // checkbody = request.getRequestBody();
+        // std::cout<< "CECKBODY <<<<<<<<<<" << checkbody << std::endl;
+        // envVars["REQUEST_METHOD"] = "GET";
+        // if (checkbody.length() > 0) {
+        //     return std::make_pair("Content-Type: text/html\r\n", "<html><h1>405 Method Not Allowed</h1></html>");
+        // }
+
         pid = fork();
 
         if (pid == -1) {
@@ -26,6 +37,9 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file,
 
             // Set up the environment variables
             envVars = fillEnv(headers);
+            //find CONTENT_LENGTH and CONTENT_TYPE and delete them
+            envVars.erase("CONTENT_LENGTH");
+            envVars.erase("CONTENT_TYPE");
 
             envVars["SCRIPT_NAME"] = file;
             envVars["SCRIPT_FILENAME"] = file;
@@ -122,6 +136,7 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             envVars["REQUEST_METHOD"] = "POST";
             envVars["CONTENT_TYPE"] = mapHeaders["Content-Type:"];
             envVars["CONTENT_LENGTH"] = std::to_string(postData.length());
+            envVars["QUERY_STRING"] = request.getQueryString();
 
             executeChildProcess(interpreterPath, file, envVars);
 

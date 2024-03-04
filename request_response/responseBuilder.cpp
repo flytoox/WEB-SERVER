@@ -146,6 +146,13 @@ responseBuilder& responseBuilder::addContentLength() {
     return (*this);
 }
 
+
+responseBuilder& responseBuilder::addCookie(const std::string &cookies) {
+
+    headersResponses.insert(std::make_pair("SET_COOKIE", cookies));
+    return (*this);
+}
+
 responseBuilder& responseBuilder::addContentLength(const std::string &content) {
 
    unsigned long number = content.size();

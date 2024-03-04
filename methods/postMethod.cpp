@@ -81,6 +81,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             request.response = responseBuilder()
             .addStatusLine("200")
             .addContentType(extension)
+            .addCookie("Set-Cookie: session=12345")
             .addResponseBody(body);
             throw ("CGI");
         }
@@ -200,7 +201,8 @@ void parseQueriesInURI(Request &request,std::string &uri) {
     if (uri.length() == pos + 1)
         return ;
 
-    std::string queriesString = uri.substr(uri.find('?') + 1); //username=sana&password=123&&&&&&&
+    std::string queriesString = uri.substr(uri.find('?') + 1);
+    request.setQueryString(queriesString);
     std::map<std::string, std::string> mapTopush;
 
     std::stringstream ss(queriesString);
@@ -219,6 +221,9 @@ void parseQueriesInURI(Request &request,std::string &uri) {
         std::string keyValue = (*it);
         size_t signPos = keyValue.find('=');
         try {
+            if (keyValue[0] == '?') {
+                throw (std::runtime_error("400"));
+            }
             if (signPos != std::string::npos) {
                 if (keyValue.substr(signPos + 1).empty())
                     throw (std::runtime_error("400"));

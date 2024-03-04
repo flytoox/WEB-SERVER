@@ -23,7 +23,7 @@ enum STATUS_CODE_ENUM {
 class responseBuilder {
 
 public:
-    
+
     std::map<std::string, std::string> headersResponses;
     std::string resultMsg;
     std::string body;
@@ -37,6 +37,7 @@ public:
     responseBuilder& addContentLength();
     responseBuilder& addContentLength(const std::string &content);
     responseBuilder& addResponseBody(const std::string &responseBody);
+    responseBuilder& addCookie(const std::string &cookies);
 
 
 
