@@ -189,7 +189,6 @@ void validateRequest(Request &request) {
 
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
 
-
     std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
     if ( !transferEncoding.empty() && transferEncoding != "chunked") {
 
