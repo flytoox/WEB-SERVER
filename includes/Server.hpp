@@ -21,8 +21,8 @@ private:
     int socketD;
     struct sockaddr_in serverAddress;
     std::map<std::string, std::string> directives;
-    std::vector<std::map<std::string, std::string> > locationsBlock;
-
+    std::vector<std::map<std::string, std::string>> locationsBlock;
+    std::map<std::string, std::map<int, std::string>> pages;
 
 public:
 
@@ -37,6 +37,7 @@ public:
     int getSocketDescriptor() const;
     std::string getServerName() const;
     std::map<std::string, std::string> const& getdirectives(void) const ;
+    std::map<std::string, std::map<int, std::string>> const& getPages(void) const ;
     std::vector<std::map<std::string, std::string> > const& getlocationsBlock(void) const;
 
 
@@ -47,6 +48,7 @@ public:
 
     static std::vector<Server> parsingFile(std::string s);
     static void overrideLocations(Server &s);
+    static void fillErrorPages(Server &s);
 
     ~Server();
 };

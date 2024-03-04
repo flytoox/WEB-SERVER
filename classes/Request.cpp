@@ -1,4 +1,5 @@
 #include "../includes/webserve.hpp"
+#include <fstream>
 
 Request::Request() :
     httpVerb (""),
@@ -17,6 +18,9 @@ Request::Request() :
 
 const std::map<std::string, std::string> &Request::getDirectives() const {
     return (this->directives);
+}
+const std::map<std::string, std::map<int, std::string>> &Request::getPages() const {
+    return (this->pages);
 }
 const std::vector<std::map<std::string, std::string> > &Request::getLocationsBlock() const {
     return (this->locationsBlock);
@@ -133,8 +137,9 @@ void Request::setRequestHeader(std::string setter) {
 }
 
 
-void Request::setDirectives(std::map<std::string, std::string> other) {
-    this->directives = other;
+void Request::setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string>> pages) {
+    this->directives = directives;
+    this->pages = pages;
 }
 
 void Request::setLocationsBlock(std::vector<std::map<std::string, std::string> > other) {
@@ -215,7 +220,15 @@ Request::~Request() {}
 
 
 //test
-
+const std::string Request::getPageStatus(int status) const {
+    std::string LocationName = getLocationBlockWillBeUsed().at("location");
+    if (LocationName.empty()) {
+        std::ifstream file("./response_pages/favicon.ico");
+        return (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
+    }
+    std::string page = getPages().at(LocationName).at(status);
+    return (page);
+}
 
 void Request::setrequestOutputTest(std::string &setter) {
     this->requestOutputTest = setter;

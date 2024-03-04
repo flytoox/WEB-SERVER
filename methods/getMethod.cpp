@@ -1,4 +1,5 @@
 #include "../includes/webserve.hpp"
+#include <fstream>
 
 // static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
 
@@ -70,7 +71,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
         .addStatusLine("301")
         .addContentType("text/html") //* COOL
         .addLocation(uri)
-        .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
+        .addResponseBody(request.getPageStatus(301));
         throw "301";
     }
 
@@ -199,7 +200,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
         request.response = responseBuilder()
         .addStatusLine("403")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>403 Forbidden</h1></html>");
+        .addResponseBody(request.getPageStatus(403));
         throw ("403");
     }
 
@@ -454,7 +455,7 @@ void getMethod(Request &request) {
 		request.response = responseBuilder()
             .addStatusLine("403")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
+            .addResponseBody(request.getPageStatus(403));
             throw "403 Security";
 	}
     // std::cout << "AFTER URI |" << uri << "|\n";
@@ -483,17 +484,25 @@ void getMethod(Request &request) {
             request.response = responseBuilder()
             .addStatusLine("500")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>500 Internal Server Error</h1></html>");
+            .addResponseBody(request.getPageStatus(500));
             throw "500";
         }
     } else {
 
-        std::cout << "RESOURCE ERROR|" << path << "|\n";
-
+        if (uri == "/favicon.ico") {
+            std::ifstream file("./response_pages/favicon.ico");
+            std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
+            request.response = responseBuilder()
+            .addStatusLine("200")
+            .addContentType("image/x-icon")
+            .addResponseBody(content);
+            throw "200";
+        }
+        
         request.response = responseBuilder()
         .addStatusLine("404")
         .addContentType("text/html")
-        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
+        .addResponseBody(request.getPageStatus(404));
         throw "4041";
     }
 
