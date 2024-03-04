@@ -41,8 +41,11 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 
     while ( (read_dir = readdir(dir_ptr)) != NULL ) {
         std::string link = read_dir->d_name;
-        if (read_dir->d_type == DT_REG || read_dir->d_type == DT_DIR) {
-            response += "<a href=" + link + "> "+ read_dir->d_name + "/ </a>\r\n" ;
+        std::cout << link << std::endl;
+        if (read_dir->d_type == DT_REG) {
+            response += "<a href= \"" + link  + "\"> "+ read_dir->d_name + " </a>\r\n" ;
+        } else if (read_dir->d_type == DT_DIR) {
+            response += "<a href= \"" + link  + "\"/> "+ read_dir->d_name + "/ </a>\r\n" ;
         }
     }
 
@@ -384,6 +387,33 @@ std::string CheckPathForSecurity(std::string path) {
 	return result;
 }
 
+char hexToCharacters(const std::string& hex) {
+    std::stringstream ss;
+    ss << std::hex << hex;
+    unsigned int c;
+    ss >> c;
+    return static_cast<char>(c);
+}
+
+std::string decodeUrl(const std::string &srcString) {
+    std::string result;
+    size_t length = srcString.size();
+
+    for (size_t i = 0; i < length; ++i) {
+        if (srcString[i] == '%' && i + 2 < length) {
+            std::string hex = srcString.substr(i + 1, 2);
+            result += hexToCharacters(hex);
+            i += 2;
+        } else if (srcString[i] == '+') {
+            result += ' ';
+        } else {
+            result += srcString[i];
+        }
+    }
+    return result;
+}
+
+
 void getMethod(Request &request) {
 
     std::string concatenateWithRoot , locationUsed;
@@ -414,6 +444,8 @@ void getMethod(Request &request) {
         // parseQueriesInURI(request, uri);
     }
 
+    uri = decodeUrl(uri);
+    request.setUri(uri);
 
 	//uri : /../../tmp/ll.txt
 	//concatenateWithRoot : /Users/sizgunan/
@@ -455,6 +487,8 @@ void getMethod(Request &request) {
             throw "500";
         }
     } else {
+
+        std::cout << "RESOURCE ERROR|" << path << "|\n";
 
         request.response = responseBuilder()
         .addStatusLine("404")

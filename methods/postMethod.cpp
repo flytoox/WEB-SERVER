@@ -318,6 +318,9 @@ void postMethod(Request &request) {
         parseQueriesInURI(request, uri);
     }
 
+    uri = decodeUrl(uri);
+    request.setUri(uri);
+
     // std::cout << "POST : BEFORE URI|" << uri << "|\n";
     std::string absolutePath;
     std::string result =  CheckPathForSecurity(root+uri);

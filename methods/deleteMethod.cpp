@@ -208,6 +208,9 @@ void deleteMethod(Request &request) {
         // parseQueriesInURI(request, uri);
     }
 
+    uri = decodeUrl(uri);
+    request.setUri(uri);
+
     // concatenateWithRoot += uri;
 
 
