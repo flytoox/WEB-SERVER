@@ -221,11 +221,10 @@ Request::~Request() {}
 
 //test
 const std::string Request::getPageStatus(int status) const {
-    std::string LocationName = getLocationBlockWillBeUsed().at("location");
-    if (LocationName.empty()) {
-        std::ifstream file("./response_pages/favicon.ico");
-        return (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
+    if (!getLocationBlockWillBeUsed().count("location")) {
+        return (getPages().at(".").at(status));
     }
+    std::string LocationName = getLocationBlockWillBeUsed().at("location");
     std::string page = getPages().at(LocationName).at(status);
     return (page);
 }

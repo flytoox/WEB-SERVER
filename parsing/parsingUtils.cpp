@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 15:30:31 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/04 17:39:22 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/04 21:57:44 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,10 +50,12 @@ void fillTheMap(std::map<int, std::string> &map, std::string &Err) {
 
 void Server::fillErrorPages(Server &s) {
     std::string ErrorPages;
+    fillTheMap(s.pages["."], ErrorPages);
     for (auto &i : s.locationsBlock) {
         ErrorPages = i["error_page"];
         try {
             fillTheMap(s.pages[i["location"]], ErrorPages);
+            ErrorPages.clear();
         } catch (std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
             exit(1);

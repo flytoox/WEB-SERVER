@@ -491,7 +491,9 @@ void getMethod(Request &request) {
 
         if (uri == "/favicon.ico") {
             std::ifstream file("./response_pages/favicon.ico");
+            std::cout << "FAVICON\n";
             std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
+            std::cout << "AFOOR\n";
             request.response = responseBuilder()
             .addStatusLine("200")
             .addContentType("image/x-icon")
