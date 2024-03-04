@@ -14,7 +14,6 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<in
 
 static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
 
-    // (void)readsd; (void)writesd;
     FD_CLR(i, &readsd); FD_SET(i, &writesd);
 
     std::cout << "IT's ME WHO GOT HERE|................." << i << "|...\n";
@@ -38,15 +37,12 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
 
     std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
 
-    // for (auto it : all) {
-    //     std::cout << "---------------|" << it.first << "|\t|" << it.second << "|\n";
-    // }
 
     if ((simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) {
-        // std::cout << "WHAAAAT CONNECTION|" << (simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:")->second << "|\n";
         if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
             close(i);
             FD_CLR(i, &allsd);
+            FD_CLR(i, &writesd);
             simultaneousRequests.erase(i);
         } else {
             Request newRequest;
