@@ -174,3 +174,5 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
 
 bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath);
 std::string extractContentType(const std::string& headers);
+
+std::multimap<std::string, std::string> parseResponseHeaders(const std::string& headers);

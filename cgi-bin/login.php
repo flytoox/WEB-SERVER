@@ -3,6 +3,23 @@ ob_start(); // Start output buffering
 
 session_start();
 
+// Function to parse the cookie string and populate $_COOKIE
+function parseCookies() {
+    if (!empty($_SERVER['HTTP_COOKIE'])) {
+        $cookies = explode(';', $_SERVER['HTTP_COOKIE']);
+        foreach ($cookies as $cookie) {
+            $parts = explode('=', $cookie, 2); // Limit to 2 parts to handle '=' in cookie values
+            $name = trim($parts[0]);
+            $value = isset($parts[1]) ? trim($parts[1]) : '';
+            $_COOKIE[$name] = $value;
+        }
+    }
+}
+
+// Call the function to parse cookies
+parseCookies();
+
+
 // Function to authenticate user
 function authenticateUser($username, $password) {
     // Here you would typically validate the username and password against a database
@@ -19,21 +36,16 @@ function authenticateUser($username, $password) {
 
 // Function to check if the user is logged in
 function isLoggedIn() {
-    return isset($_SESSION['username']);
-}
-
-// Check if the user is logging out
-if (isset($_GET['logout'])) {
-    session_destroy();
-    setcookie('loggedIn', '', time() - 3600); // Remove the cookie
-    header('Location: login.php'); // Redirect to login page
-    exit;
+    return isset($_SESSION['loggedIn']) && $_SESSION['loggedIn'] === 'true';
 }
 
 // Check if the user is already logged in
 if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] === 'true') {
     // If the user is logged in, create a session
+    $_SESSION['loggedIn'] = $_COOKIE['loggedIn'];
     $_SESSION['username'] = $_COOKIE['username'];
+    echo "Setting Logged In: " . $_SESSION['loggedIn']; // Debug output
+    echo "<br/>";
     echo "Setting session username: " . $_SESSION['username']; // Debug output
 }
 
@@ -47,12 +59,8 @@ if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] === 'true') {
     <title>Login</title>
 </head>
 <body>
-	<!-- print logged in and authentication status -->
-	<p>Logged in: <?php echo isLoggedIn() ? 'true' : 'false'; ?></p>
-	<p>Authentication status: <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?></p>
     <?php if (isLoggedIn()): ?>
         <h1>Welcome, <?php echo $_SESSION['username']; ?>!</h1>
-        <p><a href="?logout">Logout</a></p>
     <?php else: ?>
         <h1>Login</h1>
         <form action="/Desktop/WebServ/cgi-bin/login.php" method="post">
@@ -73,20 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    if (authenticateUser($username, $password)) {
+    if (authenticateUser($username, $password) && !isLoggedIn()) {
 		// If authentication succeeds, create a session and set cookies
 		$_SESSION['username'] = $username;
 		setcookie('loggedIn', 'true', time() + (86400 * 30), '/'); // Set cookie to expire in 30 days
 		setcookie('username', $username, time() + (86400 * 30), '/'); // Set cookie to expire in 30 days
 
-		// Debug output
-		echo "Setting session username: " . $_SESSION['username'] . "<br>";
-		echo "Setting cookie loggedIn: true<br>";
-		echo "Setting cookie username: " . $username . "<br>";
-
-		header("Location: /Desktop/WebServ/cgi-bin/login.php"); // Redirect to the login page to refresh the view
-		echo "Redirecting to login page..."; // Debug output
-		// exit;
+        header('Location: /Desktop/WebServ/cgi-bin/login.php'); // Redirect to the same page
+		exit;
 	}
 
 }

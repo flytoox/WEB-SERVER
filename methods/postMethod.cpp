@@ -42,6 +42,24 @@ static void uploadRequestBody(Request &request) {
 
 }
 
+// Function to parse HTTP headers string into a map
+std::multimap<std::string, std::string> parseResponseHeaders(const std::string& headers) {
+    std::multimap<std::string, std::string> headersMap;
+    std::istringstream iss(headers);
+
+    std::string line;
+    while (std::getline(iss, line)) {
+        size_t pos = line.find(':');
+        if (pos != std::string::npos) {
+            std::string key = line.substr(0, pos);
+            std::string value = line.substr(pos + 1);
+            headersMap.insert(std::make_pair(key, value));
+        }
+    }
+
+    return headersMap;
+}
+
 
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
@@ -74,15 +92,26 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             std::cout << "extension: " << extension << "\n";
 
             std::cout << "HEADERS |" << headers << "|\n";
+            std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
+            for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                std::cout << "HEADER |" << it->first << " : " << it->second << "|\n";
+            }
             std::cout << "BODY |" << body << "|\n";
-            // std::cout << "BODY |" << body << "|\n";
 
             // Set the initial HTTP response headers
             request.response = responseBuilder()
             .addStatusLine("200")
             .addContentType(extension)
-            .addCookie("Set-Cookie: session=12345")
             .addResponseBody(body);
+            for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                if (it->first == "Set-Cookie")
+                    request.response.addCookie(it->second);
+                else if (it->first == "Location")
+                    request.response.addLocationFile(it->second);
+            }
+            request.response.addContentType(extension).addResponseBody(body);
+
+            // request.response.addCookie("loggedIn=true; expires=Wed, 03-Apr-2024 17:37:03 GMT; Max-Age=2592000; path=/");
             throw ("CGI");
         }
     }
@@ -170,14 +199,21 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
                 std::cout << "extension: " << extension << "\n";
 
                 std::cout << "HEADERS |" << headers << "|\n";
+                std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
                 std::cout << "BODY |" << body << "|\n";
-                // std::cout << "BODY |" << body << "|\n";
 
                 // Set the initial HTTP response headers
                 request.response = responseBuilder()
-                .addStatusLine("200")
-                .addContentType(extension)
-                .addResponseBody(body);
+                    .addStatusLine("200")
+                    .addContentType(extension)
+                    .addResponseBody(body);
+                for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                    if (it->first == "Set-Cookie")
+                        request.response.addCookie(it->second);
+                    else if (it->first == "Location")
+                        request.response.addLocationFile(it->second);
+                }
+                request.response.addContentType(extension).addResponseBody(body);
                 throw ("CGI");
             }
         }
