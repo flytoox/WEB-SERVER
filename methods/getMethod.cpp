@@ -418,8 +418,6 @@ void getMethod(Request &request) {
 	//uri : /../../tmp/ll.txt
 	//concatenateWithRoot : /Users/sizgunan/
 	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
-    // std::cout << "WHAT ROOT|" << concatenateWithRoot << "|\n";
-    // std::cout << "WHAT CHECK|" << result << "|\n";
 	if (result.find(concatenateWithRoot) == std::string::npos) {
 		request.response = responseBuilder()
             .addStatusLine("403")
@@ -429,6 +427,7 @@ void getMethod(Request &request) {
 	}
     // std::cout << "AFTER URI |" << uri << "|\n";
     // std::cout << "ROOT |" << concatenateWithRoot << "|\n";
+    // std::cout << "AFTER |" << result << "|\n";
     // concatenateWithRoot += uri;
     concatenateWithRoot = result;
     // std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";

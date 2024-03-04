@@ -46,6 +46,7 @@ public:
     void setLocationBlock(std::vector<std::map<std::string, std::string> > &newLocDirectives);
 
     static std::vector<Server> parsingFile(std::string s);
+    static void overrideLocations(Server &s);
 
     ~Server();
 };

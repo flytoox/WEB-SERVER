@@ -56,10 +56,10 @@ static void parseSingleLine(std::vector<std::string> &headerSplitVector, Request
             request.setHttpVerb(value);
         } else {
             request.response = responseBuilder()
-            .addStatusLine("400")
+            .addStatusLine("405")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request5</h1></html>");
-            throw "400" ;
+            .addResponseBody("<html><h1>405 Method Not Allowed</h1></html>");
+            throw ("405");
         }
 
 

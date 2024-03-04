@@ -1,2 +1,7 @@
 OMAR :
     //TODO EVERYTHING SHOULD BE IN THE SERVER MOTHER_FUCKER
+    // error_page directory must be set : map<STATUS_CODE:ABSOLUTE_PATH>
+
+SANA :
+    // error_page 404 /var/www/default/404.html;
+    // check first if the error page exists, if yes, open -> send it !
