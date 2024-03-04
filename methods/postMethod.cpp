@@ -3,16 +3,6 @@
 
 static void uploadRequestBody(Request &request) {
 
-    // //! CGI MUST BE RUN
-    // bool uploaded = cgiRun(request);
-    // if (uploaded) {
-
-    //     request.response = responseBuilder()
-    //     .addStatusLine("201")
-    //     .addContentType("text/html")
-    //     .addResponseBody("");
-
-
     std::map<std::string, std::string>::const_iterator itContentType;
 
     itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
