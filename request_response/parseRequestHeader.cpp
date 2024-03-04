@@ -307,8 +307,5 @@ void parseAndSetRequestHeader(Request &request) {
             break ;
         }
     }
-
     validateRequest(request);
-    // request.setRequestBodyChunk(true);
-
 }

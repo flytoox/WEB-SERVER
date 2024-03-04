@@ -213,6 +213,9 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
                             }
                             parseAndSetRequestHeader(simultaneousRequests[i]);
+                            if (simultaneousRequests[i].getHttpVerb() == "GET") {
+                                checkRequestedHttpMethod(simultaneousRequests[i]);
+                            }
                             (simultaneousRequests[i].setRequestBodyChunk(true));
                             // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
                             // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
@@ -225,7 +228,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                                 // getMethod(simultaneousRequests[i]);
                                 checkRequestedHttpMethod(simultaneousRequests[i]);
                             }
-                            }
+                        }
                             
                     //  else if ( recevRequestLen < 1024  ) {
 
