@@ -1,6 +1,7 @@
 #include "../includes/webserve.hpp"
 
-Server::Server() {}
+Server::Server() :
+    duplicated(false) {}
 
 
 void Server::setSocketDescriptor(int &socketDescriptor) {
@@ -56,7 +57,7 @@ void Server::setLocationBlock(std::vector<std::map<std::string, std::string> > &
     this->locationsBlock = newLocDirectives;
 }
 
-std::map<std::string, std::map<int, std::string>> const& Server::getPages(void) const {
+std::map<std::string, std::map<int, std::string> > const& Server::getPages(void) const {
     return (this->pages);
 }
 

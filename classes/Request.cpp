@@ -11,7 +11,11 @@ Request::Request() :
     requestBodyChunk(false),
     requestOutputTest("20000000000000000000"),
     saveLastBS(false),
-    reCheck(false) {}
+    realContentLength(0),
+    reachedBodyLength(0),
+    dup(false),
+    reCheck(false)
+    {}
 
 //* GETTERS
 
@@ -19,7 +23,7 @@ Request::Request() :
 const std::map<std::string, std::string> &Request::getDirectives() const {
     return (this->directives);
 }
-const std::map<std::string, std::map<int, std::string>> &Request::getPages() const {
+const std::map<std::string, std::map<int, std::string> > &Request::getPages() const {
     return (this->pages);
 }
 const std::vector<std::map<std::string, std::string> > &Request::getLocationsBlock() const {
@@ -137,7 +141,7 @@ void Request::setRequestHeader(std::string setter) {
 }
 
 
-void Request::setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string>> pages) {
+void Request::setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string> > pages) {
     this->directives = directives;
     this->pages = pages;
 }

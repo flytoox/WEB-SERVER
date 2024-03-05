@@ -206,6 +206,10 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
 }
 
+bool f(int ch) {
+    return !std::isspace(ch);
+}
+
 std::string extractContentType(const std::string& headers) {
     std::istringstream iss(headers);
     std::string line;
@@ -224,12 +228,8 @@ std::string extractContentType(const std::string& headers) {
             std::size_t semicolonPos = contentType.find(';');
 
             // Trim leading and trailing whitespaces
-            contentType.erase(contentType.begin(), std::find_if(contentType.begin(), contentType.end(), [](int ch) {
-                return !std::isspace(ch);
-            }));
-            contentType.erase(std::find_if(contentType.rbegin(), contentType.rend(), [](int ch) {
-                return !std::isspace(ch);
-            }).base(), contentType.end());
+            contentType.erase(contentType.begin(), std::find_if(contentType.begin(), contentType.end(), f));
+            contentType.erase(std::find_if(contentType.rbegin(), contentType.rend(), f).base(), contentType.end());
 
             // Extract only the content type value until the semicolon if it exists
             if (semicolonPos != std::string::npos) {
@@ -381,8 +381,8 @@ std::string CheckPathForSecurity(std::string path) {
 			i--;
 		}
 	}
-	for (std::string s : ret) {
-		result += "/" + s;
+	for (std::vector<std::string>::iterator s = ret.begin(); s != ret.end(); s++) {
+		result += "/" + *s;
 	}
 
 	return result;

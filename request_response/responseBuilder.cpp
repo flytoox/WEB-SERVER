@@ -194,8 +194,8 @@ std::string responseBuilder::build() {
     response << HTTP_VERSION << " " << resultMsg << CRLF;
 
 
-    for (auto it : headersResponses) {
-        response << it.first << it.second << CRLF;
+    for (std::multimap<std::string, std::string>::iterator it = headersResponses.begin(); it !=  headersResponses.end(); it++) {
+        response << it->first << it->second << CRLF;
     }
 
     response << "Keep-Alive: timeout=5" << CRLF;

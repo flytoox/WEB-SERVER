@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 18:00:04 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/04 17:47:44 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/05 13:30:55 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ std::map<std::string, std::string> parseHeaders(const std::string& headers) {
     return headerMap;
 }
 
-std::map<std::string, std::string> fillEnv(const std::map<std::string, std::string>& headers) {
+std::map<std::string, std::string> fillEnv(std::map<std::string, std::string>& headers) {
     std::map<std::string, std::string> envVars;
 
     // Set up the environment variables
@@ -75,10 +75,10 @@ std::map<std::string, std::string> fillEnv(const std::map<std::string, std::stri
 
     envVars["REDIRECT_STATUS"] = "1";
 
-    for (const auto& entry : headers) {
-        if (entry.first == "HTTP_REQUEST") {
+    for (std::map<std::string, std::string>::iterator entry = headers.begin(); entry != headers.end(); entry++) {
+        if (entry->first == "HTTP_REQUEST") {
             // Parse the HTTP_REQUEST header to extract relevant information
-            std::istringstream requestStream(entry.second);
+            std::istringstream requestStream(entry->second);
             std::vector<std::string> requestTokens;
             std::string token;
 
@@ -102,7 +102,7 @@ std::map<std::string, std::string> fillEnv(const std::map<std::string, std::stri
                 envVars["SERVER_PROTOCOL"] = requestTokens[2];
             }
         } else {
-            envVars[entry.first] = entry.second;
+            envVars[entry->first] = entry->second;
         }
     }
 
