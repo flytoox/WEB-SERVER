@@ -34,7 +34,7 @@ void fillTheMap(std::map<int, std::string> &map, std::string &Err) {
         if (s.size() > 1e6) continue;
         map[num] = s;
     }
-   int statusCodes[] = {200, 201, 204, 301, 400, 403, 404, 405, 409, 413, 414, 500, 501, 502};
+   int statusCodes[] = {200, 201, 204, 301, 400, 403, 404, 405, 408, 409, 413, 414, 500, 501, 502};
     for (int i = 0; i < 14; i++) {
         std::stringstream codeStr;
         codeStr << statusCodes[i];

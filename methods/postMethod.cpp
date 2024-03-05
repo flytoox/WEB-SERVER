@@ -304,13 +304,14 @@ void postMethod(Request &request) {
     }
 
 
-    if (locations["upload_enable"] == "on" && value == "multipart/form-data;") {
-            multipartContentType(request);
-            request.response = responseBuilder()
-                .addStatusLine("201")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>201 Created</h1></html>");
-            throw "201" ;
+    if ( value == "multipart/form-data;" ) {
+        multipartContentType(request);
+        request.response = responseBuilder()
+            .addStatusLine("201")
+            .addContentType("text/html")
+            .addLocationFile(locations["upload_store"])
+            .addResponseBody(request.getPageStatus(201));
+        throw "201" ;
         // uploadRequestBody(request);
     }
 

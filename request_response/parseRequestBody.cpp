@@ -331,7 +331,6 @@ static int getTheMaxsize(Request &request) {
 
 void parseRequestBody(Request &request) {
 
-
     //*Check Length of the Body
 
     unsigned long sizeMax = getTheMaxsize(request);
@@ -340,74 +339,15 @@ void parseRequestBody(Request &request) {
         request.response = responseBuilder()
         .addStatusLine("413")
         .addContentType("text/html")
-        .addResponseBody("<html><h1> 413 Content Too Large </h1></html>");
+        .addResponseBody(request.getPageStatus(413));
         throw "413";
 
     }
 
-    // if ( request.getRequestBody().length() > 4000000000 ) {
-
-    //     request.response = responseBuilder()
-    //     .addStatusLine("413")
-    //     .addContentType("text/html")
-    //     .addResponseBody("<html><h1> 413 Content Too Large </h1></html>");
-    //     throw "413";
-
-    // }
-
-    //TODO : Check Transfer-Encoding && multipart
-
     std::map<std::string, std::string>::const_iterator itTransferEncoding;
     std::map<std::string, std::string>::const_iterator itContentType;
     itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding:");
-
-    if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() ) {
-        // if (itTransferEncoding->second != "chunked") {
-
-        //     request.response = responseBuilder()
-        //     .addStatusLine("500")
-        //     .addContentType("txt");
-
-        //     throw "500";
-
-        // }
-        // std::cout << "Transfer-Encoding\n";
+    if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() ) 
         chunkedRequest(request);
-
-    }
-
-
-
-    // itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
-    // if ( itContentType != (request.getHttpRequestHeaders()).end()) {
-
-    //     std::string value = itContentType->second;
-
-    //     if (value == "text/plain") {
-
-    //         request.response = responseBuilder()
-    //         .addStatusLine("200")
-    //         .addContentType("txt");
-
-    //         textContentType(request);
-    //         throw "200L";
-    //     } else if ((itContentType->second).find("multipart/form-data") != std::string::npos ) {
-
-    //         multipartContentType(request);
-    //         request.response = responseBuilder()
-    //         .addStatusLine("200")
-    //         .addContentType("text/html");
-
-    //         request.response = responseBuilder()
-    //         .addResponseBody("<html><h1> Successfully Uploaded </h1></html>");
-    //         throw "200L";
-    //     } else if (value == "application/x-www-form-urlencoded") {
-    //         std::cout << "111\n";
-    //         urlencodedContentType(request);
-    //         throw "200L";
-    //     } else {
-    //         throw "502 Content-type";
-    //     }
-    // }
 
 }

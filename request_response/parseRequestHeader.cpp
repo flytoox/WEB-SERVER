@@ -279,20 +279,14 @@ void parseAndSetRequestHeader(Request &request) {
 
 
     while ( header.length() != 2 ) {
-
         std::size_t found = header.find("\r\n");
 
         if ( found != std::string::npos ) {
-
             httpRequestHeader = header.substr(0, found);
-            //std::cout << "|" << httpRequestHeader;
             spaceParse = splitBySpace(request, httpRequestHeader);
-
             tokenizeHttpHeader(spaceParse, request);
-
             header.erase(0, found + 2);
         } else {
-            //exit (0);
             if ( request.getHttpVerb().empty() ) {
                 request.response = responseBuilder()
                 .addStatusLine("400")

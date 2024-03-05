@@ -11,7 +11,6 @@ void parseConfigFile(configFile &configurationServers, std::string path) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
 	}
-
     funcMultiplexingBySelect(configurationServers);
 }
 
@@ -31,7 +30,7 @@ int main(int argc, char **argv) {
     configFile	configurationServers;
 	if (argc != 2) {
 		std::cerr << "Error: invalid number of arguments" << std::endl;
-		exit(1);
+		return (1);
 	}
 	signal(SIGPIPE, SIG_IGN);
 	checkBasicErrors(argv[1]);

@@ -30,6 +30,8 @@ STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
         return NOT_IMPLEMENTED;    
     if (type == "302")
         return FOUND;
+    if (type == "408")
+        return TIMEOUT;
     return BAD_GATEWAY;
 }
 
@@ -90,6 +92,7 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 12 : ret = RESPONSE_NOT_IMPLEMENTED; break ;
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
         case 14 : ret = RESPONSE_FOUND; break ;
+        case 15 : ret = RESPONSE_REQUEST_TIMEOUT; break ;
     }
 
     resultMsg = ret;

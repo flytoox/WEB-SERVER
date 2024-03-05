@@ -17,7 +17,8 @@ enum STATUS_CODE_ENUM {
     NOT_IMPLEMENTED,            //* 501
     METHOD_NOT_ALLOWED,         //* 405
     BAD_GATEWAY,                //* 502
-    FOUND                       //* 302
+    FOUND,                      //* 302
+    TIMEOUT                     //* 408
 };
 
 
