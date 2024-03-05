@@ -236,9 +236,12 @@ void tokenizeHttpHeader(std::vector<std::string> &headerSplitVector, Request &re
     std::string track = headerSplitVector[0];
     if ( ( track.find("GET") != std::string::npos ) ||
         ( track.find("POST") != std::string::npos ) ||
-        ( track.find("DELETE") != std::string::npos ) )
-        parseSingleLine(headerSplitVector, request);
+        ( track.find("DELETE") != std::string::npos ) ) {
+            parseSingleLine(headerSplitVector, request); 
+            return ;
+        }
     if (request.getHttpVerb().empty()) {
+
             request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
