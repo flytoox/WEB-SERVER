@@ -249,10 +249,6 @@ void parseQueriesInURI(Request &request,std::string &uri) {
         keyValueVector.push_back(token);
     }
 
-    for (auto it : keyValueVector ) {
-        std::cout << "RESULT ||" << it << "||\n";
-    }
-
     for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
         std::string keyValue = (*it);
         size_t signPos = keyValue.find('=');

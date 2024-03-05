@@ -142,7 +142,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     //TODO: RESET URI
     request.setUri(uri);
 
-    std::vector<std::map<std::string, std::string>> locationsBlock = request.getLocationsBlock();
+    std::vector<std::map<std::string, std::string> > locationsBlock = request.getLocationsBlock();
     std::map<std::string, std::string> found ;
 
     for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
@@ -172,7 +172,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     std::cout << "WHAAAAAAAT|" << directoryUri << "|\n";
 
     while (!directoryUri.empty()) {
-        for (auto it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
+        for (std::vector<std::map<std::string, std::string> >::iterator it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
             if (it->at("location") == directoryUri) {
                 std::cerr << "OK OK ?? " << directoryUri<< std::endl;
                 return *it;
@@ -354,9 +354,9 @@ void validateRequest(Request &request) {
         std::string input = location["allowedMethods"];
         std::cout << "Allowed Methods |" << input << "|\n";
         std::vector<std::string> theAllowedMethods = splitString(input, " ");
-        for (auto it : theAllowedMethods) {
-            std::cout << "|" << it << "|\n";
-        }
+        // for (auto it : theAllowedMethods) {
+        //     std::cout << "|" << it << "|\n";
+        // }
         const_vector_it itAllowedMethods = std::find(theAllowedMethods.begin(), theAllowedMethods.end(), request.getHttpVerb());
 
 

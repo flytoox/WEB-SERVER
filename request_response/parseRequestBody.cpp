@@ -109,8 +109,8 @@ void chunkedRequest(Request &request) {
 
 
     std::string ret;
-    for (auto i : output) {
-        ret += i;
+    for (size_t i = 0; i < output.size(); i++) {
+        ret += output[i];
     }
 
     request.setRequestBody(ret);

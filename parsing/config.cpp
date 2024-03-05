@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/04 17:03:23 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/05 13:43:58 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,10 +112,12 @@ string convertDomainToIPv4(string &domain)
 }
 void Server::overrideLocations(Server &s) {
 	map<string, string> ServerDirectives = s.getdirectives();
-	for (auto &i : s.locationsBlock)
-		for (auto &j : ServerDirectives) 
-			if (!i.count(j.first) && j.first != "listen" && j.first != "host")
-				i[j.first] = j.second;
+	for (size_t i=0;i<s.locationsBlock.size();i++) {
+		map<string, string> &location = s.locationsBlock[i];
+		for (std::map<std::string, std::string>::iterator j = ServerDirectives.begin(); j != ServerDirectives.end(); j++)
+			if (!location.count(j->first) && j->first != "listen" && j->first != "host")
+				location[j->first] = j->second;
+	}
 }
 
 //if you find listen && port the same -> duplicated : true 
@@ -230,7 +232,7 @@ vector<Server> Server::parsingFile(string s) {
 		cerr << e.what() << endl;
 		exit(1);
 	}
-	set<std::pair<string, string>> Check;
+	set<std::pair<string, string> > Check;
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		for (size_t j = 0; j < servers.size(); j++) {
@@ -250,10 +252,10 @@ vector<Server> Server::parsingFile(string s) {
 		setsockopt(servers[i].socketD, SOL_SOCKET, SO_REUSEADDR, &add, sizeof(add));
 		servers[i].setSocketDescriptor(servers[i].socketD);
 		//* SAVE HISTORY ( HOST & PORT )
-		if (!Check.count({servers[i].directives["listen"], servers[i].directives["host"]})) {
+		if (!Check.count(std::make_pair(servers[i].directives["listen"], servers[i].directives["host"]))) {
 			servers[i].bindSockets();
 			servers[i].listenToIncomingConxs();
-			Check.insert({servers[i].directives["listen"], servers[i].directives["host"]});
+			Check.insert(std::make_pair(servers[i].directives["listen"], servers[i].directives["host"]));
 		}
 	}
 	// set index.html if index is empty, and remove autoindex if it's off

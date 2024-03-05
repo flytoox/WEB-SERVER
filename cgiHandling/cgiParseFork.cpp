@@ -24,7 +24,7 @@ std::string readFromPipeAndClose(int readEnd) {
 }
 
 int executeChildProcess(const std::string& interpreter, const std::string& scriptFilePath,
-    	const std::map<std::string, std::string>& envVars) {
+    std::map<std::string, std::string>& envVars) {
     std::vector<char*> argv;
     std::vector<char*> envp;
 
@@ -32,9 +32,19 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     argv.push_back(const_cast<char*>(scriptFilePath.c_str()));
     argv.push_back(nullptr);
 
-    for (const auto& entry : envVars) {
-        std::string envVar = entry.first + "=" + entry.second;
-        envp.push_back(strdup(envVar.c_str()));  // Use strdup to duplicate the string
+    // for (const auto& entry : envVars) {
+    //     std::string envVar = entry.first + "=" + entry.second;
+    //     envp.push_back(strdup(envVar.c_str()));  // Use strdup to duplicate the string
+    // }
+
+    // for (const std::pair<std::string, std::string>& entry : envVars) {
+    //     std::string envVar = entry.first + "=" + entry.second;
+    //     envp.push_back(strdup(envVar.c_str()));
+    // }
+
+    for (std::map<std::string, std::string>::iterator it = envVars.begin(); it != envVars.end(); ++it) {
+        std::string envVar = it->first + "=" + it->second;
+        envp.push_back(strdup(envVar.c_str()));
     }
 
     envp.push_back(nullptr);
@@ -42,8 +52,8 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     execve(interpreter.c_str(), argv.data(), envp.data());
 
     // Free the duplicated strings after execve
-    for (char* str : envp) {
-        free(str);
+    for (size_t i = 0; i < envp.size(); ++i) {
+        free(envp[i]);
     }
 
     // If execve fails

@@ -14,7 +14,7 @@ private:
 
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
-    std::map<std::string, std::map<int, std::string>> pages;
+    std::map<std::string, std::map<int, std::string> > pages;
 
     std::map<std::string, std::string> cgiDirectives;
 
@@ -57,18 +57,18 @@ public:
     Request();
 
     responseBuilder response;
-    size_t realContentLength = 0;
-    size_t reachedBodyLength = 0;
+    size_t realContentLength;
+    size_t reachedBodyLength;
     std::string extension;
 
     std::string RePort;
     std::string ReHost;
 
-    bool dup = false;
+    bool dup;
 	std::string result;
     bool reCheck;
     //* GETTERS
-    const std::map<std::string, std::map<int, std::string>> &getPages() const;
+    const std::map<std::string, std::map<int, std::string> > &getPages() const;
     const std::map<std::string, std::string> &getDirectives() const;
     const std::vector<std::map<std::string, std::string> > &getLocationsBlock() const;
 
@@ -117,7 +117,7 @@ public:
     void setHTTPVersion(std::string &setter);
     void setBoundary(std::string &setter);
 
-    void setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string>> Pages);
+    void setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string> > Pages);
     void setLocationsBlock(std::vector<std::map<std::string, std::string> > other);
 
     void setLocationBlockWillBeUsed(std::map<std::string, std::string> &other);
