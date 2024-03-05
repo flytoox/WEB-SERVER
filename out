@@ -1,0 +1,18 @@
+DID YOU GET IN HERE.................|6|..
+HOST Value|localhost:1111|
+URI |/Desktop/upload.html|
+WHAAAAAAAT|/Desktop|
+WTTFF2
+IT'S FILE
+file /upload.html
+IT's ME WHO GOT HERE|.................6|...
+Error From Request Header : 200
+DID YOU GET IN HERE.................|7|..
+HOST Value|localhost:1111|
+URI |/Desktop/upload.html|
+WHAAAAAAAT|/Desktop|
+WTTFF1
+keep-alive
+closed
+IT's ME WHO GOT HERE|.................7|...
+Error From Request Header : 403

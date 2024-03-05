@@ -375,17 +375,20 @@ void validateRequest(Request &request) {
     std::map<std::string, std::string>::const_iterator contentType = (request.getHttpRequestHeaders()).find("Content-Type:");
 
     if (contentType != (request.getHttpRequestHeaders()).end() && contentType->second == "multipart/form-data;") {
-        if (location["upload_enabled"] == "on") {
-            if (location.find("upload_store") == location.end()) {
-                std::string page = request.getPageStatus(403);
-                request.response = responseBuilder()
-                .addStatusLine("403")
-                .addContentType("text/html")
-                .addResponseBody(page);
-                throw "403";
-            }
+        if (location["upload_enabled"] == "off" || location.find("upload_store") == location.end()) {
+            std::cout << "WTTFF1\n";
+            std::cout << request.getHttpRequestHeaders().find("Connection:")->second << std:: endl;
+            std::pair<std::string, std::string> p = std::make_pair("Connection:", "closed");
+            request.setHttpRequestHeaders(p);
+            std::cout << request.getHttpRequestHeaders().find("Connection:")->second << std:: endl;
+            std::string page = request.getPageStatus(403);
+            request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody(page);
+            throw "403";
         }
     }
-
+     std::cout << "WTTFF2\n";
 
 }

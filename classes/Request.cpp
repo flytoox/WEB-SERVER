@@ -179,7 +179,7 @@ void Request::setRequestBodyChunk(bool chunk) {
 
 void Request::setHttpRequestHeaders(pair &setPair) {
 
-    httpRequestHeaders.insert(setPair);
+    httpRequestHeaders[setPair.first] = setPair.second;
 }
 
 void Request::setChunkedResponse(std::vector<std::string> &setter) {

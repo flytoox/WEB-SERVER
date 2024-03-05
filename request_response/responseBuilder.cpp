@@ -206,7 +206,7 @@ std::string responseBuilder::build() {
     }
 
 
-    std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
+    // std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
 
     // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();
