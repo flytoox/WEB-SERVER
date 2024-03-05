@@ -371,4 +371,21 @@ void validateRequest(Request &request) {
         }
     }
 
+
+    std::map<std::string, std::string>::const_iterator contentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+
+    if (contentType != (request.getHttpRequestHeaders()).end() && contentType->second == "multipart/form-data;") {
+        if (location["upload_enabled"] == "on") {
+            if (location.find("upload_store") == location.end()) {
+                std::string page = request.getPageStatus(403);
+                request.response = responseBuilder()
+                .addStatusLine("403")
+                .addContentType("text/html")
+                .addResponseBody(page);
+                throw "403";
+            }
+        }
+    }
+
+
 }
