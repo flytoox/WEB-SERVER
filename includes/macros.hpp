@@ -11,6 +11,7 @@
 #define RESPONSE_CREATED                 "201 Created"
 #define RESPONSE_NO_CONTENT              "204 No Content"
 #define RESPONSE_MOVED_PERMANETLY        "301 Moved Permanently"
+#define RESPONSE_FOUND                   "302 Found"
 #define RESPONSE_BAD_REQUEST             "400 Bad Request"
 #define RESPONSE_FORBIDDEN               "403 Forbidden"
 #define RESPONSE_NOT_FOUND               "404 Not Found"

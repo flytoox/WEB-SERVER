@@ -100,7 +100,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
             // Set the initial HTTP response headers
             request.response = responseBuilder()
-            .addStatusLine("200")
+            .addStatusLine("302")
             .addContentType(extension)
             .addResponseBody(body);
             for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
@@ -109,7 +109,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
                 else if (it->first == "Location")
                     request.response.addLocationFile(it->second);
             }
-            request.response.addContentType(extension).addResponseBody(body);
+            request.response.addResponseBody(body);
 
             // request.response.addCookie("loggedIn=true; expires=Wed, 03-Apr-2024 17:37:03 GMT; Max-Age=2592000; path=/");
             throw ("CGI");

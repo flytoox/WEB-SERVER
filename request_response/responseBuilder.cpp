@@ -27,7 +27,9 @@ STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
     if (type == "500")
         return INTERNAL_SERVER_ERROR;
     if (type == "501")
-        return NOT_IMPLEMENTED;
+        return NOT_IMPLEMENTED;    
+    if (type == "302")
+        return FOUND;
     return BAD_GATEWAY;
 }
 
@@ -87,6 +89,7 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 11 : ret = RESPONSE_INTERNAL_SERVER_ERROR; break ;
         case 12 : ret = RESPONSE_NOT_IMPLEMENTED; break ;
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
+        case 14 : ret = RESPONSE_FOUND; break ;
     }
 
     resultMsg = ret;
@@ -203,7 +206,7 @@ std::string responseBuilder::build() {
     }
 
 
-    // std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
+    std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
 
     // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();

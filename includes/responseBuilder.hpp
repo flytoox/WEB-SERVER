@@ -16,7 +16,8 @@ enum STATUS_CODE_ENUM {
     INTERNAL_SERVER_ERROR ,     //* 500
     NOT_IMPLEMENTED,            //* 501
     METHOD_NOT_ALLOWED,         //* 405
-    BAD_GATEWAY                 //* 502
+    BAD_GATEWAY,                //* 502
+    FOUND                       //* 302
 };
 
 
