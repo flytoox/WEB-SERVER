@@ -27,7 +27,9 @@ STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
     if (type == "500")
         return INTERNAL_SERVER_ERROR;
     if (type == "501")
-        return NOT_IMPLEMENTED;
+        return NOT_IMPLEMENTED;    
+    if (type == "302")
+        return FOUND;
     return BAD_GATEWAY;
 }
 
@@ -87,6 +89,7 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 11 : ret = RESPONSE_INTERNAL_SERVER_ERROR; break ;
         case 12 : ret = RESPONSE_NOT_IMPLEMENTED; break ;
         case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
+        case 14 : ret = RESPONSE_FOUND; break ;
     }
 
     resultMsg = ret;
@@ -125,7 +128,9 @@ responseBuilder& responseBuilder::addStatusLine(const std::string &type) {
 responseBuilder& responseBuilder::addContentType(const std::string &extension) {
     // std::cout << "HA L3AAAAR|" << extension << "|\n";
     // exit (0);
-    defineContentType(extension);
+    //if contenr type is not defined, define it
+    if (headersResponses.find(CONTENT_TYPE) == headersResponses.end())
+        defineContentType(extension);
     return (*this);
 }
 
@@ -142,14 +147,21 @@ responseBuilder& responseBuilder::addContentLength() {
     std::stringstream ss;
 
     ss << length;
-    headersResponses.insert(std::make_pair(CONTENT_LENGTH, ss.str()));
+    if (headersResponses.find(CONTENT_LENGTH) == headersResponses.end())
+        headersResponses.insert(std::make_pair(CONTENT_LENGTH, ss.str()));
     return (*this);
 }
 
 
-responseBuilder& responseBuilder::addCookie(const std::string &cookies) {
+responseBuilder& responseBuilder::addCookie(const std::string &cookie) {
 
-    headersResponses.insert(std::make_pair("SET_COOKIE", cookies));
+    headersResponses.insert(std::make_pair("Set-Cookie:", cookie));
+    return (*this);
+}
+
+responseBuilder& responseBuilder::addLocationFile(const std::string &location) {
+
+    headersResponses.insert(std::make_pair("Location:", location));
     return (*this);
 }
 
@@ -159,14 +171,18 @@ responseBuilder& responseBuilder::addContentLength(const std::string &content) {
    std::ostringstream oss ;
 
     oss << number ;
-    headersResponses.insert(std::make_pair(CONTENT_LENGTH, oss.str()));
+    if (headersResponses.find(CONTENT_LENGTH) == headersResponses.end())
+        headersResponses.insert(std::make_pair(CONTENT_LENGTH, oss.str()));
     return (*this);
 }
 
 responseBuilder& responseBuilder::addResponseBody(const std::string &responseBody) {
 
-    this->body = responseBody;
-    this->addContentLength();
+    // if bosy is not defined, define it
+    if (this->body.length() == 0) {
+        this->body = responseBody;
+        this->addContentLength();
+    }
     return (*this);
 
 }
@@ -190,7 +206,7 @@ std::string responseBuilder::build() {
     }
 
 
-    // std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
+    std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
 
     // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();

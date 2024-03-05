@@ -144,13 +144,6 @@ static void parseContentType(std::vector<std::string> &headerSplitVector, Reques
         throw "400" ;
     }
 
-    if (request.getHttpRequestHeaders().find("Content-Type:") != request.getHttpRequestHeaders().end()) {
-        request.response = responseBuilder()
-        .addStatusLine("400")
-        .addContentType("text/html")
-        .addResponseBody("<html><h1>400 Bad Request12</h1></html>");
-        throw "400" ;
-    }
 
 
     std::string headerValue = headerSplitVector[1];

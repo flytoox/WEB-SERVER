@@ -16,7 +16,8 @@ enum STATUS_CODE_ENUM {
     INTERNAL_SERVER_ERROR ,     //* 500
     NOT_IMPLEMENTED,            //* 501
     METHOD_NOT_ALLOWED,         //* 405
-    BAD_GATEWAY                 //* 502
+    BAD_GATEWAY,                //* 502
+    FOUND                       //* 302
 };
 
 
@@ -24,7 +25,7 @@ class responseBuilder {
 
 public:
 
-    std::map<std::string, std::string> headersResponses;
+    std::multimap<std::string, std::string> headersResponses;
     std::string resultMsg;
     std::string body;
 
@@ -37,10 +38,8 @@ public:
     responseBuilder& addContentLength();
     responseBuilder& addContentLength(const std::string &content);
     responseBuilder& addResponseBody(const std::string &responseBody);
-    responseBuilder& addCookie(const std::string &cookies);
-
-
+    responseBuilder& addCookie(const std::string &cookie);
+    responseBuilder& addLocationFile(const std::string &location);
 
     std::string build();
-
 };
