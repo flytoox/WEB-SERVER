@@ -39,6 +39,7 @@
 #include <fcntl.h>
 //! Typedef
 
+
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
 typedef std::vector<std::map<std::string, std::string> >::const_iterator vectorToMapIterator;

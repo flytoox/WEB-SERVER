@@ -65,7 +65,7 @@ int hexaToDec(Request &request, std::string &res) {
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            .addResponseBody(request.getPageStatus(400));
             throw "400 CHUNKED";
     }
 
@@ -102,7 +102,7 @@ void chunkedRequest(Request &request) {
             request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+                .addResponseBody(request.getPageStatus(400));
                 throw "400 CHUNKED";
         }
     }
@@ -222,7 +222,7 @@ void multipartContentType(Request &request) {
         request.response = responseBuilder()
         .addStatusLine("400")
         .addContentType("text/html")
-        .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+        .addResponseBody(request.getPageStatus(400));
         throw "400";
     }
     // for (auto it : split) {
@@ -291,7 +291,7 @@ void urlencodedContentType(Request &request) {
             request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><body><h1>400 Bad Request</h1></body></html>");
+            .addResponseBody(request.getPageStatus(400));
             throw "400";
         }
     }

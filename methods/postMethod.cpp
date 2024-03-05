@@ -35,7 +35,7 @@ static void uploadRequestBody(Request &request) {
             request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                .addResponseBody(request.getPageStatus(400));
                 throw "400 CT";
         }
     }
@@ -119,7 +119,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
     request.response = responseBuilder()
     .addStatusLine("403")
     .addContentType("text/html")
-    .addResponseBody("<html><h1>403 Forbidden</h1></html>");
+    .addResponseBody(request.getPageStatus(403));
     throw "403";
 
 }
@@ -222,7 +222,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     request.response = responseBuilder()
     .addStatusLine("403")
     .addContentType("text/html")
-    .addResponseBody("<html><h1>403 Forbidden</h1></html>");
+    .addResponseBody(request.getPageStatus(403));
     throw ("403");
 }
 
@@ -359,7 +359,7 @@ void postMethod(Request &request) {
 		request.response = responseBuilder()
             .addStatusLine("403")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>403 Forbidden for Security Purposes</h1></html>");
+            .addResponseBody(request.getPageStatus(403));
             throw "403 Security";
 	}
     absolutePath = result;

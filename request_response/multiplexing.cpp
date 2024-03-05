@@ -47,7 +47,7 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         } else {
             Request newRequest;
 
-            newRequest.setDirectives(simultaneousRequests[i].getDirectives());
+            newRequest.setDirectivesAndPages(simultaneousRequests[i].getDirectives(), simultaneousRequests[i].getPages());
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
             simultaneousRequests[i] = newRequest;
         }
@@ -72,10 +72,9 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 
     std::map<std::string, std::string> serverDirectives = serverUsed.getdirectives();
     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverUsed.getlocationsBlock();
-
     request.RePort = serverUsed.prePort;
     request.ReHost = serverUsed.preHost;
-    request.setDirectives(serverDirectives);
+    request.setDirectivesAndPages(serverDirectives, serverUsed.getPages());
     request.setLocationsBlock(serverLocationsBlock);
 }
 
@@ -100,7 +99,7 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
                     std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
                     // exit (0);
                     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
-                    request.setDirectives(serverDirectives);
+                    request.setDirectivesAndPages(serverDirectives, serverReform.getPages());
                     request.setLocationsBlock(serverLocationsBlock);
                     break ;
                 }
@@ -232,7 +231,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     //         (simultaneousRequests[i]).response = responseBuilder()
                     //         .addStatusLine("400")
                     //         .addContentType("text/html")
-                    //         .addResponseBody("<html><h1>400 Bad Request</h1></html>");
+                    //         .addResponseBody(request.getPageStatus(400));
 
                     //         throw "400"; }
 

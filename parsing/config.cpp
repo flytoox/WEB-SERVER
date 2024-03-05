@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/03 21:59:52 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/04 17:03:23 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,7 +202,7 @@ vector<Server> Server::parsingFile(string s) {
 			if ((v[0] == "host" || v[0] == "listen" || v[0] == "server_name") && (st.top() == "location")) {
 				throw runtime_error("Error: on line " + lineNumStr.str()  + " \"" +  v[0] + "\" can't be inside location block");
 			}
-			if (v[0] == "cgi_bin" && directives.count(v[0]) && st.top() == "location")
+			if ((v[0] == "cgi_bin" || v[0] == "error_page") && directives.count(v[0]) && st.top() == "location")
                 directives[v[0]] += '\n' + v[1];
 			else directives[v[0]] = v[1];
 			for (size_t i = 2; i < v.size(); i++) {
@@ -224,6 +224,7 @@ vector<Server> Server::parsingFile(string s) {
 					throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
 				if (!checkReturnOnLocation(servers[i].locationsBlock))
 					throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
+				fillErrorPages(servers[i]);
 		}
 	} catch (runtime_error &e) {
 		cerr << e.what() << endl;
@@ -263,5 +264,6 @@ vector<Server> Server::parsingFile(string s) {
 		}
 		overrideLocations(servers[i]);
 	}
+
 	return (servers);
 }

@@ -56,6 +56,8 @@ void Server::setLocationBlock(std::vector<std::map<std::string, std::string> > &
     this->locationsBlock = newLocDirectives;
 }
 
-
+std::map<std::string, std::map<int, std::string>> const& Server::getPages(void) const {
+    return (this->pages);
+}
 
 Server::~Server() {}

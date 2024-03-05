@@ -195,7 +195,7 @@ void validateRequest(Request &request) {
         request.response = responseBuilder()
             .addStatusLine("501")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>501 Not Implemented</h1></html>");
+            .addResponseBody(request.getPageStatus(501));
         throw "501" ;
 
     }
@@ -365,7 +365,7 @@ void validateRequest(Request &request) {
             request.response = responseBuilder()
             .addStatusLine("405")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>405 Method Not Allowed</h1></html>");
+            .addResponseBody(request.getPageStatus(405));
 
             throw "405";
         }

@@ -14,6 +14,7 @@ private:
 
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
+    std::map<std::string, std::map<int, std::string>> pages;
 
     std::map<std::string, std::string> cgiDirectives;
 
@@ -67,7 +68,7 @@ public:
 	std::string result;
     bool reCheck;
     //* GETTERS
-
+    const std::map<std::string, std::map<int, std::string>> &getPages() const;
     const std::map<std::string, std::string> &getDirectives() const;
     const std::vector<std::map<std::string, std::string> > &getLocationsBlock() const;
 
@@ -77,27 +78,13 @@ public:
     const std::string &getBoundary(void) const;
 
 
-
-    // const std::string &getHost(void) const;
-    // const int         &getPort(void) const;
-    // const std::string &getContentType(void) const;
-    // const int         &getContentLength(void) const;
-    // const std::string &getTransferEncoding(void) const;
-    // const std::string &getConnection(void) const;
-
-
-
-    // void getRequestHeader(std::map<std::string, std::string> &other);
-    // void getRequestBody(std::vector<std::map<std::string, std::string> > &other);
-
-
     const std::string &getRequestHeader() const ;
     const std::string &getRequestBody() const ;
 
     const std::map<std::string, std::string> &getHttpRequestHeaders() const;
     const std::map<std::string, std::string> &getLocationBlockWillBeUsed() const ;
+    const std::string getPageStatus(int status) const ;
 
-    // bool getAllowRequestBodyChunk(void) const;
     bool getRequestBodyChunk(void);
    //  bool getResponseChunk(void) const;
 
@@ -119,7 +106,6 @@ public:
 
     //* SETTERS
 
-    //void setJoiningTheWholeRequest(std::string &request);
     void setRequestHeader(std::string setter);
     void setRequestBody(std::string setter);
 
@@ -130,22 +116,12 @@ public:
     void setUri(std::string &setter);
     void setHTTPVersion(std::string &setter);
     void setBoundary(std::string &setter);
-    // void setHost(std::string &setter);
-    // void setPort(int &setter);
-    // void setContentType(std::string &setter);
-    // void setContentLength(int &setter);
-    // void setTransferEncoding(std::string &setter);
-    // void setConnection(std::string &setter);
 
-
-    void setDirectives(std::map<std::string, std::string> other);
+    void setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string>> Pages);
     void setLocationsBlock(std::vector<std::map<std::string, std::string> > other);
 
     void setLocationBlockWillBeUsed(std::map<std::string, std::string> &other);
-
-    // void setAllowRequestBodyChunk(bool chunk) ;
     void setRequestBodyChunk(bool chunk) ;
-    // void setResponseChunk(bool chunk) ;
 
     void setQueryString(std::string &setter);
 
@@ -174,6 +150,3 @@ public:
 };
 
 
-// for (auto it = request.getHttpRequestHeaders().begin(); it != request.getHttpRequestHeaders().end(); it++) {
-//     std::cout << it->first << " - " << it->second << std::endl;
-// }
