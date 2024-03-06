@@ -180,9 +180,9 @@ input[type="file"] {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-image: url('https://www.transparenttextures.com/patterns/brushed-alum-dark.png');
+    background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
     background-color: #f48c06;
-    background-blend-mode: multiply;
+    background-blend-mode: screen;
     height: 120px;
     margin-bottom: 2rem;
     border-radius: 10px;
@@ -212,4 +212,56 @@ label {
     padding: 10px 20px;
     border-radius: 5px;
     color: #f5f5f5;
+}
+
+.links {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 120px;
+}
+
+.linkItem a {
+    text-decoration: none;
+    font-weight: 300;
+    color: #f9a02c;
+    text-decoration: underline;
+}
+
+.postForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50%;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    padding: 2rem;
+    background-color: #f5f5f5;
+}
+
+.postForm label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #001219;
+}
+
+.postForm input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid #ababab;
+}
+
+.postForm input[type="submit"] {
+    background-color: #f48c06;
+    color: #f5f5f5;
+    font-size: 16px;
+    padding: 10px 20px;
+    width: 100%;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.2s ease-in-out;
 }

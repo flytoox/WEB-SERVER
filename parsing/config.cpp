@@ -6,20 +6,15 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/05 13:43:58 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/06 12:39:44 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
 #include <stdexcept>
 
-
 using namespace std;
 
-//Done: Omar check location if it's duplicated , error -> exit
-//Done: Omar check the return if it gets Resonse StatusCode and next to it a URL; error -> exit
-//Done: Omar don't remove /// in location -> DONNNNNN'T
-//DONE: Omar if autoindex is on , if autoindex is off remove autoindex key from scratch
 vector<string> splitWhiteSpaces(string s) {
 	stringstream ss(s);
 	vector<string> v;
@@ -28,6 +23,7 @@ vector<string> splitWhiteSpaces(string s) {
 		v.push_back(word);
 	return (v);
 }
+
 bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 	for (size_t i = 0; i < locationsBlock.size(); i++) {
 		if (!locationsBlock[i].count("return"))
@@ -42,7 +38,7 @@ bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 			if (!isdigit(v[0][i]))
 				return (false);
 		int statusCode = atoi(v[0].c_str());
-		if (statusCode < 100 || statusCode > 599)
+		if (statusCode < 300 || statusCode > 399)
 			return (false);
 	}
 	return (true);
@@ -213,6 +209,8 @@ vector<Server> Server::parsingFile(string s) {
 				if (v[i] == "") continue;
 				directives[v[0]] += " " + v[i];
 			}
+			if (st.top() == "server")
+				server.directives.insert(directives.begin(), directives.end());
 		}
 		file.close();
 	}
@@ -266,6 +264,5 @@ vector<Server> Server::parsingFile(string s) {
 		}
 		overrideLocations(servers[i]);
 	}
-
 	return (servers);
 }

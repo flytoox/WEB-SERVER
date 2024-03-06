@@ -12,13 +12,11 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<in
 }
 
 
-static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
+static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
 
-    // FD_CLR(i, &readsd); FD_SET(i, &writesd);
+    FD_CLR(i, &readsd); FD_SET(i, &writesd);
 
-    (void)readsd; (void)writesd;
-    std::cout << "IT's ME WHO GOT HERE|................." << i << "|...\n";
-
+    // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
     int sd;
     while (res.length()) {
@@ -28,22 +26,19 @@ static void functionToSend(int &max, int i , fd_set &readsd, fd_set &writesd, fd
         } else {
             chunk = res; res.clear();
         }
-        if ((sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
-            std::cout << "Error: send()" << std::endl;
+        if ( FD_ISSET(i, &writesd) && (sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
+            std::cerr << "Error: send(): " << strerror(errno) << std::endl;
         }
     }
 
-    (void)max;
     //* Check of the connection is closed, if yes
-
     std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
-
 
     if ((simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) {
         if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
             close(i);
             FD_CLR(i, &allsd);
-            // FD_CLR(i, &writesd);
+            FD_CLR(i, &writesd);
             simultaneousRequests.erase(i);
         } else {
             Request newRequest;
@@ -79,194 +74,63 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     request.setLocationsBlock(serverLocationsBlock);
 }
 
-void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request) {
-
-    try {
-        Server serverReform;
-        std::string v1 = header.substr(header.find("Host: "));
-        std::string hostHeader = v1.substr(0, v1.find("\n"));
-        std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1);
-        hostValue.erase(hostValue.length() - 1);
-
-        // std::cout << "HOST HEADER|" << hostHeader << "|\n";
-        std::cout << "HOST Value|" << hostValue << "|\n";
-
-        if ( request.dup == true ) {
-
-            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
-                std::map<std::string, std::string>tmp = it->getdirectives();
-                if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost ) {
-                    serverReform = *it;
-                    std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
-                    // exit (0);
-                    std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
-                    request.setDirectivesAndPages(serverDirectives, serverReform.getPages());
-                    request.setLocationsBlock(serverLocationsBlock);
-                    break ;
-                }
-            }
-    } } catch (std::exception &e) {
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request22</h1></html>");
-        throw "400";
-        std::cout << e.what() << std::endl;
-    }
-
-}
-
-void push_convert(std::string &convert, char *buffer, int r) {
-    for (int i = 0; i != r; i++)
-        convert.push_back(buffer[i]);
-}
-
 void funcMultiplexingBySelect(configFile &configurationServers) {
 
     std::vector<int> allSocketsVector;
-
     std::map<int, std::string> clientSocketsMap;
     std::map<int, std::string> clientsMap;
     fd_set readsd, writesd, allsd;
-    (void)writesd;
-
-
     std::map<int, Request> simultaneousRequests;
+    int maxD = 0;
 
     getAllTheConfiguredSockets(configurationServers, allSocketsVector);
-
     FD_ZERO(&allsd);
-    int maxD = 0;
 
     for (socket_iterator it = allSocketsVector.begin(); it != allSocketsVector.end(); ++it) {
         maxD = (*it);
         FD_SET((*it), &allsd);
     }
 
+    struct timeval tv;
+
+    tv.tv_sec = 2;
+    tv.tv_usec = 500000;
 
     for (FOREVER) {
         readsd = allsd;
-        char buffer[1024] = {0};
         if (select(maxD + 1, &readsd, 0, 0, 0) < 0) {
-            std::cerr << "Error: select() fail" << std::endl;
-            // exit (1);
+            std::cerr << "Error: select(): " << strerror(errno) << std::endl;
         }
-        for (int i = 0; i <= maxD; i++) {
 
+        for (int i = 0; i <= maxD; i++) {
             if ( ! FD_ISSET(i, &readsd)) {
                 continue ;
             }
 
-
             socket_iterator readyToConnect = std::find(allSocketsVector.begin(), allSocketsVector.end(), i);
             if (readyToConnect != allSocketsVector.end()) {
+                //! A Connection's been received
+
                 struct sockaddr_in clientAddress;
                 socklen_t addrlen =  sizeof(clientAddress);
-
                 int connectSD = accept( (*readyToConnect) , (struct sockaddr *)&clientAddress , &addrlen);
                 if (connectSD == -1 ) {
+                   std::cerr << "Error: accept(): " << strerror(errno) << std::endl;
                     continue ;
-                };
-
+                }
                 FD_SET(connectSD, &allsd);
                 maxD = std::max(connectSD, maxD);
-
                 Request request;
-
-            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
-                    std::map<std::string, std::string> test = it->getdirectives();
-                    // std::cout << "------------------------------------\n";
-                    // for (auto ita : test) {
-                    //     std::cout << "WHAT |" << ita.first << "| |" << ita.second << "|\n";
-                    // }
-                    // std::cout << "------------------------------------\n";
-            }
-
                 configureRequestClass(request, configurationServers, i);
                 simultaneousRequests.insert(std::make_pair(connectSD, request));
 
             } else {
-
-                std::string res;
-                int recevRequestLen = recv(i , buffer, 1024, 0);
-
-                if (recevRequestLen < 0) {
-                    std::cout << "Error: recev()" << std::endl;
-                    close(i), FD_CLR(i, &allsd); continue ;
-                }
-
-                std::string convert;
-                push_convert(convert, buffer, recevRequestLen);
-
-                //* REQUEST
-                if ( ! (simultaneousRequests[i].getRequestBodyChunk()) ) {
-                    //! REQUEST HEADER
-                    simultaneousRequests[i].setRequestHeader(convert);
-                    try {
-                    if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
-                            std::string header = (simultaneousRequests[i]).getRequestHeader();
-                            //DONE1: this unction must check the server only once!
-                            if ((simultaneousRequests[i]).reCheck != true) {
-                                //* Fix this
-                                (simultaneousRequests[i]).reCheck = true;
-                                std::cout << "DID YOU GET IN HERE.................|" << i << "|..\n";
-                                reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
-                            }
-                            parseAndSetRequestHeader(simultaneousRequests[i]);
-                            (simultaneousRequests[i].setRequestBodyChunk(true));
-                            // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
-                            // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
-                            (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
-                            if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
-                                // std::cout << "REACHED THIS>>>>>>>>>>|" << simultaneousRequests[i].reachedBodyLength << "|\n";
-                            // if ( recevRequestLen < 1024 ) {
-                                // std::cout << "REAAALY}}}}}}}}}}}}}}}}}}}}\n";
-                                parseRequestBody(simultaneousRequests[i]);
-                                // getMethod(simultaneousRequests[i]);
-                                checkRequestedHttpMethod(simultaneousRequests[i]);
-                            }
-                        }
-
-                    //  else if ( recevRequestLen < 1024  ) {
-
-                    //         (simultaneousRequests[i]).response = responseBuilder()
-                    //         .addStatusLine("400")
-                    //         .addContentType("text/html")
-                    //         .addResponseBody(request.getPageStatus(400));
-
-                    //         throw "400"; }
-
-                         } catch (const char *err) {
-                        functionToSend(maxD, i, readsd, writesd, allsd, simultaneousRequests);
-                        std::cout << "Error From Request Header : " << err << std::endl;
-                    }
-                } else {
-                    //! REQUEST BODY
-                    // std::cout << "0- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
-                    simultaneousRequests[i].setRequestBody(convert);
-
-                    (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
-
-                    // std::cout << "WHY |" << convert << "|\n";
-                    // std::cout << "1- DID YOU EVEN GOT HREERE|||||||||||||||||||||||||||||||||||||||\n";
-
-                    //TODO: here insert the max here check length
-                    //TODO:
-                    try {
-                        // if (recevRequestLen < 1024) {
-                            // std::cout << "REACHED THIS|" << simultaneousRequests[i].reachedBodyLength << "|\n";
-                            // std::cout << "CPNTENT-LENGTH:|" << (simultaneousRequests[i]).realContentLength << "|\n";
-
-                        if (((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) || \
-                            ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
-                                (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
-                            parseRequestBody((simultaneousRequests[i]));
-                            checkRequestedHttpMethod(simultaneousRequests[i]);
-                        }
-                    } catch (const char *err) {
-                        functionToSend(maxD, i, readsd, writesd, allsd, simultaneousRequests);
-                        std::cerr << "Error From Request Body : " << err << std::endl;
-                    }
+                try {
+                    //* REQUEST
+                    receiveRequestPerBuffer(simultaneousRequests, i, configurationServers, allsd);
+                } catch (const char *error) {
+                    //* RESPONSE
+                    functionToSend(i, readsd, writesd, allsd, simultaneousRequests);
                 }
             }
         }

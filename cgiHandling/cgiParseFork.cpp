@@ -32,16 +32,6 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     argv.push_back(const_cast<char*>(scriptFilePath.c_str()));
     argv.push_back(nullptr);
 
-    // for (const auto& entry : envVars) {
-    //     std::string envVar = entry.first + "=" + entry.second;
-    //     envp.push_back(strdup(envVar.c_str()));  // Use strdup to duplicate the string
-    // }
-
-    // for (const std::pair<std::string, std::string>& entry : envVars) {
-    //     std::string envVar = entry.first + "=" + entry.second;
-    //     envp.push_back(strdup(envVar.c_str()));
-    // }
-
     for (std::map<std::string, std::string>::iterator it = envVars.begin(); it != envVars.end(); ++it) {
         std::string envVar = it->first + "=" + it->second;
         envp.push_back(strdup(envVar.c_str()));

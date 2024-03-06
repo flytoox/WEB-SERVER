@@ -1,27 +1,4 @@
 #include "../includes/webserve.hpp"
-#include <fstream>
-
-// static void fetchFullPath(std::string &serverName, std::string &listen, Request &request) {
-
-//     std::map<std::string, std::string> directories;
-
-//     directories = request.getDirectives();
-//     mapConstIterator it = directories.find("server_name");
-
-//     if ( it != directories.end() ) {
-//         serverName = it->second;
-//     } else {
-//         std::cout << "Error: NO server_name \n"; exit (1);
-//     }
-
-//     it = directories.find("listen");
-//     if ( it != directories.end() ) {
-//         listen = it->second;
-//     } else {
-//         std::cout << "Error: NO listen \n"; exit (1);
-//     }
-
-// }
 
 static void autoIndexFunction(std::string absolutePath, Request &request) {
 
@@ -33,27 +10,34 @@ static void autoIndexFunction(std::string absolutePath, Request &request) {
 
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
-        std::cout << "Error: cannot open the file/directory\n";
-        exit (1);
+        std::cerr << "Error: opendir(): " << strerror(errno) << std::endl;
+		request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(403));
+            throw ("403");
     }
 
     response += "<html><head><title>Index of " + request.getUri() + "</title></head><body><h1>Index \
          of " + request.getUri() + "</h1><hr><pre>";
 
-    while ( (read_dir = readdir(dir_ptr)) != NULL ) {
-        std::string link = read_dir->d_name;
-        std::cout << link << std::endl;
-        if (read_dir->d_type == DT_REG) {
-            response += "<a href= \"" + link  + "\"> "+ read_dir->d_name + " </a>\r\n" ;
-        } else if (read_dir->d_type == DT_DIR) {
-            response += "<a href= \"" + link  + "\"/> "+ read_dir->d_name + "/ </a>\r\n" ;
-        }
-    }
-
+	while ( (read_dir = readdir(dir_ptr)) != NULL ) {
+		std::string link = read_dir->d_name;
+		if (read_dir->d_type == DT_REG) {
+			response += "<a href= \"" + link  + "\"> "+ read_dir->d_name + " </a>\r\n" ;
+		} else if (read_dir->d_type == DT_DIR) {
+			response += "<a href= \"" + link  + "\"/> "+ read_dir->d_name + "/ </a>\r\n" ;
+		}
+	} 
     response += "</pre><hr></body></html>";
+
     if (closedir(dir_ptr) == -1) {
-        std::cout << "Error: cannot close the directory" << std::endl;
-        throw "Error: closedir()";
+        std::cerr << "Error: closedir(): " << strerror(errno) << std::endl;
+		request.response = responseBuilder()
+            .addStatusLine("403")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(403));
+            throw ("403");
     }
 
     request.response = responseBuilder()
@@ -75,15 +59,9 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
         throw "301";
     }
 
-    // std::map<std::string, std::string> directives = request.getDirectives();
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
 
     mapConstIterator it = directives.find("index");
-
-    // for (auto it : directives) {
-    //     std::cout << "ARE YOU IN|" << it.first << "| |" << it.second <<"|\n";
-    // }
-    // exit (0);
 
     //* Index file if it exists
     if (it != directives.end()) {
@@ -439,10 +417,8 @@ void getMethod(Request &request) {
     //?FIXED : if the uri doesn't have the exact location_match -> it's handled by the state system call
     // the stat checks from the root of the file exists or no
     std::string uri = request.getUri();
-    // std::cout << "BEFORE URI |" << uri << "|\n";
     if (uri.find('?') != std::string::npos) {
         uri.erase(uri.find('?'));
-        // parseQueriesInURI(request, uri);
     }
 
     uri = decodeUrl(uri);
@@ -458,27 +434,15 @@ void getMethod(Request &request) {
             .addResponseBody(request.getPageStatus(403));
             throw "403 Security";
 	}
-    // std::cout << "AFTER URI |" << uri << "|\n";
-    // std::cout << "ROOT |" << concatenateWithRoot << "|\n";
-    // std::cout << "AFTER |" << result << "|\n";
-    // concatenateWithRoot += uri;
+
     concatenateWithRoot = result;
-    // std::cout << "GET: ABSOLUTEPATH|" << concatenateWithRoot << "|\n";
-
-
     const char *path = concatenateWithRoot.c_str();
     struct stat fileStat;
 
-    // std::cout << "--> absolutePath |" << concatenateWithRoot << "|\n";
-    // std::cout << "--> uri |" << uri << "|\n";
-
-    // std::cout << "absolutePath:|" << concatenateWithRoot << "|\tURI|" << uri << "|\n";
     if ( stat(path, &fileStat) == 0 ) {
         if (S_ISREG(fileStat.st_mode)) {
-            std::cout << "IT'S FILE\n";
             requestTypeFile(concatenateWithRoot, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {
-            std::cout << "IT'S DIRECTORY\n";
             requestTypeDirectory(concatenateWithRoot, uri, request);
         } else {
             request.response = responseBuilder()
@@ -487,24 +451,19 @@ void getMethod(Request &request) {
             .addResponseBody(request.getPageStatus(500));
             throw "500";
         }
-    } else {
-
-        if (uri == "/favicon.ico") {
-            std::ifstream file("./response_pages/favicon.ico");
-            std::cout << "FAVICON\n";
-            std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
-            std::cout << "AFOOR\n";
-            request.response = responseBuilder()
+    } else if (uri == "/favicon.ico") {
+        std::ifstream file("./response_pages/favicon.ico");
+        std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
+        request.response = responseBuilder()
             .addStatusLine("200")
             .addContentType("image/x-icon")
             .addResponseBody(content);
-            throw "200";
-        }
-        
+        throw "200";
+    } else {        
         request.response = responseBuilder()
-        .addStatusLine("404")
-        .addContentType("text/html")
-        .addResponseBody(request.getPageStatus(404));
+            .addStatusLine("404")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(404));
         throw "4041";
     }
 

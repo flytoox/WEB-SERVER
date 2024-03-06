@@ -1,16 +1,13 @@
 #include "../includes/cgi.hpp"
 
-std::pair<std::string, std::string> handleCgiGet(const std::string& file,
-                                        const std::string& interpreterPath,
-                                        Request &request) {
+std::pair<std::string, std::string> handleCgiGet(const std::string& file, const std::string& interpreterPath, Request &request) {
+    
     try {
         std::string response;
         Pipe pipe;
         pid_t pid;
 
-
         std::string Header = request.getRequestHeader();
-
         std::map<std::string, std::string> headers = parseHeaders(Header);
         std::map<std::string, std::string> envVars;
         

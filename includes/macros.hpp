@@ -16,6 +16,7 @@
 #define RESPONSE_FORBIDDEN               "403 Forbidden"
 #define RESPONSE_NOT_FOUND               "404 Not Found"
 #define RESPONSE_METHOD_NOT_ALLOWED      "405 Method Not Allowed"
+#define RESPONSE_REQUEST_TIMEOUT         "408 Request Timeout"
 #define RESPONSE_CONFLICT                "409 Conflict"
 #define RESPONSE_REQUEST_TOO_LARGE       "413 Payload Too Large"
 #define RESPONSE_URI_TOO_LONG            "414 URI Too Long"

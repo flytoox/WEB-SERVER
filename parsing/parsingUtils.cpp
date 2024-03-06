@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 15:30:31 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/05 13:51:15 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/06 12:27:25 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,15 @@ void fillTheMap(std::map<int, std::string> &map, std::string &Err) {
         if (v2.size() != 2)
             throw std::runtime_error("Error: error_page has invalid format");
         StringIsNum(v2[0]) == false ? throw std::runtime_error("Error: invalid error code") : num = atoi(v2[0].c_str());
-        if (num < 100 || num > 599)
-            throw std::runtime_error("Error: error code should be between 100 and 599");
+        if (num < 400 || num > 599)
+            throw std::runtime_error("Error: error code should be between 400 and 599");
         std::ifstream file(v2[1]);
         if (!file) continue;
         std::string s = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         if (s.size() > 1e6) continue;
         map[num] = s;
     }
-   int statusCodes[] = {200, 201, 204, 301, 400, 403, 404, 405, 409, 413, 414, 500, 501, 502};
+   int statusCodes[] = {200, 201, 204, 301, 400, 403, 404, 405, 408, 409, 413, 414, 500, 501, 502};
     for (int i = 0; i < 14; i++) {
         std::stringstream codeStr;
         codeStr << statusCodes[i];

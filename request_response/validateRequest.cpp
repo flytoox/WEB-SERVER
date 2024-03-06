@@ -1,4 +1,5 @@
 #include "../includes/webserve.hpp"
+static void handleUploadingError(Request &request, std::string statusCode);
 
 static bool characterNotAllowed(std::string &uri) {
 
@@ -114,17 +115,9 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     } else {
         request.setSaveLastBS(true);
     }
+
     //! erase the double slash and count how many for saving the uri if it's only /regular
     int backSlashcount = 0;
-    // for (size_t i = 0; i < uri.size(); i++) {
-    //     if (uri[i] == '/' && uri [i + 1] && uri [i + 1] == '/') {
-    //         uri.erase(uri[i]);
-    //         backSlashcount++;
-    //     } else if (uri[i] == '/') {
-    //         backSlashcount++;
-    //     }
-    // }
-
     if (uri.length() != 1) {
         removeExtraBackslashes(uri);
     }
@@ -156,7 +149,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
     }
 
-    std::cout << "URI |" << uri << "|\n";
     for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
 
         std::map<std::string, std::string> mapIterator = (*it);
@@ -165,11 +157,9 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
         if ( location_match == uri ) {
            return (mapIterator);
         }
-
     }
 
     std::string directoryUri = fetchTheExactDirectory(uri);
-    std::cout << "WHAAAAAAAT|" << directoryUri << "|\n";
 
     while (!directoryUri.empty()) {
         for (std::vector<std::map<std::string, std::string> >::iterator it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
@@ -185,210 +175,133 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     }
     return (found);
 }
+
+
 void validateRequest(Request &request) {
 
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
-
     std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
-    if ( !transferEncoding.empty() && transferEncoding != "chunked") {
 
+    if ( !transferEncoding.empty() && transferEncoding != "chunked") {
         request.response = responseBuilder()
             .addStatusLine("501")
             .addContentType("text/html")
             .addResponseBody(request.getPageStatus(501));
         throw "501" ;
-
     }
 
-    // std::string contentLenghStr = (httpRequestHeaders["Content-Length:"]);
-    // int contentLength = std::atoi(contentLenghStr.c_str());
+    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
+    std::string method = request.getHttpVerb();
+    if (method == "GET" && ( contentLengh != httpRequestHeaders.end() || !transferEncoding.empty()) ) {
 
-    //! This was done to check the POST method and Transfer-Encoding and Content-Length
-    // mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(400));
 
-    // std::string method = request.getHttpVerb();
-    // if (method == "POST" && contentLengh == httpRequestHeaders.end() ) {
-
-    //     request.response = responseBuilder()
-    //         .addStatusLine("400")
-    //         .addContentType("text/html")
-    //         .addResponseBody("<html><h1>400 Bad Request20</h1></html>");
-
-    //     throw "40018" ;
-    // }
+        throw "40018" ;
+    }
 
     std::string uri = request.getUri();
-    //! TEST BUILDER PATTERN
-
     if ( !uri.empty() && characterNotAllowed( uri ) ) {
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request21</h1></html>");
+            .addResponseBody(request.getPageStatus(400));
         throw "414";
     }
 
     if ( uri.length()  &&  uri.length() > 2048) {
-
         request.response = responseBuilder()
         .addStatusLine("414")
         .addContentType("text/html")
-        .addResponseBody("<html><h1>414 Request-URI Too Long</h1></html>");
-
+        .addResponseBody(request.getPageStatus(414));
         throw "414" ;
-    }
-
-    // request.setRequestBodyChunk(true);
-    //request.setAllowRequestBodyChunk(true);
-    std::map<std::string, std::string> directives = request.getDirectives();
-
-
-    unsigned long clientMaxBody = std::atoi((directives["client_max_body_size"]).c_str());
-
-    if (request.getRequestBodyChunk() == true) {
-        if ( clientMaxBody && (request.getRequestBody()).length() > clientMaxBody ) {
-
-            request.response = responseBuilder()
-            .addStatusLine("413")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>413 Request Entity Too Large</h1></html>");
-
-            throw "413";
-        }
     }
 
     //! Skipped: if => no location match the request uri
     std::map<std::string, std::string> location = fetchSuitableLocationBlock(request, uri);
-    // std::string root;
-
-    // mapConstIterator it = request.getDirectives().find("root");
-
-    // std::string locationNotFound;
-    // root = it->second;
-    // locationNotFound = root + request.getUri();
 
     if ( ! location.empty() ) {
         request.setLocationBlockWillBeUsed(location) ;
     } else if ( request.getLocationBlockWillBeUsed().empty() ) {
-
-        // std::cout << "GET HERE\n";
-
         std::map<std::string, std::string> defaultLocation = request.getDirectives();
-
-        // for (auto it : defaultLocation) {
-        //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
-        // }
         request.setLocationBlockWillBeUsed(defaultLocation);
         location = request.getLocationBlockWillBeUsed();
-
-    } else {
-
-        request.response = responseBuilder()
-        .addStatusLine("404")
-        .addContentType("text/html")
-        .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-        throw "4042";
     }
-
-
-    std::map<std::string, std::string> why = request.getLocationBlockWillBeUsed();
-
-    // std::cout << "*************TESTING***********************\n";
-    // std::cout << " --------> URI |" << request.getUri() << "| <---------------\n";
-
-    // for (auto it : why) {
-    //     std::cout << "|" << it.first << "|\t|" << it.second << "|\n";
-    // }
-    // std::cout << "*************TESTING***********************\n";
-    // exit (0);
-
 
     if ( location.find("return") != location.end() ) {
 
-     std::string changeLocation = location["return"];
-    std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
-    changeLocation = *(vectorReturn.end() - 1);
-        std::cout << "CORRECT ? |" << changeLocation << "|\n";
-        //TODO:this must be split; the first string must contain 301 and the second strign is the one saved as a value for directives["return"]
+		std::string changeLocation = location["return"];
+		std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
+		changeLocation = *(vectorReturn.end() - 1);
 
-        if ( changeLocation.length() ) {
-            if (changeLocation.substr(0, 8) != "https://") {
-                changeLocation.insert(0, "https://");
-            }
-            request.response = responseBuilder()
-            .addStatusLine(*vectorReturn.begin())
-            .addLocation(changeLocation)
-            .addContentType("text/html")
-            .addResponseBody("<html><h1>" + (*vectorReturn.begin()) + "</h1></html>");
+		if ( changeLocation.length() ) {
+			if (changeLocation.substr(0, 8) != "https://") {
+				changeLocation.insert(0, "https://");
+			}
+			request.response = responseBuilder()
+				.addStatusLine(*vectorReturn.begin())
+				.addLocation(changeLocation)
+				.addContentType("text/html")
+				.addResponseBody("<html><h1>" + (*vectorReturn.begin()) + "</h1></html>");
 
-            throw "return directive";
-        }
-        // else {
+			throw "return directive";
+		}
 
-        //     request.response = responseBuilder()
-        //     .addStatusLine("200")
-        //     .addContentType("text/html")
-        //     .addResponseBody("<html><h1>301 Moved Permanently</h1></html>");
-        //     throw "200";
-        // }
-
-        std::map<std::string, std::string> directives = request.getDirectives();
-        std::string returnCheck = directives["return"];
-        std::vector<std::map<std::string, std::string> > allLocations = request.getLocationsBlock();
-        for (vectorToMapIterator it = allLocations.begin(); it != allLocations.end(); it++) {
-            std::map<std::string, std::string> locations = *it;
-            if ( locations["location"] == returnCheck  ) {
-                if ( directives["location"] != returnCheck )
-                    request.setUri(returnCheck);
-                    request.setLocationBlockWillBeUsed(locations);
-                    break ;
-            }
-        }
-
+		std::map<std::string, std::string> directives = request.getDirectives();
+		std::string returnCheck = directives["return"];
+		std::vector<std::map<std::string, std::string> > allLocations = request.getLocationsBlock();
+		for (vectorToMapIterator it = allLocations.begin(); it != allLocations.end(); it++) {
+			std::map<std::string, std::string> locations = *it;
+			if ( locations["location"] == returnCheck  ) {
+				if ( directives["location"] != returnCheck )
+				request.setUri(returnCheck);
+				request.setLocationBlockWillBeUsed(locations);
+				break ;
+			}
+		}
     }
 
-    //DONE: this is a mqp which containes notAllowd methods ; must be split and checked !
-    //DONE : Omar this a string not a word to override everytime
     if ( location.find("allowedMethods") != location.end()) {
-
         std::string input = location["allowedMethods"];
-        std::cout << "Allowed Methods |" << input << "|\n";
         std::vector<std::string> theAllowedMethods = splitString(input, " ");
-        // for (auto it : theAllowedMethods) {
-        //     std::cout << "|" << it << "|\n";
-        // }
         const_vector_it itAllowedMethods = std::find(theAllowedMethods.begin(), theAllowedMethods.end(), request.getHttpVerb());
 
-
         if (itAllowedMethods == theAllowedMethods.end()) {
-
             request.response = responseBuilder()
             .addStatusLine("405")
             .addContentType("text/html")
             .addResponseBody(request.getPageStatus(405));
-
             throw "405";
         }
     }
 
-
     std::map<std::string, std::string>::const_iterator contentType = (request.getHttpRequestHeaders()).find("Content-Type:");
-
     if (contentType != (request.getHttpRequestHeaders()).end() && contentType->second == "multipart/form-data;") {
-        if (location["upload_enabled"] == "off" || location.find("upload_store") == location.end()) {
-            std::cout << "WTTFF1\n";
-            std::cout << request.getHttpRequestHeaders().find("Connection:")->second << std:: endl;
-            std::pair<std::string, std::string> p = std::make_pair("Connection:", "closed");
-            request.setHttpRequestHeaders(p);
-            std::cout << request.getHttpRequestHeaders().find("Connection:")->second << std:: endl;
-            std::string page = request.getPageStatus(403);
-            request.response = responseBuilder()
-            .addStatusLine("403")
-            .addContentType("text/html")
-            .addResponseBody(page);
-            throw "403";
+        if (location["upload_enable"] == "off" || location.find("upload_store") == location.end()) {
+			handleUploadingError(request, "403");
+        }
+
+        DIR *dir_ptr = opendir(location["upload_store"].c_str());
+        if (dir_ptr == NULL) {
+			handleUploadingError(request, "500");
         }
     }
-     std::cout << "WTTFF2\n";
+}
 
+
+static void handleUploadingError(Request &request, std::string statusCode) {
+
+	int status = std::atoi(statusCode.c_str());
+
+	std::cout << "Status" << statusCode << std::endl;
+	std::pair<std::string, std::string> p = std::make_pair("Connection:", "closed");
+	request.setHttpRequestHeaders(p);
+	std::string page = request.getPageStatus(status);
+	request.response = responseBuilder()
+		.addStatusLine(statusCode)
+		.addContentType("text/html")
+		.addResponseBody(page);
+		throw ((const char *)statusCode.c_str());
 }

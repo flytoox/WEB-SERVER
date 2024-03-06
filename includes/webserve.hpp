@@ -44,50 +44,9 @@ typedef std::map<std::string, std::string>::const_iterator               mapCons
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
 typedef std::vector<std::map<std::string, std::string> >::const_iterator vectorToMapIterator;
 
-//! config.cpp
-
-
-//! parseServer1Block.cpp
-void    adjustServer1DirectivesMap(std::map<std::string, std::string> &serverDirectives);
-void    adjustServer1LocationBlockMap1(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer1LocationBlockMap2(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer1LocationBlockMap3(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer1LocationBlockVector(std::vector<std::map<std::string, std::string> > &server1LocationBlockVector);
-
-//! parseServer2Block.cpp
-void    adjustServer2DirectivesMap(std::map<std::string, std::string> &serverDirectives);
-void    adjustServer2LocationBlockMap1(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer2LocationBlockMap2(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer2LocationBlockMap3(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer2LocationBlockVector(std::vector<std::map<std::string, std::string> > &server2LocationBlockVector);
-
-//! parseServer3Block.cpp
-
-void    adjustServer3DirectivesMap(std::map<std::string, std::string> &serverDirectives);
-void    adjustServer3LocationBlockMap1(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer3LocationBlockMap2(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer3LocationBlockMap3(std::map<std::string, std::string> &serverLocationDirectives);
-void    adjustServer3LocationBlockVector(std::vector<std::map<std::string, std::string> > &server3LocationBlockVector);
-
-
 //! multiplexing.cpp
 
-
 void funcMultiplexingBySelect(configFile &configurationServers);
-
-//! parseServer1Block.cpp | parseServer2Block.cpp | parseServer3Block.cpp
-
-
-void    adjustServer1DirectivesMap(std::map<std::string, std::string> &serverDirectives);
-void    adjustServer2DirectivesMap(std::map<std::string, std::string> &serverDirectives);
-void    adjustServer3DirectivesMap(std::map<std::string, std::string> &serverDirectives);
-
-void adjustServer1LocationBlockVector(std::vector<std::map<std::string, std::string> > &server1LocationBlockVector);
-void adjustServer2LocationBlockVector(std::vector<std::map<std::string, std::string> > &server1LocationBlockVector);
-void adjustServer3LocationBlockVector(std::vector<std::map<std::string, std::string> > &server1LocationBlockVector);
-
-
-
 
 //! re_configureRequestClass.cpp
 //TODO: remove the requestOutput after checking the output request
@@ -177,3 +136,8 @@ bool isValidCGI(std::map<std::string, std::string> &directives, std::string &ext
 std::string extractContentType(const std::string& headers);
 
 std::multimap<std::string, std::string> parseResponseHeaders(const std::string& headers);
+
+//! receiveRequest.cpp
+
+void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int &i, configFile &configurationServers, fd_set &allsd);
+void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);

@@ -63,7 +63,7 @@ if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] === 'true') {
         <h1>Welcome, <?php echo $_SESSION['username']; ?>!</h1>
     <?php else: ?>
         <h1>Login</h1>
-        <form action="/Desktop/WebServ/cgi-bin/login.php" method="post">
+        <form action="/Desktop/WebServ/cgiTests/login.php" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br><br>
             <label for="password">Password:</label>
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		setcookie('loggedIn', 'true', time() + (86400 * 30), '/'); // Set cookie to expire in 30 days
 		setcookie('username', $username, time() + (86400 * 30), '/'); // Set cookie to expire in 30 days
 
-        header('Location: /Desktop/WebServ/cgi-bin/login.php'); // Redirect to the same page
+        header('Location: /Desktop/WebServ/cgiTests/login.php'); // Redirect to the same page
 		exit;
 	}
 

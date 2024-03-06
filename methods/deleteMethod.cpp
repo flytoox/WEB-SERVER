@@ -115,8 +115,6 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
 
     std::string response; (void)uri;
 
-
-    std::cout << "WTF |" << "|\n"; 
     if ( ! request.getSaveLastBS() ) {
         std::string page = request.getPageStatus(409);
         request.response = responseBuilder()

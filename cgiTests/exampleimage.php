@@ -1,11 +1,11 @@
 <?php
 // Specify the path to the existing WebP image file
-$imagePath = "/Users/aait-mal/Desktop/nokia.webp";
+$imagePath = "/Users/aait-mal/Downloads/street.jpeg";
 
 // Check if the image file exists
 if (file_exists($imagePath)) {
     // Set the Content-Type header to indicate that the response is a WebP image
-    header("Content-Type: image/webp");
+    header("Content-Type: image/jpeg");
 
     // Output the WebP image to the browser
     readfile($imagePath);

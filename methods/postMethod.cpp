@@ -100,7 +100,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
             // Set the initial HTTP response headers
             request.response = responseBuilder()
-            .addStatusLine("302")
+            .addStatusLine("200")
             .addContentType(extension)
             .addResponseBody(body);
             for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
@@ -108,6 +108,14 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
                     request.response.addCookie(it->second);
                 else if (it->first == "Location")
                     request.response.addLocationFile(it->second);
+                else if (it->first == "Status") {
+                    std::string status = it->second;
+                    std::stringstream ss(status);
+                    std::string statusNumber;
+                    ss >> statusNumber;
+        
+                    request.response.addStatusLine(statusNumber);
+                }
             }
             request.response.addResponseBody(body);
 
@@ -304,13 +312,14 @@ void postMethod(Request &request) {
     }
 
 
-    if (locations["upload_enable"] == "on" && value == "multipart/form-data;") {
-            multipartContentType(request);
-            request.response = responseBuilder()
-                .addStatusLine("201")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>201 Created</h1></html>");
-            throw "201" ;
+    if ( value == "multipart/form-data;" ) {
+        multipartContentType(request);
+        request.response = responseBuilder()
+            .addStatusLine("201")
+            .addContentType("text/html")
+            .addLocationFile(locations["upload_store"])
+            .addResponseBody(request.getPageStatus(201));
+        throw "201" ;
         // uploadRequestBody(request);
     }
 
