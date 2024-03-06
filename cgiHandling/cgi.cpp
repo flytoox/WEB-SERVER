@@ -1,29 +1,16 @@
 #include "../includes/cgi.hpp"
 
-std::pair<std::string, std::string> handleCgiGet(const std::string& file,
-                                        const std::string& interpreterPath,
-                                        Request &request) {
+std::pair<std::string, std::string> handleCgiGet(const std::string& file, const std::string& interpreterPath, Request &request) {
+    
     try {
         std::string response;
         Pipe pipe;
         pid_t pid;
 
-
         std::string Header = request.getRequestHeader();
-
         std::map<std::string, std::string> headers = parseHeaders(Header);
         std::map<std::string, std::string> envVars;
-
-        // std::string checkbody = request.getRequestBody();
-        // // erase the whole body of request
-        // request.setRequestBody(std::string());
-        // checkbody = request.getRequestBody();
-        // std::cout<< "CECKBODY <<<<<<<<<<" << checkbody << std::endl;
-        // envVars["REQUEST_METHOD"] = "GET";
-        // if (checkbody.length() > 0) {
-        //     return std::make_pair("Content-Type: text/html\r\n", "<html><h1>405 Method Not Allowed</h1></html>");
-        // }
-
+        
         pid = fork();
 
         if (pid == -1) {

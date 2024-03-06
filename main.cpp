@@ -8,7 +8,7 @@ void parseConfigFile(configFile &configurationServers, std::string path) {
 		}
     	configurationServers.setTheVector(servers);
     	funcMultiplexingBySelect(configurationServers);
-	} catch (std::runtime_error &e) {
+	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
 	}
