@@ -7,11 +7,11 @@ void parseConfigFile(configFile &configurationServers, std::string path) {
 			throw std::runtime_error("Error: file has no server in it");
 		}
     	configurationServers.setTheVector(servers);
+    	funcMultiplexingBySelect(configurationServers);
 	} catch (std::runtime_error &e) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
 	}
-    funcMultiplexingBySelect(configurationServers);
 }
 
 void checkBasicErrors(std::string path) {

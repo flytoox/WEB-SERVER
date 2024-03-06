@@ -199,7 +199,7 @@ void deleteMethod(Request &request) {
 
     std::string concatenateWithRoot, locationUsed;
 
-    retrieveRootAndUri(request, concatenateWithRoot, locationUsed);
+    retrieveRootAndUri(request, concatenateWithRoot);
 
 
 

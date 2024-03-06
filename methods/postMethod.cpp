@@ -317,8 +317,8 @@ void postMethod(Request &request) {
 
 
     //* get_requested_resource()
-    std::string root, locationUsed;
-    retrieveRootAndUri(request, root, locationUsed);
+    std::string root;
+    retrieveRootAndUri(request, root);
 
     // if ( root.empty() ) {
 
@@ -334,7 +334,7 @@ void postMethod(Request &request) {
         //     throw "No Root: 200";
         // }
         // else
-            root =  request.getDirectives().find("root")->second;
+            // root =  request.getDirectives().find("root")->second;
 
     // }
 

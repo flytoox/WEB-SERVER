@@ -181,7 +181,6 @@ responseBuilder& responseBuilder::addContentLength(const std::string &content) {
 
 responseBuilder& responseBuilder::addResponseBody(const std::string &responseBody) {
 
-    // if bosy is not defined, define it
     if (this->body.length() == 0) {
         this->body = responseBody;
         this->addContentLength();
@@ -196,22 +195,14 @@ std::string responseBuilder::build() {
 
     response << HTTP_VERSION << " " << resultMsg << CRLF;
 
-
     for (std::multimap<std::string, std::string>::iterator it = headersResponses.begin(); it !=  headersResponses.end(); it++) {
         response << it->first << it->second << CRLF;
     }
-
     response << "Keep-Alive: timeout=5" << CRLF;
     response << CRLF;
 
     if (body.length() != 0) {
         response << body << CRLF;
     }
-
-
-    // std::cout << "RESPONSE BE LIKE |" << response.str() << "|\n";
-
-    // std::cout << "WHAT I WOULD RETURN |" << response.str() << "|\n";
     return response.str();
-
 }

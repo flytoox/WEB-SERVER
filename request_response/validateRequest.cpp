@@ -203,20 +203,22 @@ void validateRequest(Request &request) {
     }
 
     std::string uri = request.getUri();
-    if ( !uri.empty() && characterNotAllowed( uri ) ) {
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(400));
-        throw "414";
-    }
 
-    if ( uri.length()  &&  uri.length() > 2048) {
-        request.response = responseBuilder()
-        .addStatusLine("414")
-        .addContentType("text/html")
-        .addResponseBody(request.getPageStatus(414));
-        throw "414" ;
+    if ( ! uri.empty() ) {
+        if ( characterNotAllowed( uri ) ) {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(400));
+            throw "414";
+        }
+        if (  uri.length() > 2048 ) {
+            request.response = responseBuilder()
+                .addStatusLine("414")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(414));
+            throw "414" ;            
+        }
     }
 
     //! Skipped: if => no location match the request uri
@@ -248,19 +250,6 @@ void validateRequest(Request &request) {
 
 			throw "return directive";
 		}
-
-		std::map<std::string, std::string> directives = request.getDirectives();
-		std::string returnCheck = directives["return"];
-		std::vector<std::map<std::string, std::string> > allLocations = request.getLocationsBlock();
-		for (vectorToMapIterator it = allLocations.begin(); it != allLocations.end(); it++) {
-			std::map<std::string, std::string> locations = *it;
-			if ( locations["location"] == returnCheck  ) {
-				if ( directives["location"] != returnCheck )
-				request.setUri(returnCheck);
-				request.setLocationBlockWillBeUsed(locations);
-				break ;
-			}
-		}
     }
 
     if ( location.find("allowedMethods") != location.end()) {
@@ -282,7 +271,6 @@ void validateRequest(Request &request) {
         if (location["upload_enable"] == "off" || location.find("upload_store") == location.end()) {
 			handleUploadingError(request, "403");
         }
-
         DIR *dir_ptr = opendir(location["upload_store"].c_str());
         if (dir_ptr == NULL) {
 			handleUploadingError(request, "500");
@@ -295,7 +283,6 @@ static void handleUploadingError(Request &request, std::string statusCode) {
 
 	int status = std::atoi(statusCode.c_str());
 
-	std::cout << "Status" << statusCode << std::endl;
 	std::pair<std::string, std::string> p = std::make_pair("Connection:", "closed");
 	request.setHttpRequestHeaders(p);
 	std::string page = request.getPageStatus(status);

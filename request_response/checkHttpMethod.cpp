@@ -3,18 +3,13 @@
 
 void checkRequestedHttpMethod(Request &request) {
 
-    
     std::string httpMethod;
     httpMethod = request.getHttpVerb();
 
     if (httpMethod == "GET") {
         getMethod(request);
-    } 
-    else if (httpMethod == "POST") {
+    } else if (httpMethod == "POST") {
         postMethod(request);
-    } 
-    else {
-        deleteMethod(request);
     }
-
+    deleteMethod(request);
 }
