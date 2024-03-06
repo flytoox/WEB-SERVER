@@ -49,6 +49,7 @@ public:
     static std::vector<Server> parsingFile(std::string s);
     static void overrideLocations(Server &s);
     static void fillErrorPages(Server &s);
+    static void runServers(std::vector<Server> &servers);
 
     ~Server();
 };

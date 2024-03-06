@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsingUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 15:30:31 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/06 12:27:25 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/06 16:58:57 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,3 +63,4 @@ void Server::fillErrorPages(Server &s) {
         }
     }
 }
+
