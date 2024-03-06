@@ -1,6 +1,6 @@
 #pragma once
 
-#define HTTP_VERSION                    "HTTP/1.1 "
+#define HTTP_VERSION                    "HTTP/1.1"
 
 #define CRLF                            "\r\n"
 #define LOCATION                        "Location: "

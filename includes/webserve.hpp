@@ -95,7 +95,7 @@ void getMethod(Request &request);
 
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request);
 void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request);
-void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot,std::string& locationUsed);
+void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot);
 void getMethod(Request &request);
 char hexToCharacters(const std::string& hex);
 std::string decodeUrl(const std::string &srcString);
