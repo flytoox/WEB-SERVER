@@ -139,5 +139,5 @@ std::multimap<std::string, std::string> parseResponseHeaders(const std::string& 
 
 //! receiveRequest.cpp
 
-void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int &i, configFile &configurationServers, fd_set &allsd);
+void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
