@@ -42,25 +42,6 @@ static void uploadRequestBody(Request &request) {
 
 }
 
-// Function to parse HTTP headers string into a map
-std::multimap<std::string, std::string> parseResponseHeaders(const std::string& headers) {
-    std::multimap<std::string, std::string> headersMap;
-    std::istringstream iss(headers);
-
-    std::string line;
-    while (std::getline(iss, line)) {
-        size_t pos = line.find(':');
-        if (pos != std::string::npos) {
-            std::string key = line.substr(0, pos);
-            std::string value = line.substr(pos + 1);
-            headersMap.insert(std::make_pair(key, value));
-        }
-    }
-
-    return headersMap;
-}
-
-
 void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
@@ -91,12 +72,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             std::cout << "contentType: " << contentType << "\n";
             std::cout << "extension: " << extension << "\n";
 
-            std::cout << "HEADERS |" << headers << "|\n";
             std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
-            for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
-                std::cout << "HEADER |" << it->first << " : " << it->second << "|\n";
-            }
-            std::cout << "BODY |" << body << "|\n";
 
             // Set the initial HTTP response headers
             request.response = responseBuilder()

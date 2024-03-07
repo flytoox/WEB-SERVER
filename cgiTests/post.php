@@ -19,16 +19,18 @@ echo "        <li class=\"headerItem\" ><a href=\"/\">Root</a></li>\n";
 echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/html/upload.html\">Upload</a></li>\n";
 echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/cgiTests/example.php\">Get</a></li>\n";
 echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/html/test_cgi.html\">Post</a></li>\n";
+echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/cgiTests/login.php\">Login</a></li>\n";
 echo "    </ul>\n";
 echo "</div>\n";
 echo "<div class=\"container\">\n";
-
+echo "    <div class=\"head\">\n";
 if (!empty($postData)) {
-    echo "<p>Received POST data: " . htmlspecialchars($postData) . "</p>";
+    echo "<h1 >Received POST data: <font class=\"special\">" . htmlspecialchars($postData) . "</font></h1>";
 } else {
-    echo "<p>No POST data received.</p>";
+    echo "<h1 >No POST data received</h1>";
 }
-
+echo "    </div>\n";
+echo "    <div>\n";
 echo "</div>";
 echo "</body>\n";
 echo "</html>\n";

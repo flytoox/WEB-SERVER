@@ -12,6 +12,7 @@
     echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/html/upload.html\">Upload</a></li>\n";
     echo "        <li class=\"headerItem\" ><a href=\"#\">Get</a></li>\n";
     echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/html/test_cgi.html\">Post</a></li>\n";
+    echo "        <li class=\"headerItem\" ><a href=\"/Desktop/WebServ/cgiTests/login.php\">Login</a></li>\n";
     echo "    </ul>\n";
     echo "</div>\n";
     echo "<div class=\"container\">\n";
