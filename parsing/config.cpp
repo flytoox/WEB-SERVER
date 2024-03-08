@@ -3,25 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/06 18:16:39 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/08 18:40:23 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
 
 using namespace std;
-
-vector<string> splitWhiteSpaces(string s) {
-	stringstream ss(s);
-	vector<string> v;
-	string word;
-	while (ss >> word)
-		v.push_back(word);
-	return (v);
-}
 
 bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 	for (size_t i = 0; i < locationsBlock.size(); i++) {

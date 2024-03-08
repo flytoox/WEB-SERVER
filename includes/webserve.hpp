@@ -7,6 +7,7 @@
 #include "responseBuilder.hpp"
 #include "macros.hpp"
 #include "cgi.hpp"
+#include "utils.hpp"
 
 #include <exception>
 #include <string>
@@ -89,21 +90,19 @@ void parseRequestBody(Request &request);
 void checkRequestedHttpMethod(Request &request);
 
 //! getMethod.cpp
-std::string CheckPathForSecurity(std::string path);
-
 void getMethod(Request &request);
+std::string CheckPathForSecurity(std::string path);
+void autoIndexFunction(std::string absolutePath, Request &request);
 
 void requestTypeDirectory(std::string &root, std::string &uri, Request &request);
 void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request);
 void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot);
-void getMethod(Request &request);
-char hexToCharacters(const std::string& hex);
-std::string decodeUrl(const std::string &srcString);
 
 //! postMethod.cpp
 
 void parseQueriesInURI(Request &request,std::string &uri);
 void postMethod(Request &request);
+void uploadRequestBody(Request &request);
 
 //! deleteMEthod.cpp
 
@@ -118,24 +117,8 @@ void pureBinary(std::string &image, std::string &destination);
 void multipartContentType(Request &request);
 void urlencodedContentType(Request &request);
 
-
-
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
-
-//! cgi.cpp
-
-std::pair<std::string, std::string> handleCgiGet(const std::string& file,
-                                        const std::string& interpreterPath,
-                                        Request &request);
-std::pair<std::string, std::string> handleCgiPost(const std::string& file,
-                                        const std::string& interpreterPath,
-                                        Request &request);
-
-bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath);
-std::string extractContentType(const std::string& headers);
-
-std::multimap<std::string, std::string> parseResponseHeaders(const std::string& headers);
 
 //! receiveRequest.cpp
 

@@ -274,8 +274,6 @@ void multipartContentType(Request &request) {
 
 void urlencodedContentType(Request &request) {
 
-    std::cout << "GOTTEN WITHIN urlencodedContentType()\n";
-
     std::string res = request.getRequestBody();
     std::map<std::string, std::string> mapTopush;
 
@@ -296,12 +294,6 @@ void urlencodedContentType(Request &request) {
         }
     }
     request.setUrlencodedResponse(mapTopush);
-
-    // for (auto it : mapTopush) {
-    //     std::cout << "URLENCODED |" << it.first << "|\t|" << it.second << "\n";
-    // }
-
-
 }
 
 

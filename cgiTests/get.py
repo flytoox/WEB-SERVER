@@ -2,7 +2,7 @@
 
 # Importing necessary modules
 import cgi
-
+import requests
 # Set content type to HTML
 print("Content-type:text/html\r\n\r\n")
 
@@ -16,3 +16,7 @@ print("<h2>This is a CGI Example</h2>")
 print("<p>Hello from Python CGI!</p>")
 print("</body>")
 print("</html>")
+
+session = requests.Session()
+session.get('http://localhost:1111/cgiTests/get.py')
+session.close()

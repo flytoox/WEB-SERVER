@@ -2,13 +2,8 @@
 
 void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<int> &allSocketsVector) {
 
-    for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
-        //* GET SOCKET ON EACH SERVER
-        Server serverIndex = (*it);
-        int eachSocket = serverIndex.getSocketDescriptor();
-        //* PUSH IT TO THE allSocketsVector
-        allSocketsVector.push_back(eachSocket);
-    }
+    for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it)
+        allSocketsVector.push_back(it->getSocketDescriptor());
 }
 
 
@@ -19,7 +14,6 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
     // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
-    std::cerr << res << std::endl;
     int sd;
     while (res.length()) {
         std::string chunk = "";
@@ -80,32 +74,30 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 
 void funcMultiplexingBySelect(configFile &configurationServers) {
 
-    std::vector<int> allSocketsVector;
-    std::map<int, std::string> clientSocketsMap;
-    std::map<int, std::string> clientsMap;
+    std::vector<int> ServersSD;
     fd_set readsd, writesd, allsd;
     std::map<int, Request> simultaneousRequests;
     std::set<int> Fds;
 
-    getAllTheConfiguredSockets(configurationServers, allSocketsVector);
+    getAllTheConfiguredSockets(configurationServers, ServersSD);
     FD_ZERO(&allsd);
 
-    for (socket_iterator it = allSocketsVector.begin(); it != allSocketsVector.end(); ++it) {
+    for (socket_iterator it = ServersSD.begin(); it != ServersSD.end(); it++) {
         Fds.insert(*it);
         FD_SET((*it), &allsd);
     }
 
-    int s;
     int responseD = 0;
     for (FOREVER) {    
         try {
             readsd = allsd;
-            if ((s = select(*Fds.rbegin() + 1, &readsd, 0, 0, 0)) < 0) {
-                std::cerr << "Error: select(): " << strerror(errno) << std::endl;
+            if (select(*Fds.rbegin() + 1, &readsd, 0, 0, 0) < 0) {
+                std::cerr << "Error: select():" << std::endl;
+                exit(1);
             }
             for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {
                 responseD = *i;
-                if (std::find(allSocketsVector.begin(), allSocketsVector.end(), *i) == allSocketsVector.end()) {
+                if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
                     time_t now = time(0);
                     time_t elapsedSeconds = now - simultaneousRequests[*i].getTimeout();
                     std::cout << *i << ' ' << ' '<< elapsedSeconds <<"\n";
@@ -120,38 +112,35 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 }
             }
 
-            std::cout<< "3333333|S" << s << "|\n";
-
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {
                 responseD = *i;
                 if (!FD_ISSET(*i, &readsd)) {
                     continue ;
                 }
 
-                socket_iterator readyToConnect = std::find(allSocketsVector.begin(), allSocketsVector.end(), *i);
-                if (readyToConnect != allSocketsVector.end()) {
+                socket_iterator readyToConnect = std::find(ServersSD.begin(), ServersSD.end(), *i);
+                if (readyToConnect != ServersSD.end()) {
                     //! A Connection's been received
-
                     struct sockaddr_in clientAddress;
                     socklen_t addrlen =  sizeof(clientAddress);
-                    int connectSD = accept( (*readyToConnect) , (struct sockaddr *)&clientAddress , &addrlen);
-                    if (connectSD == -1 ) {
-                    std::cerr << "Error: accept(): " << strerror(errno) << std::endl;
+                    int clientSD = accept(*readyToConnect , (struct sockaddr *)&clientAddress , &addrlen);
+                    if (clientSD == -1 ) {
+                        std::cerr << "Error: accept(): " << strerror(errno) << std::endl;
                         continue ;
                     }
-                    FD_SET(connectSD, &allsd);
-                    Fds.insert(connectSD);
+                    FD_SET(clientSD, &allsd);
+                    Fds.insert(clientSD);
                     Request request;
                     configureRequestClass(request, configurationServers, *i);
-                    simultaneousRequests.insert(std::make_pair(connectSD, request));
-
-                } else
-                        //* REQUEST
-                        receiveRequestPerBuffer(simultaneousRequests, *i, configurationServers, allsd);
+                    simultaneousRequests.insert(std::make_pair(clientSD, request));
+                } else {
+                    //* REQUEST
+                    receiveRequestPerBuffer(simultaneousRequests, *i, configurationServers, allsd);
                 }
-            } catch (const char *error) {
-                //* RESPONSE
-                functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests);
             }
+        } catch (const char *error) {
+            //* RESPONSE
+            functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests);
+        }
     }
 }

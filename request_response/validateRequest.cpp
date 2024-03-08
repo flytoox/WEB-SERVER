@@ -164,7 +164,6 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     while (!directoryUri.empty()) {
         for (std::vector<std::map<std::string, std::string> >::iterator it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
             if (it->at("location") == directoryUri) {
-                std::cerr << "OK OK ?? " << directoryUri<< std::endl;
                 return *it;
             }
         }

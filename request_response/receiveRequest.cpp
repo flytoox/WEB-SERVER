@@ -7,19 +7,18 @@ static void push_convert(std::string &convert, char *buffer, int r) {
 }
 
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request) {
-
     try {
         Server serverReform;
         std::string v1 = header.substr(header.find("Host: "));
         std::string hostHeader = v1.substr(0, v1.find("\n"));
         std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1);
-        hostValue.erase(hostValue.length() - 1);
+        hostValue.erase(hostValue.size() - 1);
 
-        if ( request.dup == true ) {
+        if (request.dup == true) {
 
-            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
+            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); it++) {
                 std::map<std::string, std::string>tmp = it->getdirectives();
-                if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost ) {
+                if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost) {
                     serverReform = *it;
                     std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
                     std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
@@ -28,7 +27,8 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
                     break ;
                 }
             }
-    } } catch (std::exception &e) {
+        }
+    } catch (std::exception &e) {
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
@@ -52,22 +52,22 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
     std::string convert;
     push_convert(convert, buffer, recevRequestLen);
 
-    if ( ! (simultaneousRequests[i].getRequestBodyChunk()) ) {
+    if (!(simultaneousRequests[i].getRequestBodyChunk())) {
         //! REQUEST HEADER
         simultaneousRequests[i].setRequestHeader(convert);
-        if ( ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos ) {
-                std::string header = (simultaneousRequests[i]).getRequestHeader();
-                if ((simultaneousRequests[i]).reCheck != true) {
-                    (simultaneousRequests[i]).reCheck = true;
-                    reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
-                }
-                parseAndSetRequestHeader(simultaneousRequests[i]);
-                (simultaneousRequests[i].setRequestBodyChunk(true));
-                (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
-                if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
-                    parseRequestBody(simultaneousRequests[i]);
-                    checkRequestedHttpMethod(simultaneousRequests[i]);
-                }
+        if (((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos) {
+            std::string header = (simultaneousRequests[i]).getRequestHeader();
+            if ((simultaneousRequests[i]).reCheck != true) {
+                (simultaneousRequests[i]).reCheck = true;
+                reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
+            }
+            parseAndSetRequestHeader(simultaneousRequests[i]);
+            simultaneousRequests[i].setRequestBodyChunk(true);
+            simultaneousRequests[i].reachedBodyLength = simultaneousRequests[i].getRequestBody().length();
+            if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
+                parseRequestBody(simultaneousRequests[i]);
+                checkRequestedHttpMethod(simultaneousRequests[i]);
+            }
         }
         // else if (recevRequestLen < 1024 && ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") == std::string::npos) {
         //     (simultaneousRequests[i]).response = responseBuilder()
