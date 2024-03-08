@@ -142,13 +142,16 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
 
             if (WIFEXITED(status)) {
                 int exitStatus = WEXITSTATUS(status);
-                std::cout << "Child process exited with status: " << exitStatus << "\n";
+                if (exitStatus != 0) {
+                    std::cerr << "CGI Warning!! Child process exited with status: " << exitStatus << "\n";
+                    return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
+                }
             } else if (WIFSIGNALED(status)) {
                 int signalNumber = WTERMSIG(status);
-                std::cerr << "Child process terminated by signal: " << signalNumber << "\n";
+                std::cerr << "CGI Warning!! Child process terminated by signal: " << signalNumber << "\n";
                 return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             } else {
-                std::cerr << "Child process terminated abnormally.\n";
+                std::cerr << "CGI Error!! Child process terminated abnormally.\n";
             }
         }
 

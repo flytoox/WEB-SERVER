@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:18:26 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/07 12:27:11 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/08 12:47:31 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,28 +49,6 @@ std::string extractContentType(const std::string& headers) {
     return "";  // Return an empty string if "Content-Type" is not found
 }
 
-static std::vector<std::string> splitWhiteSpaces(std::string s) {
-	std::stringstream ss(s);
-	std::vector<std::string> v;
-	std::string word;
-	while (ss >> word)
-		v.push_back(word);
-	return (v);
-}
-
-bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
-    if (!directives.count("cgi_bin")) return false;
-    std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
-    for (int i = 0; i < (int)cgiParts.size(); i++) {
-        std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
-        if (cgiConfig.size() < 2) continue;
-        if (access(cgiConfig[0].c_str(), F_OK | X_OK) == -1) continue;
-        for (int i = 1; i < (int)cgiConfig.size(); i++)
-            if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
-    }
-    return false;
-}
-
 // Function to parse HTTP headers string into a map
 std::multimap<std::string, std::string> parseResponseHeaders(const std::string& headers) {
     std::multimap<std::string, std::string> headersMap;
@@ -87,5 +65,19 @@ std::multimap<std::string, std::string> parseResponseHeaders(const std::string& 
     }
 
     return headersMap;
+}
+
+std::pair<std::string, std::string> splitHeadersAndBody(const std::string& response) {
+    size_t headerEndPos = response.find("\r\n\r\n");
+
+    if (headerEndPos == std::string::npos) {
+        // No header delimiter found, treat the entire response as headers
+        return std::make_pair(std::string(), response);
+    }
+
+    std::string headers = response.substr(0, headerEndPos);
+    std::string body = response.substr(headerEndPos + 4); // Skip "\r\n\r\n"
+
+    return std::make_pair(headers, body);
 }
 

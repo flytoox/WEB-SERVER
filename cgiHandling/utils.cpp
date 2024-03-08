@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cgiUtils.cpp                                       :+:      :+:    :+:   */
+/*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 18:00:04 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/05 13:30:55 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/08 12:47:28 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,4 +107,26 @@ std::map<std::string, std::string> fillEnv(std::map<std::string, std::string>& h
     }
 
     return envVars;
+}
+
+std::vector<std::string> splitWhiteSpaces(std::string s) {
+	std::stringstream ss(s);
+	std::vector<std::string> v;
+	std::string word;
+	while (ss >> word)
+		v.push_back(word);
+	return (v);
+}
+
+bool isValidCGI(std::map<std::string, std::string> &directives, std::string &extension, std::string &cgiPath) {
+    if (!directives.count("cgi_bin")) return false;
+    std::vector<std::string> cgiParts = splitWithChar(directives["cgi_bin"], '\n');
+    for (int i = 0; i < (int)cgiParts.size(); i++) {
+        std::vector<std::string> cgiConfig = splitWhiteSpaces(cgiParts[i]);
+        if (cgiConfig.size() < 2) continue;
+        if (access(cgiConfig[0].c_str(), F_OK | X_OK) == -1) continue;
+        for (int i = 1; i < (int)cgiConfig.size(); i++)
+            if (cgiConfig[i] == extension) return (cgiPath = cgiConfig[0], true);
+    }
+    return false;
 }

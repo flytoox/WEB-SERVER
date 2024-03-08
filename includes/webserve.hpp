@@ -102,6 +102,7 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot);
 
 void parseQueriesInURI(Request &request,std::string &uri);
 void postMethod(Request &request);
+void uploadRequestBody(Request &request);
 
 //! deleteMEthod.cpp
 
