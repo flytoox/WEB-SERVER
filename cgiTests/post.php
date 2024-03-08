@@ -10,7 +10,7 @@ echo "<!DOCTYPE html>\n";
 echo "<html>\n";
 echo "<head>\n";
 echo "    <title>CGI Example</title>\n";
-echo "    <link rel=\"stylesheet\" href=\"/Desktop/WEB-SERVE/html/styles.css\">\n";
+echo "    <link rel=\"stylesheet\" href=\"/Desktop/WebServ/html/styles.css\">\n";
 echo "</head>\n";
 echo "<body>\n";
 echo "<div class=\"header\">\n";

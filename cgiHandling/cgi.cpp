@@ -19,6 +19,8 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
         }
 
         if (pid == 0) {  // Child process
+
+            std::cout << "CHI HAJA" << std::endl;
             close(pipe.getReadEnd());
             redirectStdoutStderr(pipe);
 
