@@ -117,8 +117,6 @@ void pureBinary(std::string &image, std::string &destination);
 void multipartContentType(Request &request);
 void urlencodedContentType(Request &request);
 
-
-
 //GetConfig
 std::vector<std::string> splitWithChar(std::string s, char delim);
 

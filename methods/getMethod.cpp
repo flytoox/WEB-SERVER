@@ -224,7 +224,7 @@ void getMethod(Request &request) {
             .addStatusLine("404")
             .addContentType("text/html")
             .addResponseBody(request.getPageStatus(404));
-        throw "4041";
+        throw "404";
     }
 
 }
