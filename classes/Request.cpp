@@ -11,6 +11,7 @@ Request::Request() :
     requestBodyChunk(false),
     requestOutputTest("20000000000000000000"),
     saveLastBS(false),
+    timeout(time(0)),
     realContentLength(0),
     reachedBodyLength(0),
     dup(false),
@@ -122,7 +123,13 @@ const std::string &Request::getQueryString() const {
 // void Request::setJoiningTheWholeRequest(std::string &request) {
 //     this->httpRequest += request;
 // }
+void Request::setTimeout() {
+    this->timeout = time(0);
+}
 
+time_t Request::getTimeout() const {
+    return this->timeout;
+}
 void Request::setBoundary(std::string &setter) {
     this->boundary = setter;
 }

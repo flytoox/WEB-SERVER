@@ -6,12 +6,11 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/08 12:50:46 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/08 18:40:23 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
-#include <stdexcept>
 
 using namespace std;
 
@@ -62,7 +61,7 @@ void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 	if (key == "")
 		key = word;
 	else {
-		if (word.back() == ';')
+		if (*word.rbegin() == ';')
 			word.pop_back();
 		directives[key] = word;
 	}
@@ -127,9 +126,44 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
     serverAddress.sin_port = htons(port);
 }
 
+void Server::runServers(std::vector<Server> &servers) {
+	std::set<std::pair<std::string, std::string> > Check;
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		for (size_t j = 0; j < servers.size(); j++) {
+			if (i == j) continue;
+			if (servers[i].directives["listen"] == servers[j].directives["listen"]
+			 && servers[i].directives["host"] == servers[j].directives["host"])
+			 servers[i].duplicated = true, servers[j].duplicated = true;
+		}
+		adjustServerAddress(servers[i], servers[i].serverAddress);
+		servers[i].setServerAddress(servers[i].serverAddress);
+
+
+		if (( servers[i].socketD = socket(AF_INET, SOCK_STREAM, 0) ) < 0) {
+			fatal("Error: Fail to create a Socket for Server 1");
+		}
+		int add = 1;
+		setsockopt(servers[i].socketD, SOL_SOCKET, SO_REUSEADDR, &add, sizeof(add));
+		servers[i].setSocketDescriptor(servers[i].socketD);
+		//* SAVE HISTORY ( HOST & PORT )
+		if (!Check.count(std::make_pair(servers[i].directives["listen"], servers[i].directives["host"]))) {
+			servers[i].bindSockets();
+			servers[i].listenToIncomingConxs();
+			Check.insert(std::make_pair(servers[i].directives["listen"], servers[i].directives["host"]));
+		}
+	}
+	// set index.html if index is empty, and remove autoindex if it's off
+	for (size_t i = 0; i < servers.size(); i++) {
+		for (size_t j = 0; j < servers[i].directives.size(); j++) {
+			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
+				servers[i].directives.erase("autoindex");
+		}
+		overrideLocations(servers[i]);
+	}
+}
 
 vector<Server> Server::parsingFile(string s) {
-	stringstream lineNumStr;
 	stack<string> st;
 	vector<Server> servers;
 	Server server;
@@ -140,18 +174,17 @@ vector<Server> Server::parsingFile(string s) {
 	int lineNum = 0;
 	if (file.is_open()) {
 		while (getline(file, line)) {
+			stringstream lineNumStr;
 			lineNum++;
 			lineNumStr << lineNum;
 			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
-			if (v.size() == 1 && v[0].back() != '{' && v[0].back() != '}') {
+			if (v.size() == 1 && *v[0].rbegin() != '{' && *v[0].rbegin() != '}') 
 				throw runtime_error("Syntax error");
-				return servers;
-			}
-			if (v.back().back() == '{') {
-				v.back().pop_back();
-				if (v.back() == "") v.pop_back();
+			if (*v.rbegin()->rbegin() == '{') {
+				v.rbegin()->pop_back();
+				if (*v.rbegin() == "") v.pop_back();
 				if (v.empty()) throw runtime_error("Syntax error");
 				if (v.size() == 1 && v[0] == "server") { // on server brackets
 					if (!st.empty()) throw runtime_error("Can't have a block inside a block");
@@ -187,15 +220,19 @@ vector<Server> Server::parsingFile(string s) {
 				st.pop();
 				continue;
 			}
-			if (v[1].back() == ';') v[1].pop_back();
+			if (*v.rbegin()->rbegin() == ';') v.rbegin()->pop_back();
+			else throw runtime_error("Error: missing \";\" on line " + lineNumStr.str());
+			if (*v.rbegin() == "") v.pop_back();
 			if ((v[0] == "host" || v[0] == "listen" || v[0] == "server_name") && (st.top() == "location")) {
 				throw runtime_error("Error: on line " + lineNumStr.str()  + " \"" +  v[0] + "\" can't be inside location block");
 			}
 			if ((v[0] == "cgi_bin" || v[0] == "error_page") && directives.count(v[0]) && st.top() == "location")
                 directives[v[0]] += '\n' + v[1];
 			else directives[v[0]] = v[1];
+			if (v[0] == "root" && v.size() > 2)
+				throw runtime_error("Error: root should only have one argument on line " + lineNumStr.str());
 			for (size_t i = 2; i < v.size(); i++) {
-				if (v[i].back() == ';')
+				if (*v[i].rbegin() == ';')
 					v[i].pop_back();
 				if (v[i] == "") continue;
 				directives[v[0]] += " " + v[i];
@@ -221,39 +258,6 @@ vector<Server> Server::parsingFile(string s) {
 		cerr << e.what() << endl;
 		exit(1);
 	}
-	set<std::pair<string, string> > Check;
-	for (size_t i = 0; i < servers.size(); i++)
-	{
-		for (size_t j = 0; j < servers.size(); j++) {
-			if (i == j) continue;
-			if (servers[i].directives["listen"] == servers[j].directives["listen"]
-			 && servers[i].directives["host"] == servers[j].directives["host"])
-			 servers[i].duplicated = true, servers[j].duplicated = true;
-		}
-		adjustServerAddress(servers[i], servers[i].serverAddress);
-		servers[i].setServerAddress(servers[i].serverAddress);
-
-
-		if (( servers[i].socketD = socket(AF_INET, SOCK_STREAM, 0) ) < 0) {
-			fatal("Error: Fail to create a Socket for Server 1");
-		}
-		int add = 1;
-		setsockopt(servers[i].socketD, SOL_SOCKET, SO_REUSEADDR, &add, sizeof(add));
-		servers[i].setSocketDescriptor(servers[i].socketD);
-		//* SAVE HISTORY ( HOST & PORT )
-		if (!Check.count(std::make_pair(servers[i].directives["listen"], servers[i].directives["host"]))) {
-			servers[i].bindSockets();
-			servers[i].listenToIncomingConxs();
-			Check.insert(std::make_pair(servers[i].directives["listen"], servers[i].directives["host"]));
-		}
-	}
-	// set index.html if index is empty, and remove autoindex if it's off
-	for (size_t i = 0; i < servers.size(); i++) {
-		for (size_t j = 0; j < servers[i].directives.size(); j++) {
-			if (servers[i].directives.count("autoindex") && servers[i].directives["autoindex"] == "off")
-				servers[i].directives.erase("autoindex");
-		}
-		overrideLocations(servers[i]);
-	}
+	runServers(servers);
 	return (servers);
 }

@@ -39,7 +39,7 @@ void reCheckTheServer(configFile &configurationServers, std::string &header, Req
 
 }
 
-void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int &i, configFile &configurationServers, fd_set &allsd) {
+void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd) {
 
     char buffer[1024] = {0};
     std::string res;

@@ -50,6 +50,7 @@ private:
 
     std::vector<std::string> responseVector;
     std::string root;
+    time_t timeout;
 
 
 public:
@@ -68,6 +69,7 @@ public:
 	std::string result;
     bool reCheck;
     //* GETTERS
+    time_t getTimeout(void) const;
     const std::map<std::string, std::map<int, std::string> > &getPages() const;
     const std::map<std::string, std::string> &getDirectives() const;
     const std::vector<std::map<std::string, std::string> > &getLocationsBlock() const;
@@ -106,6 +108,7 @@ public:
 
     //* SETTERS
 
+    void setTimeout();
     void setRequestHeader(std::string setter);
     void setRequestBody(std::string setter);
 

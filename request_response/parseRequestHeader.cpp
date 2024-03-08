@@ -1,29 +1,14 @@
 #include "../includes/webserve.hpp"
 
 static std::vector<std::string> splitBySpace(Request &request, const std::string& httpLine ) {
+    (void)request;
 
     std::vector<std::string> tokens;
     std::string token;
     std::istringstream tokenStream(httpLine);
 
-    while (std::getline(tokenStream, token, ' ')) {
-        if (token.length())
-            tokens.push_back(token);
-    }
-
-    token = tokens[0];
-
-    //* Whitespaces ruled : https://www.rfc-editor.org/rfc/rfc7230#section-3.2
-
-    if ( token.back() == ' ' ) {
-
-        request.response = responseBuilder()
-        .addStatusLine("400")
-        .addContentType("text/html")
-        .addResponseBody(request.getPageStatus(400));
-        throw "400" ;
-    }
-
+    while (std::getline(tokenStream, token, ' ')) 
+        tokens.push_back(token);
     return tokens;
 }
 
@@ -223,8 +208,7 @@ static void parseConnection(std::vector<std::string> &headerSplitVector, Request
         .addResponseBody("<html><h1>400 Bad Request17</h1></html>");
         throw "400" ;
     }
-
-
+    
     std::string connection = headerSplitVector[1];
     pair connectionPair = std::make_pair(std::string("Connection:"), connection);
     request.setHttpRequestHeaders(connectionPair);
@@ -278,23 +262,22 @@ void parseAndSetRequestHeader(Request &request) {
     request.setRequestBody(restToRequestBody);
 
 
-    while ( header.length() != 2 ) {
+    while (header.length() != 2) {
         std::size_t found = header.find("\r\n");
 
-        if ( found != std::string::npos ) {
+        if (found != std::string::npos) {
             httpRequestHeader = header.substr(0, found);
             spaceParse = splitBySpace(request, httpRequestHeader);
             tokenizeHttpHeader(spaceParse, request);
             header.erase(0, found + 2);
         } else {
-            if ( request.getHttpVerb().empty() ) {
+            if (request.getHttpVerb().empty()) {
                 request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
                 .addResponseBody(request.getPageStatus(400));
-                throw "400" ;
+                throw "400";
             }
-            break ;
         }
     }
     validateRequest(request);
