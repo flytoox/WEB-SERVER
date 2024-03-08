@@ -19,6 +19,7 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
     // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
+    std::cerr << res << std::endl;
     int sd;
     while (res.length()) {
         std::string chunk = "";
@@ -36,22 +37,22 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
-
-    if ((simultaneousRequests[i]).getHttpRequestHeaders().find("Connection:") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) {
-        if (((simultaneousRequests[i]).getHttpRequestHeaders()).find("Connection:")->second == "closed") {
-            close(i);
-            FD_CLR(i, &allsd);
-            FD_CLR(i, &writesd);
-            simultaneousRequests.erase(i);
-        } else {
+    if (all.find("Connection:") != all.end()) {
+        if ((all).find("Connection:")->second == "keep-alive") {
+            // std::cerr << i << std::endl;
             Request newRequest;
-
+            std::cerr << all.find("Connection:")->second << std::endl;
             newRequest.setDirectivesAndPages(simultaneousRequests[i].getDirectives(), simultaneousRequests[i].getPages());
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
             // newRequest.setTimeout();
             simultaneousRequests[i] = newRequest;
+            return ;
         }
-    }
+    }        
+    close(i);
+    FD_CLR(i, &allsd);
+    FD_CLR(i, &writesd);
+    simultaneousRequests.erase(i);
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -102,23 +103,23 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             if ((s = select(*Fds.rbegin() + 1, &readsd, 0, 0, 0)) < 0) {
                 std::cerr << "Error: select(): " << strerror(errno) << std::endl;
             }
-            for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end(); i++) {
+            for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {
                 responseD = *i;
                 if (std::find(allSocketsVector.begin(), allSocketsVector.end(), *i) == allSocketsVector.end()) {
                     time_t now = time(0);
                     time_t elapsedSeconds = now - simultaneousRequests[*i].getTimeout();
-                    std::cerr << *i << ' ' << ' '<< elapsedSeconds <<"\n";
+                    std::cout << *i << ' ' << ' '<< elapsedSeconds <<"\n";
                     if (elapsedSeconds >= 2) {
-                        std::cerr << elapsedSeconds << "\n";
+
                         (simultaneousRequests[*i]).response = responseBuilder()
                             .addStatusLine("408")
                             .addContentType("text/html")
                             .addResponseBody(simultaneousRequests[*i].getPageStatus(408));
-                        functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests);
+                        functionToSend(*i, readsd, writesd, allsd, simultaneousRequests);
                     }
                 }
             }
-            
+
             std::cout<< "3333333|S" << s << "|\n";
 
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {
