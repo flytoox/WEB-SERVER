@@ -47,7 +47,7 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     }
 
     // If execve fails
-    std::cerr << "Error executing interpreter: " << strerror(errno) << "\n";
+    std::cerr << "Error executing interpreter" << "\n";
     exit(EXIT_FAILURE);
 }
 
