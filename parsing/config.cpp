@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/08 18:40:23 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/09 23:01:18 by adnane           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ void Server::overrideLocations(Server &s) {
 	}
 }
 
-//if you find listen && port the same -> duplicated : true 
+//if you find listen && port the same -> duplicated : true
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
@@ -170,7 +170,7 @@ vector<Server> Server::parsingFile(string s) {
 	map<string, string> directives;
 	vector<map<string, string> > locationsBlock;
 	string line;
-	ifstream file(s);
+	ifstream file(s.c_str());
 	int lineNum = 0;
 	if (file.is_open()) {
 		while (getline(file, line)) {
@@ -180,7 +180,7 @@ vector<Server> Server::parsingFile(string s) {
 			vector<string> v = splitWhiteSpaces(line);
 			if (v.size() == 0 || v[0][0] == '#')
 				continue;
-			if (v.size() == 1 && *v[0].rbegin() != '{' && *v[0].rbegin() != '}') 
+			if (v.size() == 1 && *v[0].rbegin() != '{' && *v[0].rbegin() != '}')
 				throw runtime_error("Syntax error");
 			if (*v.rbegin()->rbegin() == '{') {
 				v.rbegin()->erase(v.rbegin()->size() - 1);

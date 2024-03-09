@@ -153,7 +153,7 @@ void pureBinary(Request &request, std::string &image, std::string &destination) 
 
     std::string absolutePath = destination + '/' + filename ;
 
-    std::ofstream outputFile(absolutePath);
+    std::ofstream outputFile(absolutePath.c_str());
 
     std::cout << "FILENAME|" << filename << "|\n";
     //std::cerr << request.getRequestBody() << "|\n";
@@ -339,7 +339,7 @@ void parseRequestBody(Request &request) {
     std::map<std::string, std::string>::const_iterator itTransferEncoding;
     std::map<std::string, std::string>::const_iterator itContentType;
     itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding:");
-    if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() ) 
+    if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() )
         chunkedRequest(request);
 
 }

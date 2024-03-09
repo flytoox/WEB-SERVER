@@ -30,14 +30,14 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
 
     argv.push_back(const_cast<char*>(interpreter.c_str()));
     argv.push_back(const_cast<char*>(scriptFilePath.c_str()));
-    argv.push_back(nullptr);
+    argv.push_back(NULL);
 
     for (std::map<std::string, std::string>::iterator it = envVars.begin(); it != envVars.end(); ++it) {
         std::string envVar = it->first + "=" + it->second;
         envp.push_back(strdup(envVar.c_str()));
     }
 
-    envp.push_back(nullptr);
+    envp.push_back(NULL);
 
     execve(interpreter.c_str(), argv.data(), envp.data());
 
@@ -47,7 +47,7 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
     }
 
     // If execve fails
-    std::cerr << "Error executing interpreter: " << strerror(errno) << "\n";
+    std::cerr << "Error executing interpreter" << "\n";
     exit(EXIT_FAILURE);
 }
 

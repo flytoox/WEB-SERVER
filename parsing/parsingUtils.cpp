@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsingUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 15:30:31 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/06 16:58:57 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/09 23:03:03 by adnane           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void fillTheMap(std::map<int, std::string> &map, std::string &Err) {
         StringIsNum(v2[0]) == false ? throw std::runtime_error("Error: invalid error code") : num = atoi(v2[0].c_str());
         if (num < 400 || num > 599)
             throw std::runtime_error("Error: error code should be between 400 and 599");
-        std::ifstream file(v2[1]);
+        std::ifstream file(v2[1].c_str());
         if (!file) continue;
         std::string s = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         if (s.size() > 1e6) continue;
@@ -39,7 +39,7 @@ void fillTheMap(std::map<int, std::string> &map, std::string &Err) {
         std::stringstream codeStr;
         codeStr << statusCodes[i];
         if (map.count(statusCodes[i]) == 0) {
-            std::ifstream file("./response_pages/" + codeStr.str() + ".html");
+            std::ifstream file(("./response_pages/" + codeStr.str() + ".html").c_str());
             if (!file) throw std::runtime_error("Error: missing error page " + codeStr.str() + ".html");
             std::string s = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
             if (s.size() > 1e6) throw std::runtime_error("Error: error page " + codeStr.str() + ".html is too big");
