@@ -6,7 +6,7 @@
 /*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/09 22:55:40 by adnane           ###   ########.fr       */
+/*   Updated: 2024/03/09 23:01:18 by adnane           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,9 +183,8 @@ vector<Server> Server::parsingFile(string s) {
 			if (v.size() == 1 && *v[0].rbegin() != '{' && *v[0].rbegin() != '}')
 				throw runtime_error("Syntax error");
 			if (*v.rbegin()->rbegin() == '{') {
-				// v.rbegin()->pop_back();
 				v.rbegin()->erase(v.rbegin()->size() - 1);
-				if (*v.rbegin() == "") v.pop_back();
+				if (*v.rbegin() == "") v.erase(v.end() - 1);
 				if (v.empty()) throw runtime_error("Syntax error");
 				if (v.size() == 1 && v[0] == "server") { // on server brackets
 					if (!st.empty()) throw runtime_error("Can't have a block inside a block");
@@ -223,7 +222,7 @@ vector<Server> Server::parsingFile(string s) {
 			}
 			if (*v.rbegin()->rbegin() == ';') v.rbegin()->erase(v.rbegin()->size() - 1);
 			else throw runtime_error("Error: missing \";\" on line " + lineNumStr.str());
-			if (*v.rbegin() == "") v.pop_back();
+			if (*v.rbegin() == "") v.erase(v.end() - 1);
 			if ((v[0] == "host" || v[0] == "listen" || v[0] == "server_name") && (st.top() == "location")) {
 				throw runtime_error("Error: on line " + lineNumStr.str()  + " \"" +  v[0] + "\" can't be inside location block");
 			}
@@ -234,7 +233,7 @@ vector<Server> Server::parsingFile(string s) {
 				throw runtime_error("Error: root should only have one argument on line " + lineNumStr.str());
 			for (size_t i = 2; i < v.size(); i++) {
 				if (*v[i].rbegin() == ';')
-					v[i].pop_back();
+					v[i].erase(v[i].size() - 1);
 				if (v[i] == "") continue;
 				directives[v[0]] += " " + v[i];
 			}
@@ -246,13 +245,15 @@ vector<Server> Server::parsingFile(string s) {
 	if (!st.empty())
 		throw runtime_error("Error: { without }");
 	try {
+		stringstream lineNumStr;
 		for (size_t i = 0; i < servers.size(); i++) {
+			lineNumStr << i + 1;
 				if (!checkPortMaxMin(servers[i].directives["listen"]))
-					throw runtime_error("Error: Invalid port number on server Num " + to_string(i+1));
+					throw runtime_error("Error: Invalid port number on server Num " + lineNumStr.str());
 				if (checkDuplicateLocation(servers[i].locationsBlock))
-					throw runtime_error("There is a duplicate Location on server Num " + to_string(i+1));
+					throw runtime_error("There is a duplicate Location on server Num " + lineNumStr.str());
 				if (!checkReturnOnLocation(servers[i].locationsBlock))
-					throw runtime_error("Error: Invalid return on server Num " + to_string(i+1));
+					throw runtime_error("Error: Invalid return on server Num " + lineNumStr.str());
 				fillErrorPages(servers[i]);
 		}
 	} catch (runtime_error &e) {
