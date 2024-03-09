@@ -42,7 +42,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
 
         // Decide which index file to use
         for (size_t i = 0; i < splitedPaths.size(); i++) {
-            std::fstream file(root+'/'+splitedPaths[i]);
+            std::fstream file((root + '/' + splitedPaths[i]).c_str());
             if ( file.good() ) {
                 absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
                 break;
@@ -68,7 +68,10 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
                 std::string body = response.second;
 
                 std::string contentType = extractContentType(headers);
-                std::string contentLength = std::to_string(body.length());
+                std::stringstream ss;
+                ss << body.length();
+                // std::string contentLength = std::to_string(body.length());
+                std::string contentLength = ss.str();
 
                 std::size_t lastSlashPos = contentType.rfind('/');
                 std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
@@ -90,7 +93,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
                         std::stringstream ss(status);
                         std::string statusNumber;
                         ss >> statusNumber;
-            
+
                         request.response.addStatusLine(statusNumber);
                     }
                 }
@@ -131,7 +134,10 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             std::string body = response.second;
 
             std::string contentType = extractContentType(headers);
-            std::string contentLength = std::to_string(body.length());
+            std::stringstream ss;
+            ss << body.length();
+            // std::string contentLength = std::to_string(body.length());
+            std::string contentLength = ss.str();
 
             std::size_t lastSlashPos = contentType.rfind('/');
             std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
@@ -153,7 +159,7 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
                     std::stringstream ss(status);
                     std::string statusNumber;
                     ss >> statusNumber;
-        
+
                     request.response.addStatusLine(statusNumber);
                 }
             }

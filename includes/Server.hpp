@@ -10,7 +10,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <fstream>
-#include <sys/_endian.h>
 #include <sstream>
 
 

@@ -42,7 +42,8 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
         // Decide which index file to use
         for (size_t i = 0; i < splitedPaths.size(); i++) {
-            std::fstream file(root+'/'+splitedPaths[i]);
+            // std::fstream file(root+'/'+splitedPaths[i]);
+            std::fstream file((root + '/' + splitedPaths[i]).c_str());
             if ( file.good() ) {
                 absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
                 break;
@@ -70,7 +71,10 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
                     std::string body = response.second;
 
                     std::string contentType = extractContentType(headers);
-                    std::string contentLength = std::to_string(body.length());
+                    std::stringstream ss;
+                    ss << body.length();
+                    // std::string contentLength = std::to_string(body.length());
+                    std::string contentLength = ss.str();
 
                     std::size_t lastSlashPos = contentType.rfind('/');
                     std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
@@ -84,7 +88,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
             }
         }
 
-        std::fstream file(absolutePath);
+        std::fstream file(absolutePath.c_str());
         if ( file.good() ) {
 
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
@@ -148,7 +152,7 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
             }
         }
 
-        std::fstream file(absolutePath);
+        std::fstream file(absolutePath.c_str());
 
         if ( file.good() ) {
             std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
@@ -185,7 +189,7 @@ void getMethod(Request &request) {
     }
     uri = decodeUrl(uri);
     request.setUri(uri);
-    
+
 	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
 	if (result.find(concatenateWithRoot) == std::string::npos) {
 		request.response = responseBuilder()
@@ -219,7 +223,7 @@ void getMethod(Request &request) {
             .addContentType("image/x-icon")
             .addResponseBody(content);
         throw "200";
-    } else {        
+    } else {
         request.response = responseBuilder()
             .addStatusLine("404")
             .addContentType("text/html")

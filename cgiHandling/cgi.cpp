@@ -1,7 +1,7 @@
 #include "../includes/cgi.hpp"
 
 std::pair<std::string, std::string> handleCgiGet(const std::string& file, const std::string& interpreterPath, Request &request) {
-    
+
     try {
         std::string response;
         Pipe pipe;
@@ -10,7 +10,7 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
         std::string Header = request.getRequestHeader();
         std::map<std::string, std::string> headers = parseHeaders(Header);
         std::map<std::string, std::string> envVars;
-        
+
         pid = fork();
 
         if (pid == -1) {
@@ -48,7 +48,7 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
 
             if (WIFEXITED(status)) {
                 int exitStatus = WEXITSTATUS(status);
-                
+
                 if (exitStatus != 0) {
                     std::cerr << "CGI Warning!! Child process exited with status: " << exitStatus << "\n";
                     return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
@@ -127,7 +127,10 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             envVars["SCRIPT_FILENAME"] = file;
             envVars["REQUEST_METHOD"] = "POST";
             envVars["CONTENT_TYPE"] = mapHeaders["Content-Type:"];
-            envVars["CONTENT_LENGTH"] = std::to_string(postData.length());
+            std::stringstream ss;
+            ss << postData.length();
+            // envVars["CONTENT_LENGTH"] = std::to_string(postData.length());
+            envVars["CONTENT_LENGTH"] = ss.str();
             envVars["QUERY_STRING"] = request.getQueryString();
 
             executeChildProcess(interpreterPath, file, envVars);
