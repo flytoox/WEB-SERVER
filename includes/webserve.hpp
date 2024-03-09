@@ -16,8 +16,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
-// #include <sys/_endian.h>
-#include <endian.h>
+#include <sys/_endian.h>
+// #include <endian.h>
 #include <stdexcept>
 #include <sys/types.h>
 #include <netdb.h>
