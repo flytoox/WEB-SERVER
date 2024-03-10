@@ -126,7 +126,7 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             envVars["SCRIPT_NAME"] = file;
             envVars["SCRIPT_FILENAME"] = file;
             envVars["REQUEST_METHOD"] = "POST";
-            envVars["CONTENT_TYPE"] = mapHeaders["Content-Type:"];
+            envVars["CONTENT_TYPE"] = mapHeaders["Content-Type"];
             std::stringstream ss;
             ss << postData.length();
             // envVars["CONTENT_LENGTH"] = std::to_string(postData.length());

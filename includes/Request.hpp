@@ -8,10 +8,10 @@
 typedef std::pair<std::string, std::string> pair;
 
 class Request {
-
+public:
+    std::string stringUnparsed;
+    
 private:
-
-
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
     std::map<std::string, std::map<int, std::string> > pages;
@@ -113,7 +113,7 @@ public:
     void setRequestBody(std::string setter);
 
 
-    void setHttpRequestHeaders(pair &setPair);
+    void setHttpRequestHeaders(pair setPair);
 
     void setHttpVerb(std::string &setter);
     void setUri(std::string &setter);

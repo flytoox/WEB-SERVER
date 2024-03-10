@@ -338,7 +338,7 @@ void parseRequestBody(Request &request) {
 
     std::map<std::string, std::string>::const_iterator itTransferEncoding;
     std::map<std::string, std::string>::const_iterator itContentType;
-    itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding:");
+    itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding");
     if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() )
         chunkedRequest(request);
 

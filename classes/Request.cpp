@@ -184,7 +184,7 @@ void Request::setRequestBodyChunk(bool chunk) {
     this->requestBodyChunk = chunk;
 }
 
-void Request::setHttpRequestHeaders(pair &setPair) {
+void Request::setHttpRequestHeaders(pair setPair) {
 
     httpRequestHeaders[setPair.first] = setPair.second;
 }

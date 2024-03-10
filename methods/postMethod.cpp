@@ -187,7 +187,7 @@ void postMethod(Request &request) {
 
     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
 
-    std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+    std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
     std::string value = "";
     if (itContentType != (request.getHttpRequestHeaders()).end()) {
         value = itContentType->second;

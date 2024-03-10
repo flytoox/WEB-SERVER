@@ -157,7 +157,7 @@ void uploadRequestBody(Request &request) {
 
     std::map<std::string, std::string>::const_iterator itContentType;
 
-    itContentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+    itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
     if ( itContentType != (request.getHttpRequestHeaders()).end()) {
 
         std::string value = itContentType->second;

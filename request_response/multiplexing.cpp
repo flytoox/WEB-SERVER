@@ -31,11 +31,11 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
-    if (all.find("Connection:") != all.end()) {
-        if ((all).find("Connection:")->second == "keep-alive") {
+    if (all.find("Connection") != all.end()) {
+        if ((all).find("Connection")->second == "keep-alive") {
             // std::cerr << i << std::endl;
             Request newRequest;
-            std::cerr << all.find("Connection:")->second << std::endl;
+            std::cerr << all.find("Connection")->second << std::endl;
             newRequest.setDirectivesAndPages(simultaneousRequests[i].getDirectives(), simultaneousRequests[i].getPages());
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
             // newRequest.setTimeout();
@@ -92,7 +92,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
         try {
             readsd = allsd;
             if (select(*Fds.rbegin() + 1, &readsd, 0, 0, 0) < 0) {
-                std::cerr << "Error: select():" << std::endl;
+                std::cerr << "Error: select()" << std::endl;
                 exit(1);
             }
             for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {

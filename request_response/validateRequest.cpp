@@ -179,7 +179,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 void validateRequest(Request &request) {
 
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
-    std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
+    std::string transferEncoding = httpRequestHeaders["Transfer-Encoding"];
 
     if ( !transferEncoding.empty() && transferEncoding != "chunked") {
         request.response = responseBuilder()
@@ -189,7 +189,7 @@ void validateRequest(Request &request) {
         throw "501" ;
     }
 
-    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
+    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length");
     std::string method = request.getHttpVerb();
     if (method == "GET" && ( contentLengh != httpRequestHeaders.end() || !transferEncoding.empty()) ) {
 
@@ -265,7 +265,7 @@ void validateRequest(Request &request) {
         }
     }
 
-    std::map<std::string, std::string>::const_iterator contentType = (request.getHttpRequestHeaders()).find("Content-Type:");
+    std::map<std::string, std::string>::const_iterator contentType = (request.getHttpRequestHeaders()).find("Content-Type");
     if (contentType != (request.getHttpRequestHeaders()).end() && contentType->second == "multipart/form-data;") {
         if (location["upload_enable"] == "off" || location.find("upload_store") == location.end()) {
 			handleUploadingError(request, "403");
@@ -282,7 +282,7 @@ static void handleUploadingError(Request &request, std::string statusCode) {
 
 	int status = std::atoi(statusCode.c_str());
 
-	std::pair<std::string, std::string> p = std::make_pair("Connection:", "closed");
+	std::pair<std::string, std::string> p = std::make_pair("Connection", "closed");
 	request.setHttpRequestHeaders(p);
 	std::string page = request.getPageStatus(status);
 	request.response = responseBuilder()
