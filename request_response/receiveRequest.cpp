@@ -89,16 +89,37 @@ bool parseDefaultLine(std::string &s, Request &request) {
     request.setHttpRequestHeaders(make_pair(v[0], value));
 }
 
-bool parseHeader(std::string &s, Request &request) {
-    size_t pos = s.find("\r\n\r\n");
-    std::string body;
-    if (pos != std::string::npos) {
-        request.setRequestBodyChunk(true);
-        body = s.substr(pos + 4);
-        s = s.substr(0, pos + 2);
+bool parseBody(std::string &s, Request &request) {
+    if (request.getHttpRequestHeaders().find("Content-Length") != request.getHttpRequestHeaders().end()) {
+        std::string contentLength = request.getHttpRequestHeaders()["Content-Length"];
+        if (contentLength.find_first_not_of("0123456789") != std::string::npos)
+            return true;
+        request.setRequestBody(s);
+        if (request.getRequestBody().length() >= std::stoi(contentLength)) {
+            request.setRequestBodyChunk(false);
+            return false;
+        }
+    } else if (request.getHttpRequestHeaders().find("Transfer-Encoding") != request.getHttpRequestHeaders().end()) {
+        if (s.find("0\r\n\r\n") != std::string::npos) {
+            request.setRequestBody(s);
+            request.setRequestBodyChunk(false);
+            return false;
+        }
     }
+    return true;
+}
+
+bool parseHeader(std::string &s, Request &request) {
+    if (request.getRequestBodyChunk())
+        return parseBody(s, request);
     std::vector<std::string> lines = customSplitRequest(s, "\r\n");
     for (size_t i = 0; i < lines.size(); i++) {
+        if (lines[i] == "\r\n" && !request.getHttpVerb().empty()) {
+            validateHeader(request);
+            request.setRequestBodyChunk(true);
+        } else if (lines[i] == "\r\n") {
+            continue;
+        }
         if (lines[i].find("\r\n") == std::string::npos) {
             s = lines[i];
             return false;
@@ -106,7 +127,6 @@ bool parseHeader(std::string &s, Request &request) {
         if ((request.getHttpVerb().empty() && !parseFirstLine(lines[i], request)) || parseDefaultLine(lines[i], request))
             return true;
     }
-    s = body;
 }
 
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd) {
@@ -122,48 +142,45 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
     std::string convert;
     push_convert(convert, buffer, recevRequestLen);
 
-    if (!(simultaneousRequests[i].getRequestBodyChunk())) {
-        //! REQUEST HEADER
-        simultaneousRequests[i].stringUnparsed += convert;
-        if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
-            simultaneousRequests[i].response = responseBuilder()
-                .addStatusLine("400")
-                .addContentType("text/html")
-                .addResponseBody(simultaneousRequests[i].getPageStatus(400));
-            throw "400";
-        }
-
-
-        if (((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos) {
-            std::string header = simultaneousRequests[i].getRequestHeader();
-            if ((simultaneousRequests[i]).reCheck != true) {
-                (simultaneousRequests[i]).reCheck = true;
-                reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
-            }
-            parseAndSetRequestHeader(simultaneousRequests[i]);
-            simultaneousRequests[i].setRequestBodyChunk(true);
-            simultaneousRequests[i].reachedBodyLength = simultaneousRequests[i].getRequestBody().length();
-            if ((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) {
-                parseRequestBody(simultaneousRequests[i]);
-                checkRequestedHttpMethod(simultaneousRequests[i]);
-            }
-        }
-        // else if (recevRequestLen < 1024 && ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") == std::string::npos) {
-        //     (simultaneousRequests[i]).response = responseBuilder()
-        //         .addStatusLine("408")
-        //         .addContentType("text/html")
-        //         .addResponseBody(simultaneousRequests[i].getPageStatus(408));
-        //         throw ("408");
-        // }
-    } else {
-        //! REQUEST BODY
-        simultaneousRequests[i].setRequestBody(convert);
-        (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
-        if (((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) || \
-            ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
-                (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
-            parseRequestBody((simultaneousRequests[i]));
-            checkRequestedHttpMethod(simultaneousRequests[i]);
-        }
+    simultaneousRequests[i].stringUnparsed += convert;
+    if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
+        simultaneousRequests[i].response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(simultaneousRequests[i].getPageStatus(400));
+        throw "400";
     }
+    // if (!(simultaneousRequests[i].getRequestBodyChunk())) {
+    //     //! REQUEST HEADER
+
+
+    //     if (((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos) {
+    //         std::string header = simultaneousRequests[i].getRequestHeader();
+    //         if ((simultaneousRequests[i]).reCheck != true) {
+    //             (simultaneousRequests[i]).reCheck = true;
+    //             reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
+    //         }
+    //         parseAndSetRequestHeader(simultaneousRequests[i]);
+    //         validateHeader(request);
+    //     }
+    //     // else if (recevRequestLen < 1024 && ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") == std::string::npos) {
+    //     //     (simultaneousRequests[i]).response = responseBuilder()
+    //     //         .addStatusLine("408")
+    //     //         .addContentType("text/html")
+    //     //         .addResponseBody(simultaneousRequests[i].getPageStatus(408));
+    //     //         throw ("408");
+    //     // }
+    // } else {
+    //     //! REQUEST BODY
+    //     simultaneousRequests[i].setRequestBody(convert);
+    //     (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
+    //     if (((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) || \
+    //         ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
+    //             (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
+    //         parseHeaderBody((simultaneousRequests[i]));
+    //         checkRequestedHttpMethod(simultaneousRequests[i]);
+    //     }
+    // }
+
+
 }

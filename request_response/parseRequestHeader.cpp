@@ -281,5 +281,5 @@ void parseAndSetRequestHeader(Request &request) {
             }
         }
     }
-    validateRequest(request);
+    validateHeader(request);
 }

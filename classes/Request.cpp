@@ -59,7 +59,7 @@ const std::string &Request::getRequestBody() const  {
 }
 
 
-const std::map<std::string, std::string> &Request::getHttpRequestHeaders() const {
+std::map<std::string, std::string> &Request::getHttpRequestHeaders() const {
     return (this->httpRequestHeaders);
 }
 

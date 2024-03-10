@@ -83,7 +83,7 @@ public:
     const std::string &getRequestHeader() const ;
     const std::string &getRequestBody() const ;
 
-    const std::map<std::string, std::string> &getHttpRequestHeaders() const;
+    std::map<std::string, std::string> &getHttpRequestHeaders() const;
     const std::map<std::string, std::string> &getLocationBlockWillBeUsed() const ;
     const std::string getPageStatus(int status) const ;
 
