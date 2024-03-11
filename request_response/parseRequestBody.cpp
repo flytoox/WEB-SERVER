@@ -297,44 +297,9 @@ void urlencodedContentType(Request &request) {
 }
 
 
-static int getTheMaxsize(Request &request) {
-
-    std::map<std::string, std::string> location = request.getLocationBlockWillBeUsed();
-    int size = 0;
-
-    for ( mapConstIterator it =  location.begin() ; it != location.end() ; ++it ) {
-        if (it->first == "client_max_body_size") {
-            size = std::atoi((it->second).c_str());
-            return (size);
-        }
-    }
-
-    std::map<std::string, std::string> directives = request.getDirectives();
-
-    for ( mapConstIterator it =  directives.begin() ; it != directives.end() ; ++it ) {
-        if (it->first == "client_max_body_size") {
-            size = std::atoi((it->second).c_str());
-            break ;
-        }
-    }
-
-    return (size);
-}
-
 void parseRequestBody(Request &request) {
 
     //*Check Length of the Body
-
-    unsigned long sizeMax = getTheMaxsize(request);
-    if ( sizeMax && request.getRequestBody().length() > sizeMax ) {
-
-        request.response = responseBuilder()
-        .addStatusLine("413")
-        .addContentType("text/html")
-        .addResponseBody(request.getPageStatus(413));
-        throw "413";
-
-    }
 
     std::map<std::string, std::string>::const_iterator itTransferEncoding;
     std::map<std::string, std::string>::const_iterator itContentType;

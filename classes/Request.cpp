@@ -59,8 +59,8 @@ const std::string &Request::getRequestBody() const  {
 }
 
 
-std::map<std::string, std::string> &Request::getHttpRequestHeaders() const {
-    return (this->httpRequestHeaders);
+std::map<std::string, std::string> &Request::getHttpRequestHeaders() {
+    return (httpRequestHeaders);
 }
 
 const std::map<std::string, std::string> &Request::getLocationBlockWillBeUsed() const {
@@ -134,16 +134,11 @@ void Request::setBoundary(std::string &setter) {
     this->boundary = setter;
 }
 
-void Request::setRequestBody(std::string setter) {
-    for (size_t i = 0; i != static_cast<size_t>(setter.length()); i++)
-        this->requestBody.push_back(setter[i]);
-    //this->requestBody.append(setter);
-
-    //this->requestBody += setter;
-    // std::cerr << this->requestBody.length() << std::endl;
+void Request::setRequestBody(std::string &setter) {
+    requestBody += setter;
 }
 
-void Request::setRequestHeader(std::string setter) {
+void Request::setRequestHeader(std::string &setter) {
     this->requestHeader += setter;
 }
 

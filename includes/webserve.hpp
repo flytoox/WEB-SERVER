@@ -125,3 +125,4 @@ std::vector<std::string> splitWithChar(std::string s, char delim);
 
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
+bool checkOverFlow(std::string &s);

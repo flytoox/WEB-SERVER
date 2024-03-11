@@ -1,28 +1,21 @@
 #include "../includes/webserve.hpp"
 
+configFile &configurationServers;
 
 static void push_convert(std::string &convert, char *buffer, int r) {
     for (int i = 0; i != r; i++)
         convert.push_back(buffer[i]);
 }
 
-void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request) {
+void reCheckTheServer(configFile &configurationServers, std::string &hostValue, Request &request) {
     try {
-        Server serverReform;
-        std::string v1 = header.substr(header.find("Host: "));
-        std::string hostHeader = v1.substr(0, v1.find("\n"));
-        std::string hostValue = hostHeader.substr(hostHeader.find(" ") + 1);
-        hostValue.erase(hostValue.size() - 1);
-
         if (request.dup == true) {
-
             for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); it++) {
                 std::map<std::string, std::string>tmp = it->getdirectives();
                 if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost) {
-                    serverReform = *it;
-                    std::map<std::string, std::string> serverDirectives = serverReform.getdirectives();
-                    std::vector<std::map<std::string, std::string> > serverLocationsBlock = serverReform.getlocationsBlock();
-                    request.setDirectivesAndPages(serverDirectives, serverReform.getPages());
+                    std::map<std::string, std::string> serverDirectives = it->getdirectives();
+                    std::vector<std::map<std::string, std::string> > serverLocationsBlock = it->getlocationsBlock();
+                    request.setDirectivesAndPages(serverDirectives, it->getPages());
                     request.setLocationsBlock(serverLocationsBlock);
                     break ;
                 }
@@ -86,37 +79,58 @@ bool parseDefaultLine(std::string &s, Request &request) {
         if (i < (s[s.length()-1] == ':' ? v.size() : v.size() - 1))
             value += ":";
     }
-    request.setHttpRequestHeaders(make_pair(v[0], value));
+    request.setHttpRequestHeaders(make_pair(v[0], value.erase(value.length() - 2)));
 }
 
-bool parseBody(std::string &s, Request &request) {
-    if (request.getHttpRequestHeaders().find("Content-Length") != request.getHttpRequestHeaders().end()) {
-        std::string contentLength = request.getHttpRequestHeaders()["Content-Length"];
-        if (contentLength.find_first_not_of("0123456789") != std::string::npos)
-            return true;
-        request.setRequestBody(s);
-        if (request.getRequestBody().length() >= std::stoi(contentLength)) {
-            request.setRequestBodyChunk(false);
-            return false;
-        }
-    } else if (request.getHttpRequestHeaders().find("Transfer-Encoding") != request.getHttpRequestHeaders().end()) {
-        if (s.find("0\r\n\r\n") != std::string::npos) {
-            request.setRequestBody(s);
-            request.setRequestBodyChunk(false);
-            return false;
+size_t custAtoi(const std::string &s) {
+    size_t res = 0;
+    for (size_t i = 0; i < s.length(); i++) {
+        res = res * 10 + s[i] - '0';
+    }
+    return res;
+}
+
+bool parseBody(Request &request) {
+    if (request.reCheck != true) {
+        request.reCheck = true;
+        reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
+    }
+    mapConstIterator MaxBodySize = request.getLocationBlockWillBeUsed().find("client_max_body_size");
+    if (MaxBodySize != request.getLocationBlockWillBeUsed().end()) {
+        size_t sizeMax = custAtoi(MaxBodySize->second);
+        if (request.getRequestBody().length() > sizeMax) {
+            request.response = responseBuilder()
+            .addStatusLine("413")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(413));
+            throw "413";
         }
     }
-    return true;
 }
 
 bool parseHeader(std::string &s, Request &request) {
     if (request.getRequestBodyChunk())
-        return parseBody(s, request);
+        return parseBody(request);
     std::vector<std::string> lines = customSplitRequest(s, "\r\n");
     for (size_t i = 0; i < lines.size(); i++) {
         if (lines[i] == "\r\n" && !request.getHttpVerb().empty()) {
             validateHeader(request);
             request.setRequestBodyChunk(true);
+            s = "";
+            for (size_t j = i + 1; j < lines.size(); j++)
+                s += lines[j];
+            request.setRequestBody(s);
+            if (request.getHttpRequestHeaders().count("Content-Length")) {
+                if (checkOverFlow(request.getHttpRequestHeaders()["Content-Length"])) {
+                    request.response = responseBuilder()
+                        .addStatusLine("413")
+                        .addContentType("text/html")
+                        .addResponseBody(request.getPageStatus(413));
+                    throw "413";
+                }
+                request.realContentLength = custAtoi(request.getHttpRequestHeaders()["Content-Length"]);
+            } else request.realContentLength = 0;
+            return parseBody(request);
         } else if (lines[i] == "\r\n") {
             continue;
         }
@@ -129,8 +143,8 @@ bool parseHeader(std::string &s, Request &request) {
     }
 }
 
-void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd) {
-
+void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &cnf, fd_set &allsd) {
+    configurationServers = cnf;
     char buffer[1024] = {0};
     std::string res;
     int recevRequestLen = recv(i , buffer, 1024, 0);
@@ -139,10 +153,7 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
         close(i), FD_CLR(i, &allsd); return ;
     }
 
-    std::string convert;
-    push_convert(convert, buffer, recevRequestLen);
-
-    simultaneousRequests[i].stringUnparsed += convert;
+    push_convert(simultaneousRequests[i].stringUnparsed, buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()
             .addStatusLine("400")
@@ -150,37 +161,10 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
             .addResponseBody(simultaneousRequests[i].getPageStatus(400));
         throw "400";
     }
-    // if (!(simultaneousRequests[i].getRequestBodyChunk())) {
-    //     //! REQUEST HEADER
-
-
-    //     if (((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") != std::string::npos) {
-    //         std::string header = simultaneousRequests[i].getRequestHeader();
-    //         if ((simultaneousRequests[i]).reCheck != true) {
-    //             (simultaneousRequests[i]).reCheck = true;
-    //             reCheckTheServer(configurationServers, header, simultaneousRequests[i]);
-    //         }
-    //         parseAndSetRequestHeader(simultaneousRequests[i]);
-    //         validateHeader(request);
-    //     }
-    //     // else if (recevRequestLen < 1024 && ((simultaneousRequests[i]).getRequestHeader()).find("\r\n\r\n") == std::string::npos) {
-    //     //     (simultaneousRequests[i]).response = responseBuilder()
-    //     //         .addStatusLine("408")
-    //     //         .addContentType("text/html")
-    //     //         .addResponseBody(simultaneousRequests[i].getPageStatus(408));
-    //     //         throw ("408");
-    //     // }
-    // } else {
-    //     //! REQUEST BODY
-    //     simultaneousRequests[i].setRequestBody(convert);
-    //     (simultaneousRequests[i]).reachedBodyLength = (simultaneousRequests[i].getRequestBody()).length();
-    //     if (((simultaneousRequests[i]).reachedBodyLength >= (simultaneousRequests[i]).realContentLength) || \
-    //         ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
-    //             (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
-    //         parseHeaderBody((simultaneousRequests[i]));
-    //         checkRequestedHttpMethod(simultaneousRequests[i]);
-    //     }
-    // }
-
-
+    if ((simultaneousRequests[i].getRequestBody().length() >= simultaneousRequests[i].realContentLength) || \
+        ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
+            (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
+        parseRequestBody((simultaneousRequests[i]));
+        checkRequestedHttpMethod(simultaneousRequests[i]);
+    }
 }
