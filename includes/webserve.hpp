@@ -69,7 +69,7 @@ void configureTheHttpHeaderRequestClass(std::string &header, Request &request);
 
 
 void parseAndSetRequestHeader(Request &request);
-void validateRequest(Request &request);
+void validateHeader(Request &request);
 
 
 //! parseRequestBody.cpp
@@ -83,7 +83,7 @@ std::vector<std::string> splitString(const std::string& input, const std::string
 void parseRequestBody(Request &request);
 
 
-//! validateRequest.cpp
+//! validateHeader.cpp
 
 //! checkHttpMethod.cpp
 
@@ -125,3 +125,4 @@ std::vector<std::string> splitWithChar(std::string s, char delim);
 
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
+bool checkOverFlow(std::string &s);

@@ -96,6 +96,17 @@ string convertDomainToIPv4(string &domain)
     freeaddrinfo(result);
     return "";
 }
+
+bool checkOverFlow(std::string &s) {
+	if (s.size() > 19)
+		return (false);
+	for (size_t i = 0; i < s.size(); i++)
+		if (!isdigit(s[i]))
+			return (false);
+	return (true);
+
+}
+
 void Server::overrideLocations(Server &s) {
 	map<string, string> ServerDirectives = s.getdirectives();
 	for (size_t i=0;i<s.locationsBlock.size();i++) {
@@ -103,6 +114,10 @@ void Server::overrideLocations(Server &s) {
 		for (std::map<std::string, std::string>::iterator j = ServerDirectives.begin(); j != ServerDirectives.end(); j++)
 			if (!location.count(j->first) && j->first != "listen" && j->first != "host")
 				location[j->first] = j->second;
+		std::string maxClientBodySize = location["client_max_body_size"];
+		if (!checkOverFlow(maxClientBodySize)) {
+			throw runtime_error("Error: Invalid client_max_body_size on location " + location["location"]);
+		}
 	}
 }
 
@@ -248,13 +263,13 @@ vector<Server> Server::parsingFile(string s) {
 		stringstream lineNumStr;
 		for (size_t i = 0; i < servers.size(); i++) {
 			lineNumStr << i + 1;
-				if (!checkPortMaxMin(servers[i].directives["listen"]))
-					throw runtime_error("Error: Invalid port number on server Num " + lineNumStr.str());
-				if (checkDuplicateLocation(servers[i].locationsBlock))
-					throw runtime_error("There is a duplicate Location on server Num " + lineNumStr.str());
-				if (!checkReturnOnLocation(servers[i].locationsBlock))
-					throw runtime_error("Error: Invalid return on server Num " + lineNumStr.str());
-				fillErrorPages(servers[i]);
+			if (!checkPortMaxMin(servers[i].directives["listen"]))
+				throw runtime_error("Error: Invalid port number on server Num " + lineNumStr.str());
+			if (checkDuplicateLocation(servers[i].locationsBlock))
+				throw runtime_error("There is a duplicate Location on server Num " + lineNumStr.str());
+			if (!checkReturnOnLocation(servers[i].locationsBlock))
+				throw runtime_error("Error: Invalid return on server Num " + lineNumStr.str());
+			fillErrorPages(servers[i]);
 		}
 	} catch (runtime_error &e) {
 		cerr << e.what() << endl;

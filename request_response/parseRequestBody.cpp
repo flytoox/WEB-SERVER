@@ -13,7 +13,7 @@
 // 0\r\n
 
 
-//7\r\nMozilla\r\n11\r\nDeveloper Network\r\n
+//7\r\nMozilla\r\n11\r\nDeveloper Network\r\n1e\r\nDocumentation\r\n0\r\n\r\n
 std::vector<std::string> splitString(const std::string& input, const std::string& delimiter) {
     std::vector<std::string> result;
     std::size_t start = 0;
@@ -297,48 +297,13 @@ void urlencodedContentType(Request &request) {
 }
 
 
-static int getTheMaxsize(Request &request) {
-
-    std::map<std::string, std::string> location = request.getLocationBlockWillBeUsed();
-    int size = 0;
-
-    for ( mapConstIterator it =  location.begin() ; it != location.end() ; ++it ) {
-        if (it->first == "client_max_body_size") {
-            size = std::atoi((it->second).c_str());
-            return (size);
-        }
-    }
-
-    std::map<std::string, std::string> directives = request.getDirectives();
-
-    for ( mapConstIterator it =  directives.begin() ; it != directives.end() ; ++it ) {
-        if (it->first == "client_max_body_size") {
-            size = std::atoi((it->second).c_str());
-            break ;
-        }
-    }
-
-    return (size);
-}
-
 void parseRequestBody(Request &request) {
 
     //*Check Length of the Body
 
-    unsigned long sizeMax = getTheMaxsize(request);
-    if ( sizeMax && request.getRequestBody().length() > sizeMax ) {
-
-        request.response = responseBuilder()
-        .addStatusLine("413")
-        .addContentType("text/html")
-        .addResponseBody(request.getPageStatus(413));
-        throw "413";
-
-    }
-
     std::map<std::string, std::string>::const_iterator itTransferEncoding;
     std::map<std::string, std::string>::const_iterator itContentType;
-    itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding:");
+    itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding");
     if ( itTransferEncoding != (request.getHttpRequestHeaders()).end() )
         chunkedRequest(request);
 

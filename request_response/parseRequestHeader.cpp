@@ -130,11 +130,12 @@ static void parseContentType(std::vector<std::string> &headerSplitVector, Reques
     }
 
 
+    // "Cntent-Type: multipart/form-data; bondary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
 
     std::string headerValue = headerSplitVector[1];
     pair contentType = std::make_pair(std::string("Content-Type:"), headerValue);
     if (headerSplitVector[1] == "multipart/form-data;") {
-        std::string boun = headerSplitVector[2].substr(headerSplitVector[2].find('=') + 1);
+        std::string boun = headerSplitVector[2].substr(headerSplitVector[2].find("boundary=") + 1);
         boun.insert(0, "--");
         request.setBoundary(boun);
     }
@@ -280,5 +281,5 @@ void parseAndSetRequestHeader(Request &request) {
             }
         }
     }
-    validateRequest(request);
+    validateHeader(request);
 }

@@ -24,11 +24,11 @@ std::string extractContentType(const std::string& headers) {
         // Convert the line to lowercase for case-insensitive comparison
         std::transform(line.begin(), line.end(), line.begin(), ::tolower);
 
-        // Find the line that contains "content-type:"
-        std::size_t found = line.find("content-type:");
+        // Find the line that contains "content-type"
+        std::size_t found = line.find("content-type");
         if (found != std::string::npos) {
-            // Extract the value after ":"
-            std::string contentType = line.substr(found + 13);  // 13 is the length of "content-type:"
+            // Extract the value after ""
+            std::string contentType = line.substr(found + 13);  // 13 is the length of "content-type"
 
             // Find the position of the semicolon
             std::size_t semicolonPos = contentType.find(';');

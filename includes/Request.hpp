@@ -8,10 +8,10 @@
 typedef std::pair<std::string, std::string> pair;
 
 class Request {
-
+public:
+    std::string stringUnparsed;
+    
 private:
-
-
     std::map<std::string, std::string> directives;
     std::map<std::string, std::string> locationBlockWillBeUsed;
     std::map<std::string, std::map<int, std::string> > pages;
@@ -83,7 +83,7 @@ public:
     const std::string &getRequestHeader() const ;
     const std::string &getRequestBody() const ;
 
-    const std::map<std::string, std::string> &getHttpRequestHeaders() const;
+    std::map<std::string, std::string> &getHttpRequestHeaders();
     const std::map<std::string, std::string> &getLocationBlockWillBeUsed() const ;
     const std::string getPageStatus(int status) const ;
 
@@ -109,11 +109,11 @@ public:
     //* SETTERS
 
     void setTimeout();
-    void setRequestHeader(std::string setter);
-    void setRequestBody(std::string setter);
+    void setRequestHeader(std::string &setter);
+    void setRequestBody(std::string &setter);
 
 
-    void setHttpRequestHeaders(pair &setPair);
+    void setHttpRequestHeaders(pair setPair);
 
     void setHttpVerb(std::string &setter);
     void setUri(std::string &setter);

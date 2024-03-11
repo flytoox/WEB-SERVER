@@ -1,16 +1,6 @@
 #include "../includes/webserve.hpp"
 static void handleUploadingError(Request &request, std::string statusCode);
 
-static bool characterNotAllowed(std::string &uri) {
-
-    std::string allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-
-    for (size_t i = 0; i < uri.length(); i++) {
-        if (allowedCharacters.find(uri[i]) == std::string::npos )
-            return true;
-    }
-    return false;
-}
 
 std::vector<std::string> splitUri(const std::string& input, const std::string& delimiter) {
 
@@ -176,12 +166,48 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 }
 
 
-void validateRequest(Request &request) {
+void validateHeader(Request &request) {
 
+    if (request.getHttpVerb() != "POST" && request.getHttpVerb() != "GET" && request.getHttpVerb() != "DELETE") {
+        request.response = responseBuilder()
+            .addStatusLine("405")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(405));
+        throw "405";
+    }
+    std::map<std::string, std::string> location = fetchSuitableLocationBlock(request, request.getUri());
+
+    if (!location.empty()) {
+        request.setLocationBlockWillBeUsed(location) ;
+    } else if ( request.getLocationBlockWillBeUsed().empty() ) {
+        std::map<std::string, std::string> defaultLocation = request.getDirectives();
+        request.setLocationBlockWillBeUsed(defaultLocation);
+        location = request.getLocationBlockWillBeUsed();
+    }
+    if (location.find("allowedMethods") != location.end()) {
+        std::string input = location["allowedMethods"];
+        std::vector<std::string> theAllowedMethods = splitString(input, " ");
+        const_vector_it itAllowedMethods = std::find(theAllowedMethods.begin(), theAllowedMethods.end(), request.getHttpVerb());
+
+        if (itAllowedMethods == theAllowedMethods.end()) {
+            request.response = responseBuilder()
+            .addStatusLine("405")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(405));
+            throw "405";
+        }
+    }
+    if (request.getUri().length() > 2048 ) {
+        request.response = responseBuilder()
+            .addStatusLine("414")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(414));
+        throw "414" ;            
+    }
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
-    std::string transferEncoding = httpRequestHeaders["Transfer-Encoding:"];
+    std::string transferEncoding = httpRequestHeaders["Transfer-Encoding"];
 
-    if ( !transferEncoding.empty() && transferEncoding != "chunked") {
+    if (!transferEncoding.empty() && transferEncoding != "chunked") {
         request.response = responseBuilder()
             .addStatusLine("501")
             .addContentType("text/html")
@@ -189,49 +215,12 @@ void validateRequest(Request &request) {
         throw "501" ;
     }
 
-    mapConstIterator contentLengh = httpRequestHeaders.find("Content-Length:");
-    std::string method = request.getHttpVerb();
-    if (method == "GET" && ( contentLengh != httpRequestHeaders.end() || !transferEncoding.empty()) ) {
 
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(400));
-
-        throw "40018" ;
-    }
-
-    std::string uri = request.getUri();
-
-    if ( ! uri.empty() ) {
-        if ( characterNotAllowed( uri ) ) {
-            request.response = responseBuilder()
-                .addStatusLine("400")
-                .addContentType("text/html")
-                .addResponseBody(request.getPageStatus(400));
-            throw "414";
-        }
-        if (  uri.length() > 2048 ) {
-            request.response = responseBuilder()
-                .addStatusLine("414")
-                .addContentType("text/html")
-                .addResponseBody(request.getPageStatus(414));
-            throw "414" ;            
-        }
-    }
 
     //! Skipped: if => no location match the request uri
-    std::map<std::string, std::string> location = fetchSuitableLocationBlock(request, uri);
 
-    if ( ! location.empty() ) {
-        request.setLocationBlockWillBeUsed(location) ;
-    } else if ( request.getLocationBlockWillBeUsed().empty() ) {
-        std::map<std::string, std::string> defaultLocation = request.getDirectives();
-        request.setLocationBlockWillBeUsed(defaultLocation);
-        location = request.getLocationBlockWillBeUsed();
-    }
 
-    if ( location.find("return") != location.end() ) {
+    if (location.find("return") != location.end() ) {
 
 		std::string changeLocation = location["return"];
 		std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
@@ -250,30 +239,28 @@ void validateRequest(Request &request) {
 			throw "return directive";
 		}
     }
-
-    if ( location.find("allowedMethods") != location.end()) {
-        std::string input = location["allowedMethods"];
-        std::vector<std::string> theAllowedMethods = splitString(input, " ");
-        const_vector_it itAllowedMethods = std::find(theAllowedMethods.begin(), theAllowedMethods.end(), request.getHttpVerb());
-
-        if (itAllowedMethods == theAllowedMethods.end()) {
-            request.response = responseBuilder()
-            .addStatusLine("405")
+    if (!httpRequestHeaders.count("Content-Type") && httpRequestHeaders["Content-Type"].find("multipart/form-data;") == std::string::npos) return ;
+    std::string contentType = httpRequestHeaders["Content-Type"];
+    size_t pos = contentType.find("multipart/form-data; boundary=");
+     if (pos != std::string::npos) {
+        std::string boun = contentType.substr(pos + 30);
+        boun.insert(0, "--");
+        request.setBoundary(boun);
+        request.getHttpRequestHeaders().erase("Content-Type");
+        request.getHttpRequestHeaders().insert(std::make_pair("Content-Type:", "multipart/form-data;"));
+    } else {
+        request.response = responseBuilder()
+            .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(405));
-            throw "405";
-        }
+            .addResponseBody(request.getPageStatus(400));
+        throw "400";
     }
-
-    std::map<std::string, std::string>::const_iterator contentType = (request.getHttpRequestHeaders()).find("Content-Type:");
-    if (contentType != (request.getHttpRequestHeaders()).end() && contentType->second == "multipart/form-data;") {
-        if (location["upload_enable"] == "off" || location.find("upload_store") == location.end()) {
-			handleUploadingError(request, "403");
-        }
-        DIR *dir_ptr = opendir(location["upload_store"].c_str());
-        if (dir_ptr == NULL) {
-			handleUploadingError(request, "500");
-        }
+    if (location["upload_enable"] == "off" || location.find("upload_store") == location.end()) {
+        handleUploadingError(request, "403");
+    }
+    DIR *dir_ptr = opendir(location["upload_store"].c_str());
+    if (dir_ptr == NULL) {
+        handleUploadingError(request, "500");
     }
 }
 
@@ -282,7 +269,7 @@ static void handleUploadingError(Request &request, std::string statusCode) {
 
 	int status = std::atoi(statusCode.c_str());
 
-	std::pair<std::string, std::string> p = std::make_pair("Connection:", "closed");
+	std::pair<std::string, std::string> p = std::make_pair("Connection", "closed");
 	request.setHttpRequestHeaders(p);
 	std::string page = request.getPageStatus(status);
 	request.response = responseBuilder()
