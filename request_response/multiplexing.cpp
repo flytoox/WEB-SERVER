@@ -1,9 +1,9 @@
 #include "../includes/webserve.hpp"
 
-void getAllTheConfiguredSockets(configFile &configurationServers, std::vector<int> &allSocketsVector) {
+void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> &allSocketsVector) {
 
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it)
-        allSocketsVector.push_back(it->getSocketDescriptor());
+        allSocketsVector.insert(it->getSocketDescriptor());
 }
 
 
@@ -72,7 +72,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     // request.setTimeout();
 }
 
-void checkTimeOut(std::set<int> &Fds, std::vector<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &simultaneousRequests, int &responseD){
+void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &simultaneousRequests, int &responseD){
     for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
         responseD = *i;
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
@@ -93,7 +93,7 @@ void checkTimeOut(std::set<int> &Fds, std::vector<int> &ServersSD, fd_set &allsd
 
 void funcMultiplexingBySelect(configFile &configurationServers) {
 
-    std::vector<int> ServersSD;
+    std::set<int> ServersSD;
     fd_set readsd, writesd, allsd;
     std::map<int, Request> simultaneousRequests;
     std::set<int> Fds;
@@ -101,7 +101,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     getAllTheConfiguredSockets(configurationServers, ServersSD);
     FD_ZERO(&allsd);
 
-    for (socket_iterator it = ServersSD.begin(); it != ServersSD.end(); it++) {
+    for (std::set<int>::iterator it = ServersSD.begin(); it != ServersSD.end(); it++) {
         Fds.insert(*it);
         FD_SET((*it), &allsd);
     }
@@ -129,13 +129,11 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 if (!FD_ISSET(*i, &readsd)) {
                     continue ;
                 }
-
-                socket_iterator readyToConnect = std::find(ServersSD.begin(), ServersSD.end(), *i);
-                if (readyToConnect != ServersSD.end()) {
+                if (find(ServersSD.begin(), ServersSD.end(), *i) != ServersSD.end()) {
                     //! A Connection's been received
                     struct sockaddr_in clientAddress;
                     socklen_t addrlen =  sizeof(clientAddress);
-                    int clientSD = accept(*readyToConnect , (struct sockaddr *)&clientAddress , &addrlen);
+                    int clientSD = accept(*i , (struct sockaddr *)&clientAddress , &addrlen);
                     if (clientSD == -1 ) {
                         std::cerr << "Error: accept(): " << strerror(errno) << std::endl;
                         continue ;
