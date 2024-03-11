@@ -10,6 +10,7 @@ typedef std::pair<std::string, std::string> pair;
 class Request {
 public:
     std::string stringUnparsed;
+    bool isTimeOut;
     
 private:
     std::map<std::string, std::string> directives;

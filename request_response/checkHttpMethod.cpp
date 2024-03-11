@@ -11,5 +11,5 @@ void checkRequestedHttpMethod(Request &request) {
     } else if (httpMethod == "POST") {
         postMethod(request);
     }
-    deleteMethod(request);
+    else deleteMethod(request);
 }

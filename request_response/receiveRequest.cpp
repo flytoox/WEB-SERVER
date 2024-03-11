@@ -1,6 +1,6 @@
 #include "../includes/webserve.hpp"
 
-configFile &configurationServers;
+configFile configurationServers;
 
 static void push_convert(std::string &convert, char *buffer, int r) {
     for (int i = 0; i != r; i++)
@@ -50,29 +50,37 @@ std::vector<std::string> customSplitRequest(const std::string& input, const std:
 
 bool parseFirstLine(std::string &s, Request &request) {
     std::vector<std::string> lines = splitWhiteSpaces(s);
-    if (lines.size() != 3 || lines[2] != "HTTP/1.1\r\n" || lines[1][0] != '/') {
+    if (lines.size() != 3 || lines[2] != "HTTP/1.1" || lines[1][0] != '/') {
+        std::cerr << "Error: HTTP" << std::endl;
         return false;
     }
     for (size_t i = 0; i < lines[0].length(); i++) {
         if (!isalpha(lines[0][i]) && !isupper(lines[0][i])) {
+            std::cerr << "isaplha" << std::endl;
             return false;
         }
     }
     request.setHttpVerb(lines[0]);
     request.setUri(lines[1]);
-    request.setHTTPVersion(lines[2].erase(lines[2].length() - 2));
+    request.setHTTPVersion(lines[2]);
     return true;
 }
-
+//Host:fjoaijfios
 bool parseDefaultLine(std::string &s, Request &request) {
     std::vector<std::string> v = splitWithChar(s, ':');
-    if (v[0][v[0].length() - 1] == ' ')
+    if (v.size() < 2) {
         return false;
-    int l = 0;
-    while (v[1][l++] == ' ');
+    }
+    if (v[0][v[0].length() - 1] == ' ') {
+        return false;
+    }
+    int l = -1;
+    while (v[1][++l] == ' ');
     v[1].erase(0, l);
-    if ((v[0] == "Content-Length" || v[0] == "Host" || v[0] == "Transfer-Encoding") && request.getHttpRequestHeaders().count(v[0])) 
+    if ((v[0] == "Content-Length" || v[0] == "Host" || v[0] == "Transfer-Encoding") && request.getHttpRequestHeaders().count(v[0]))  {
+        std::cerr << "Default Line 2" << std::endl;
         return false;
+    }
     std::string value = "";
     for (size_t i = 1; i < v.size(); i++) {
         value += v[i];
@@ -80,6 +88,7 @@ bool parseDefaultLine(std::string &s, Request &request) {
             value += ":";
     }
     request.setHttpRequestHeaders(make_pair(v[0], value.erase(value.length() - 2)));
+    return true;
 }
 
 size_t custAtoi(const std::string &s) {
@@ -91,6 +100,7 @@ size_t custAtoi(const std::string &s) {
 }
 
 bool parseBody(Request &request) {
+    std::cerr << "parseBody" << std::endl;
     if (request.reCheck != true) {
         request.reCheck = true;
         reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
@@ -106,6 +116,7 @@ bool parseBody(Request &request) {
             throw "413";
         }
     }
+    return false;
 }
 
 bool parseHeader(std::string &s, Request &request) {
@@ -138,9 +149,11 @@ bool parseHeader(std::string &s, Request &request) {
             s = lines[i];
             return false;
         }
-        if ((request.getHttpVerb().empty() && !parseFirstLine(lines[i], request)) || parseDefaultLine(lines[i], request))
+        if ((!request.getHttpVerb().empty() && !parseDefaultLine(lines[i], request)) || (request.getHttpVerb().empty() && !parseFirstLine(lines[i], request))) {
             return true;
+        }
     }
+    return false;
 }
 
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &cnf, fd_set &allsd) {
@@ -152,7 +165,6 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
         std::cerr << "Error: recv(): " << strerror(errno) << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
-
     push_convert(simultaneousRequests[i].stringUnparsed, buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()
@@ -161,9 +173,13 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
             .addResponseBody(simultaneousRequests[i].getPageStatus(400));
         throw "400";
     }
-    if ((simultaneousRequests[i].getRequestBody().length() >= simultaneousRequests[i].realContentLength) || \
-        ((((simultaneousRequests[i]).getHttpRequestHeaders()).find("Transfer-Encoding") != (simultaneousRequests[i]).getHttpRequestHeaders().end()) && \
-            (simultaneousRequests[i].getRequestBody().find("0\r\n\r\n") != std::string::npos)) ) {
+    if (recevRequestLen) {
+        simultaneousRequests[i].isTimeOut = false;
+        simultaneousRequests[i].setTimeout();
+    }
+    const std::string &body = simultaneousRequests[i].getRequestBody();
+    bool isTransferEncoding = simultaneousRequests[i].getHttpRequestHeaders().count("Transfer-Encoding");
+    if (simultaneousRequests[i].getRequestBodyChunk() && (body.length() >= simultaneousRequests[i].realContentLength || (isTransferEncoding && body.find("0\r\n\r\n") != std::string::npos))) {
         parseRequestBody((simultaneousRequests[i]));
         checkRequestedHttpMethod(simultaneousRequests[i]);
     }
