@@ -72,6 +72,25 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     // request.setTimeout();
 }
 
+void checkTimeOut(std::set<int> &Fds, std::vector<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &simultaneousRequests, int &responseD){
+    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
+        responseD = *i;
+        if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
+            time_t now = time(0);
+            time_t elapsedSeconds = now - simultaneousRequests[*i].getTimeout();
+            std::cout << *i << ' ' << ' '<< elapsedSeconds <<"\n";
+            if (elapsedSeconds >= 10) {
+
+                (simultaneousRequests[*i]).response = responseBuilder()
+                    .addStatusLine("408")
+                    .addContentType("text/html")
+                    .addResponseBody(simultaneousRequests[*i].getPageStatus(408));
+                functionToSend(*i, readsd, writesd, allsd, simultaneousRequests);
+            }
+        }
+    }
+}
+
 void funcMultiplexingBySelect(configFile &configurationServers) {
 
     std::vector<int> ServersSD;
@@ -86,32 +105,25 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
         Fds.insert(*it);
         FD_SET((*it), &allsd);
     }
-
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
     int responseD = 0;
     for (FOREVER) {    
         try {
             readsd = allsd;
-            if (select(*Fds.rbegin() + 1, &readsd, 0, 0, 0) < 0) {
-                std::cerr << "Error: select()" << std::endl;
-                exit(1);
-            }
-            for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {
-                responseD = *i;
-                if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
-                    time_t now = time(0);
-                    time_t elapsedSeconds = now - simultaneousRequests[*i].getTimeout();
-                    std::cout << *i << ' ' << ' '<< elapsedSeconds <<"\n";
-                    if (elapsedSeconds >= 2) {
-
-                        (simultaneousRequests[*i]).response = responseBuilder()
-                            .addStatusLine("408")
-                            .addContentType("text/html")
-                            .addResponseBody(simultaneousRequests[*i].getPageStatus(408));
-                        functionToSend(*i, readsd, writesd, allsd, simultaneousRequests);
-                    }
+            int ret = -1;
+            while ((ret = select(*Fds.rbegin() + 1, &readsd, 0, 0, &timeout)) <= 0) {
+                if (ret == -1) {
+                    std::cerr << "Error: select()" << std::endl;
+                    exit(1);
                 }
+                checkTimeOut(Fds, ServersSD, allsd, readsd, writesd, simultaneousRequests, responseD);
+                readsd = allsd;
+                timeout.tv_sec = 1;
+                timeout.tv_usec = 0;
             }
-
+            checkTimeOut(Fds, ServersSD, allsd, readsd, writesd, simultaneousRequests, responseD);
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {
                 responseD = *i;
                 if (!FD_ISSET(*i, &readsd)) {
