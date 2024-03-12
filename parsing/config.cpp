@@ -114,6 +114,7 @@ void Server::overrideLocations(Server &s) {
 		for (std::map<std::string, std::string>::iterator j = ServerDirectives.begin(); j != ServerDirectives.end(); j++)
 			if (!location.count(j->first) && j->first != "listen" && j->first != "host")
 				location[j->first] = j->second;
+		if (!location.count("client_max_body_size")) continue;
 		std::string maxClientBodySize = location["client_max_body_size"];
 		if (!checkOverFlow(maxClientBodySize)) {
 			throw runtime_error("Error: Invalid client_max_body_size on location " + location["location"]);
