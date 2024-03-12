@@ -239,7 +239,7 @@ void validateHeader(Request &request) {
 			throw "return directive";
 		}
     }
-    if (!httpRequestHeaders.count("Content-Type") && httpRequestHeaders["Content-Type"].find("multipart/form-data;") == std::string::npos) return ;
+    if (!httpRequestHeaders.count("Content-Type") || httpRequestHeaders["Content-Type"].find("multipart/form-data;") == std::string::npos) return ;
     std::string contentType = httpRequestHeaders["Content-Type"];
     size_t pos = contentType.find("multipart/form-data; boundary=");
      if (pos != std::string::npos) {

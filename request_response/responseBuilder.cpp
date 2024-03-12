@@ -158,13 +158,13 @@ responseBuilder& responseBuilder::addContentLength() {
 
 responseBuilder& responseBuilder::addCookie(const std::string &cookie) {
 
-    headersResponses.insert(std::make_pair("Set-Cookie", cookie));
+    headersResponses.insert(std::make_pair("Set-Cookie:", cookie));
     return (*this);
 }
 
 responseBuilder& responseBuilder::addLocationFile(const std::string &location) {
 
-    headersResponses.insert(std::make_pair("Location", location));
+    headersResponses.insert(std::make_pair("Location:", location));
     return (*this);
 }
 
