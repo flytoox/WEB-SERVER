@@ -193,7 +193,6 @@ void postMethod(Request &request) {
         value = itContentType->second;
     }
 
-
     if ( value == "multipart/form-data;" ) {
         multipartContentType(request);
         request.response = responseBuilder()

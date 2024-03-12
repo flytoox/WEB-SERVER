@@ -69,9 +69,11 @@ bool parseFirstLine(std::string &s, Request &request) {
 bool parseDefaultLine(std::string &s, Request &request) {
     std::vector<std::string> v = splitWithChar(s, ':');
     if (v.size() < 2) {
+        std::cerr << "Default Line 0" << std::endl;
         return false;
     }
     if (v[0][v[0].length() - 1] == ' ') {
+        std::cerr << "Default Line 1" << std::endl;
         return false;
     }
     int l = -1;
@@ -100,7 +102,8 @@ size_t custAtoi(const std::string &s) {
 }
 
 bool parseBody(Request &request) {
-    std::cerr << "parseBody" << std::endl;
+    request.setRequestBody(request.stringUnparsed);
+    request.stringUnparsed = "";
     if (request.reCheck != true) {
         request.reCheck = true;
         reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
@@ -130,9 +133,8 @@ bool parseHeader(std::string &s, Request &request) {
             s = "";
             for (size_t j = i + 1; j < lines.size(); j++)
                 s += lines[j];
-            request.setRequestBody(s);
             if (request.getHttpRequestHeaders().count("Content-Length")) {
-                if (checkOverFlow(request.getHttpRequestHeaders()["Content-Length"])) {
+                if (!checkOverFlow(request.getHttpRequestHeaders()["Content-Length"])) {
                     request.response = responseBuilder()
                         .addStatusLine("413")
                         .addContentType("text/html")
@@ -141,6 +143,7 @@ bool parseHeader(std::string &s, Request &request) {
                 }
                 request.realContentLength = custAtoi(request.getHttpRequestHeaders()["Content-Length"]);
             } else request.realContentLength = 0;
+            std::cerr << "Content-Length: " << request.realContentLength << std::endl;
             return parseBody(request);
         } else if (lines[i] == "\r\n") {
             continue;
@@ -165,6 +168,10 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
         std::cerr << "Error: recv(): " << strerror(errno) << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
+    if (recevRequestLen) {
+        simultaneousRequests[i].isTimeOut = false;
+        simultaneousRequests[i].setTimeout();
+    }
     push_convert(simultaneousRequests[i].stringUnparsed, buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()
@@ -173,14 +180,11 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
             .addResponseBody(simultaneousRequests[i].getPageStatus(400));
         throw "400";
     }
-    if (recevRequestLen) {
-        simultaneousRequests[i].isTimeOut = false;
-        simultaneousRequests[i].setTimeout();
-    }
     const std::string &body = simultaneousRequests[i].getRequestBody();
     bool isTransferEncoding = simultaneousRequests[i].getHttpRequestHeaders().count("Transfer-Encoding");
     if (simultaneousRequests[i].getRequestBodyChunk() && (body.length() >= simultaneousRequests[i].realContentLength || (isTransferEncoding && body.find("0\r\n\r\n") != std::string::npos))) {
         parseRequestBody((simultaneousRequests[i]));
+        simultaneousRequests[i].stringUnparsed = "";
         checkRequestedHttpMethod(simultaneousRequests[i]);
     }
 }

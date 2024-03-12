@@ -78,7 +78,6 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, f
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
             time_t now = time(0);
             time_t elapsedSeconds = now - simultaneousRequests[*i].getTimeout();
-            std::cout << *i << ' ' << ' '<< elapsedSeconds <<"\n";
             if (elapsedSeconds >= 10) {
 
                 (simultaneousRequests[*i]).response = responseBuilder()

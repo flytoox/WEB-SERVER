@@ -247,7 +247,7 @@ void validateHeader(Request &request) {
         boun.insert(0, "--");
         request.setBoundary(boun);
         request.getHttpRequestHeaders().erase("Content-Type");
-        request.getHttpRequestHeaders().insert(std::make_pair("Content-Type:", "multipart/form-data;"));
+        request.getHttpRequestHeaders().insert(std::make_pair("Content-Type", "multipart/form-data;"));
     } else {
         request.response = responseBuilder()
             .addStatusLine("400")
