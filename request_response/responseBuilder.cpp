@@ -155,10 +155,8 @@ responseBuilder& responseBuilder::addContentLength() {
     return (*this);
 }
 
-
-responseBuilder& responseBuilder::addCookie(const std::string &cookie) {
-
-    headersResponses.insert(std::make_pair("Set-Cookie:", cookie));
+responseBuilder& responseBuilder::addCustomHeader(const std::string &header, const std::string &value) {
+    headersResponses.insert(std::make_pair(header+":", value));
     return (*this);
 }
 

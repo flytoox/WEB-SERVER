@@ -68,33 +68,29 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
                 std::string body = response.second;
 
                 std::string contentType = extractContentType(headers);
-                std::stringstream ss;
-                ss << body.length();
-                // std::string contentLength = std::to_string(body.length());
-                std::string contentLength = ss.str();
+                std::string contentLength = ftToString(body.length());
 
                 std::size_t lastSlashPos = contentType.rfind('/');
-                std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+                std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "txt";
 
                 std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
 
                 // Set the initial HTTP response headers
                 request.response = responseBuilder()
                     .addStatusLine("200")
-                    .addContentType(type)
-                    .addResponseBody(body);
+                    .addContentType(type);
                 for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
-                    if (it->first == "Set-Cookie")
-                        request.response.addCookie(it->second);
-                    else if (it->first == "Location")
-                        request.response.addLocationFile(it->second);
-                    else if (it->first == "Status") {
+                    if (it->first == "Status") {
                         std::string status = it->second;
                         std::stringstream ss(status);
                         std::string statusNumber;
                         ss >> statusNumber;
 
                         request.response.addStatusLine(statusNumber);
+                    } else {
+                        std::string key = lower(it->first);
+                        if (key != "content-type" && key != "content-length")
+                            request.response.addCustomHeader(it->first, it->second);
                     }
                 }
                 request.response.addResponseBody(body);
@@ -134,33 +130,29 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
             std::string body = response.second;
 
             std::string contentType = extractContentType(headers);
-            std::stringstream ss;
-            ss << body.length();
-            // std::string contentLength = std::to_string(body.length());
-            std::string contentLength = ss.str();
+            std::string contentLength = ftToString(body.length());
 
             std::size_t lastSlashPos = contentType.rfind('/');
-            std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+            std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "txt";
 
             std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
 
             // Set the initial HTTP response headers
             request.response = responseBuilder()
                 .addStatusLine("200")
-                .addContentType(type)
-                .addResponseBody(body);
+                .addContentType(type);
             for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
-                if (it->first == "Set-Cookie")
-                    request.response.addCookie(it->second);
-                else if (it->first == "Location")
-                    request.response.addLocationFile(it->second);
-                else if (it->first == "Status") {
+                if (it->first == "Status") {
                     std::string status = it->second;
                     std::stringstream ss(status);
                     std::string statusNumber;
                     ss >> statusNumber;
 
                     request.response.addStatusLine(statusNumber);
+                } else {
+                    std::string key = lower(it->first);
+                    if (key != "content-type" && key != "content-length")
+                        request.response.addCustomHeader(it->first, it->second);
                 }
             }
             request.response.addResponseBody(body);
@@ -207,24 +199,6 @@ void postMethod(Request &request) {
     //* get_requested_resource()
     std::string root;
     retrieveRootAndUri(request, root);
-
-    // if ( root.empty() ) {
-
-        // mapConstIterator it = request.getDirectives().find("root");
-        // if (it == (request.getDirectives()).end()) {
-
-
-        //     request.response = responseBuilder()
-        //     .addStatusLine("200")
-        //     .addContentType("text/html")
-        //     .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
-
-        //     throw "No Root: 200";
-        // }
-        // else
-            // root =  request.getDirectives().find("root")->second;
-
-    // }
 
     std::string uri = request.getUri();
     if (uri.find('?') != std::string::npos) {
