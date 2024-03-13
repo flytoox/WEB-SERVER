@@ -41,6 +41,7 @@ public:
     responseBuilder& addResponseBody(const std::string &responseBody);
     responseBuilder& addCookie(const std::string &cookie);
     responseBuilder& addLocationFile(const std::string &location);
+    responseBuilder& addCustomHeader(const std::string &header, const std::string &value);
 
     std::string build();
 };

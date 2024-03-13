@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 18:00:04 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/13 02:40:10 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/13 15:00:13 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@ void handleTimeout(int signal) {
     // Handle timeout signal
     if (signal == SIGALRM) {
         std::cerr << "Child process timed out and is being terminated.\n";
-        _exit(EXIT_FAILURE);
     }
 }
 
@@ -24,7 +23,6 @@ std::map<std::string, std::string> parseHeaders(std::map<std::string, std::strin
     std::map<std::string, std::string> headerMap;
 
     for (std::map<std::string, std::string>::iterator entry = headers.begin(); entry != headers.end(); entry++) {
-        // Standardize and uppercase the key
         std::string key = entry->first;
         for (size_t i = 0; i < key.length(); ++i) {
             key[i] = toupper(key[i]);
@@ -32,47 +30,17 @@ std::map<std::string, std::string> parseHeaders(std::map<std::string, std::strin
                 key[i] = '_';
         }
 
-        // Add "HTTP_" prefix to the key except for specific headers
         if (key != "HTTP_USER_AGENT" && key != "HTTP_REFERER"
             && key != "CONTENT_LENGTH" && key != "CONTENT_TYPE"
             && key != "AUTH_TYPE" && key != "REMOTE_USER"
-            && key != "REMOTE_IDENT") {
+            && key != "REMOTE_IDENT" && key != "REQUEST_METHOD"
+            && key != "REQUEST_URI" && key != "SERVER_PROTOCOL") {
             key = "HTTP_" + key;
         }
 
         headerMap[key] = entry->second;
     }
-
-    // Process the rest of the lines
-    // while (getline(headerStream, line)) {
-    //     // Find the position of the colon (':')
-    //     size_t colonPos = line.find(':');
-
-    //     // If a colon is found, extract the key and value
-    //     if (colonPos != std::string::npos) {
-    //         // Extract the key and value
-    //         std::string key = line.substr(0, colonPos);
-    //         std::string value = line.substr(colonPos + 2);  // Skip the space after the colon
-
-    //         // Standardize and uppercase the key
-    //         for (size_t i = 0; i < key.length(); ++i) {
-    //             key[i] = toupper(key[i]);
-    //             if (key[i] == '-')
-    //                 key[i] = '_';
-    //         }
-
-    //         // Add "HTTP_" prefix to the key except for specific headers
-    //         if (key != "HTTP_USER_AGENT" && key != "HTTP_REFERER"
-    //             && key != "CONTENT_LENGTH" && key != "CONTENT_TYPE"
-    //             && key != "AUTH_TYPE" && key != "REMOTE_USER"
-    //             && key != "REMOTE_IDENT") {
-    //             key = "HTTP_" + key;
-    //         }
-
-    //         headerMap[key] = value;
-    //     }
-    // }
-
+    
     return headerMap;
 }
 

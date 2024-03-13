@@ -20,33 +20,27 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
         if (pid == -1) {
             std::cerr << "Error forking process.\n";
             return std::make_pair(std::string(), std::string());
-        }
-
-        if (pid == 0) {  // Child process
+        } else if (pid == 0) {
             close(pipe.getReadEnd());
             redirectStdoutStderr(pipe);
 
-            // Set up the environment variables
             envVars = fillEnv(parsedHeaders);
-            //find CONTENT_LENGTH and CONTENT_TYPE and delete them
             envVars.erase("CONTENT_LENGTH");
             envVars.erase("CONTENT_TYPE");
 
             envVars["SCRIPT_NAME"] = file;
             envVars["SCRIPT_FILENAME"] = file;
-            envVars["QUERY_STRING"] = request.getQueryString();
+            if (!request.getQueryString().empty())
+                envVars["QUERY_STRING"] = request.getQueryString();
 
-            // Set up a timeout using the alarm function
             signal(SIGALRM, handleTimeout);
-            alarm(10); // Timeout after 10 seconds
-
+            alarm(10);
             executeChildProcess(interpreterPath, file, envVars);
-
-            // Reset the alarm if the child process finishes before the timeout
             alarm(0);
-        } else {  // Parent process
+        } else {
             close(pipe.getWriteEnd());
             response = readFromPipeAndClose(pipe.getReadEnd());
+            
             int status;
             waitpid(pid, &status, 0);
 
@@ -59,23 +53,26 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
                 }
             } else if (WIFSIGNALED(status)) {
                 int signalNumber = WTERMSIG(status);
+
                 std::cerr << "CGI Warning!! Child process terminated by signal: " << signalNumber << "\n";
+                if (signalNumber == SIGALRM)
+                    return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(408));
                 return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             } else {
                 std::cerr << "CGI Error!! Child process terminated abnormally.\n";
+                return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             }
         }
 
         return splitHeadersAndBody(response);
     } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << "\n";
+        std::cerr << "CGI Exception: " << e.what() << "\n";
         return std::make_pair(std::string(), std::string());
     }
 }
 
-std::pair<std::string, std::string> handleCgiPost(const std::string& file,
-                                        const std::string& interpreterPath,
-                                        Request &request) {
+std::pair<std::string, std::string> handleCgiPost(const std::string& file, const std::string& interpreterPath, Request &request) {
+
     try {
         std::string response;
         Pipe pipe;
@@ -90,10 +87,6 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
         std::map<std::string, std::string> envVars;
 
         std::string postData = request.getRequestBody();
-        std::stringstream ss;
-        ss << postData.length();
-
-        //write post data to a tmp file
         std::ofstream tmpFile("tmpFile");
         tmpFile << postData;
         tmpFile.close();
@@ -103,13 +96,10 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
         if (pid == -1) {
             std::cerr << "Error forking process.\n";
             return std::make_pair(std::string(), std::string());
-        }
-
-        if (pid == 0) {  // Child process
+        } else if (pid == 0) {
             close(pipe.getReadEnd());
             redirectStdoutStderr(pipe);
 
-            // Redirect standard input to read from the temporary file
             int tmpFileDescriptor = open("tmpFile", O_RDONLY);
             if (tmpFileDescriptor < 0) {
                 std::cerr << "Error opening tmpFile for reading.\n";
@@ -119,54 +109,50 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
                 std::cerr << "Error redirecting standard input.\n";
                 exit(EXIT_FAILURE);
             }
+
             close(tmpFileDescriptor);
-            //delete the tmp file
             remove("tmpFile");
 
-            // Set up a timeout using the alarm function
-            signal(SIGALRM, handleTimeout);
-            alarm(10); // Timeout after 10 seconds
-
-            // Set up the environment variables
             envVars = fillEnv(parsedHeaders);
             envVars["SCRIPT_NAME"] = file;
             envVars["SCRIPT_FILENAME"] = file;
-            envVars["REQUEST_METHOD"] = "POST";
-            envVars["CONTENT_TYPE"] = headersMap["Content-Type"];
-            std::stringstream ss;
-            ss << postData.length();
-            // envVars["CONTENT_LENGTH"] = std::to_string(postData.length());
-            envVars["CONTENT_LENGTH"] = ss.str();
-            envVars["QUERY_STRING"] = request.getQueryString();
+            if (!request.getQueryString().empty())
+                envVars["QUERY_STRING"] = request.getQueryString();
 
+            signal(SIGALRM, handleTimeout);
+            alarm(10);
             executeChildProcess(interpreterPath, file, envVars);
-
-            // Reset the alarm if the child process finishes before the timeout
             alarm(0);
-        } else {  // Parent process
+        } else {
             close(pipe.getWriteEnd());
             response = readFromPipeAndClose(pipe.getReadEnd());
+
             int status;
             waitpid(pid, &status, 0);
 
             if (WIFEXITED(status)) {
                 int exitStatus = WEXITSTATUS(status);
+
                 if (exitStatus != 0) {
                     std::cerr << "CGI Warning!! Child process exited with status: " << exitStatus << "\n";
                     return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
                 }
             } else if (WIFSIGNALED(status)) {
                 int signalNumber = WTERMSIG(status);
+
                 std::cerr << "CGI Warning!! Child process terminated by signal: " << signalNumber << "\n";
+                if (signalNumber == SIGALRM)
+                    return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(408));
                 return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             } else {
                 std::cerr << "CGI Error!! Child process terminated abnormally.\n";
+                return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
             }
         }
 
         return splitHeadersAndBody(response);
     } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << "\n";
+        std::cerr << "CGI Exception: " << e.what() << "\n";
         return std::make_pair(std::string(), std::string());
     }
 }

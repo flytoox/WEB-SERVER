@@ -82,17 +82,17 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
                         .addStatusLine("200")
                         .addContentType(type);
                     for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
-                        if (it->first == "Set-Cookie")
-                            request.response.addCookie(it->second);
-                        else if (it->first == "Location")
-                            request.response.addLocationFile(it->second);
-                        else if (it->first == "Status") {
+                        if (it->first == "Status") {
                             std::string status = it->second;
                             std::stringstream ss(status);
                             std::string statusNumber;
                             ss >> statusNumber;
 
                             request.response.addStatusLine(statusNumber);
+                        } else {
+                            std::string key = lower(it->first);
+                            if (key != "content-type" && key != "content-length")
+                                request.response.addCustomHeader(it->first, it->second);
                         }
                     }
                     request.response.addResponseBody(body);
@@ -163,17 +163,17 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
                     .addStatusLine("200")
                     .addContentType(type);
                 for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
-                    if (it->first == "Set-Cookie")
-                        request.response.addCookie(it->second);
-                    else if (it->first == "Location")
-                        request.response.addLocationFile(it->second);
-                    else if (it->first == "Status") {
+                    if (it->first == "Status") {
                         std::string status = it->second;
                         std::stringstream ss(status);
                         std::string statusNumber;
                         ss >> statusNumber;
 
                         request.response.addStatusLine(statusNumber);
+                    } else {
+                        std::string key = lower(it->first);
+                        if (key != "content-type" && key != "content-length")
+                            request.response.addCustomHeader(it->first, it->second);
                     }
                 }
                 request.response.addResponseBody(body);

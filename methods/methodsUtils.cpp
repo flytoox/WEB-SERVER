@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:28:49 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/08 13:04:26 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/13 16:05:02 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,4 +178,12 @@ void uploadRequestBody(Request &request) {
             throw "400 CT";
         }
     }
+}
+
+std::string lower(std::string str) {
+    std::string ret = "";
+    for (std::string::iterator it = str.begin(); it != str.end(); it++) {
+        ret += std::tolower(*it);
+    }
+    return ret;
 }
