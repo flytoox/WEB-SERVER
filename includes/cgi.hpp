@@ -20,7 +20,7 @@ std::vector<std::string> splitWithString(const std::string& s, const std::string
 std::pair<std::string, std::string> splitHeadersAndBody(const std::string& response);
 void handleTimeout(int signal);
 
-std::map<std::string, std::string> parseHeaders(const std::string& headers);
+std::map<std::string, std::string> parseHeaders(std::map<std::string, std::string> headers);
 std::map<std::string, std::string> fillEnv(std::map<std::string, std::string>& headers);
 
 std::pair<std::string, std::string> handleCgiGet(const std::string& file, const std::string& interpreterPath, Request &request);

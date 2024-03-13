@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsingUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 15:30:31 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/09 23:03:03 by adnane           ###   ########.fr       */
+/*   Updated: 2024/03/13 02:47:31 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void fillTheMap(std::map<int, std::string> &map, std::string &Err) {
         std::stringstream codeStr;
         codeStr << statusCodes[i];
         if (map.count(statusCodes[i]) == 0) {
-            std::ifstream file(("./response_pages/" + codeStr.str() + ".html").c_str());
+            std::ifstream file(("./pages/response_pages/" + codeStr.str() + ".html").c_str());
             if (!file) throw std::runtime_error("Error: missing error page " + codeStr.str() + ".html");
             std::string s = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
             if (s.size() > 1e6) throw std::runtime_error("Error: error page " + codeStr.str() + ".html is too big");

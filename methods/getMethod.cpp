@@ -71,18 +71,31 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
                     std::string body = response.second;
 
                     std::string contentType = extractContentType(headers);
-                    std::stringstream ss;
-                    ss << body.length();
-                    // std::string contentLength = std::to_string(body.length());
-                    std::string contentLength = ss.str();
+                    std::string contentLength = ftToString(body.length());
 
                     std::size_t lastSlashPos = contentType.rfind('/');
-                    std::string extension = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+                    std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "txt";
+
+                    std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
 
                     request.response = responseBuilder()
                         .addStatusLine("200")
-                        .addContentType(extension)
-                        .addResponseBody(body);
+                        .addContentType(type);
+                    for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                        if (it->first == "Set-Cookie")
+                            request.response.addCookie(it->second);
+                        else if (it->first == "Location")
+                            request.response.addLocationFile(it->second);
+                        else if (it->first == "Status") {
+                            std::string status = it->second;
+                            std::stringstream ss(status);
+                            std::string statusNumber;
+                            ss >> statusNumber;
+
+                            request.response.addStatusLine(statusNumber);
+                        }
+                    }
+                    request.response.addResponseBody(body);
                     throw ("CGI");
                 }
             }
@@ -142,12 +155,29 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
                 std::string contentLength = ftToString(body.length());
 
                 std::size_t lastSlashPos = contentType.rfind('/');
-                std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "";
+                std::string type = (lastSlashPos != std::string::npos) ? contentType.substr(lastSlashPos + 1) : "txt";
+
+                std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
 
                 request.response = responseBuilder()
                     .addStatusLine("200")
-                    .addContentType(type)
-                    .addResponseBody(body);
+                    .addContentType(type);
+                for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                    if (it->first == "Set-Cookie")
+                        request.response.addCookie(it->second);
+                    else if (it->first == "Location")
+                        request.response.addLocationFile(it->second);
+                    else if (it->first == "Status") {
+                        std::string status = it->second;
+                        std::stringstream ss(status);
+                        std::string statusNumber;
+                        ss >> statusNumber;
+
+                        request.response.addStatusLine(statusNumber);
+                    }
+                }
+                request.response.addResponseBody(body);
+
                 throw ("CGI");
             }
         }
@@ -216,7 +246,7 @@ void getMethod(Request &request) {
             throw "500";
         }
     } else if (uri == "/favicon.ico") {
-        std::ifstream file("./response_pages/favicon.ico");
+        std::ifstream file("./pages/response_pages/favicon.ico");
         std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
         request.response = responseBuilder()
             .addStatusLine("200")

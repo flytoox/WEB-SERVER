@@ -7,8 +7,12 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
         Pipe pipe;
         pid_t pid;
 
-        std::string Header = request.getRequestHeader();
-        std::map<std::string, std::string> headers = parseHeaders(Header);
+        std::map<std::string, std::string> headersMap = request.getHttpRequestHeaders();
+        headersMap["REQUEST_METHOD"] = request.getHttpVerb();
+        headersMap["REQUEST_URI"] = request.getUri();
+        headersMap["SERVER_PROTOCOL"] = request.getHTTPVersion();
+
+        std::map<std::string, std::string> parsedHeaders = parseHeaders(headersMap);
         std::map<std::string, std::string> envVars;
 
         pid = fork();
@@ -23,7 +27,7 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
             redirectStdoutStderr(pipe);
 
             // Set up the environment variables
-            envVars = fillEnv(headers);
+            envVars = fillEnv(parsedHeaders);
             //find CONTENT_LENGTH and CONTENT_TYPE and delete them
             envVars.erase("CONTENT_LENGTH");
             envVars.erase("CONTENT_TYPE");
@@ -77,10 +81,12 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
         Pipe pipe;
         pid_t pid;
 
-        std::string Header = request.getRequestHeader();
-
-        std::map<std::string, std::string> mapHeaders = request.getHttpRequestHeaders();
-        std::map<std::string, std::string> headers = parseHeaders(Header);
+        std::map<std::string, std::string> headersMap = request.getHttpRequestHeaders();
+        headersMap["REQUEST_METHOD"] = request.getHttpVerb();
+        headersMap["REQUEST_URI"] = request.getUri();
+        headersMap["SERVER_PROTOCOL"] = request.getHTTPVersion();
+        
+        std::map<std::string, std::string> parsedHeaders = parseHeaders(headersMap);
         std::map<std::string, std::string> envVars;
 
         std::string postData = request.getRequestBody();
@@ -122,11 +128,11 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file,
             alarm(10); // Timeout after 10 seconds
 
             // Set up the environment variables
-            envVars = fillEnv(headers);
+            envVars = fillEnv(parsedHeaders);
             envVars["SCRIPT_NAME"] = file;
             envVars["SCRIPT_FILENAME"] = file;
             envVars["REQUEST_METHOD"] = "POST";
-            envVars["CONTENT_TYPE"] = mapHeaders["Content-Type"];
+            envVars["CONTENT_TYPE"] = headersMap["Content-Type"];
             std::stringstream ss;
             ss << postData.length();
             // envVars["CONTENT_LENGTH"] = std::to_string(postData.length());

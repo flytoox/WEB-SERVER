@@ -265,3 +265,14 @@ label {
     border-radius: 5px;
     transition: all 0.2s ease-in-out;
 }
+
+.basicLink {
+    text-decoration: underline;
+    color: #f48c06;
+    font-size: 16px;
+    transition: all 0.15s ease-in-out;
+}
+
+.basicLink:hover {
+    color: #ffc77d;
+}
