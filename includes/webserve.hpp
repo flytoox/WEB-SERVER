@@ -91,24 +91,24 @@ void parseRequestBody(Request &request);
 void checkRequestedHttpMethod(Request &request);
 
 //! getMethod.cpp
+void getFolder(std::string &root, std::string &uri, Request &request);
+void getFile(std::string &absolutePath, std::string &uri, Request &request);
 void getMethod(Request &request);
 std::string CheckPathForSecurity(std::string path);
 void autoIndexFunction(std::string absolutePath, Request &request);
-
-void requestTypeDirectory(std::string &root, std::string &uri, Request &request);
-void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request);
 void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot);
 
 //! postMethod.cpp
-
+void postFile(std::string &absolutePath, std::string &uri, Request &request);
+void postFolder(std::string &root, std::string &uri, Request &request);
 void parseQueriesInURI(Request &request,std::string &uri);
 void postMethod(Request &request);
 void uploadRequestBody(Request &request);
 
 //! deleteMEthod.cpp
-
+void deleteFolder(std::string &absolutePath, std::string &uri, Request &request);
 void deleteMethod(Request &request);
-
+void deleteFile(std::string &absolutePath, std::string &uri, Request &request);
 //! parseRequestBody.cpp
 
 int hexaToDec(std::string &res);
@@ -126,3 +126,7 @@ std::vector<std::string> splitWithChar(std::string s, char delim);
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
 bool checkOverFlow(std::string &s);
+
+
+
+void method(Request &request, void (*fileFunc)(std::string &, std::string &, Request &), void (*folderFunc)(std::string &, std::string &, Request &));

@@ -197,7 +197,7 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
     const std::string &body = simultaneousRequests[i].getRequestBody();
     bool isTransferEncoding = simultaneousRequests[i].getHttpRequestHeaders().count("Transfer-Encoding");
     if (simultaneousRequests[i].getRequestBodyChunk() && (body.length() >= simultaneousRequests[i].realContentLength || (isTransferEncoding && body.find("0\r\n\r\n") != std::string::npos))) {
-        parseRequestBody((simultaneousRequests[i]));
+        parseRequestBody(simultaneousRequests[i]);
         simultaneousRequests[i].stringUnparsed = "";
         checkRequestedHttpMethod(simultaneousRequests[i]);
     }
