@@ -80,6 +80,13 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
                     .addStatusLine("200")
                     .addContentType(type);
                 for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                    if (it->second.find("\r") != std::string::npos) {
+                        it->second = it->second.substr(0, it->second.find("\r"));
+                    }
+                    if (it->second.find("\n") != std::string::npos) {
+                        it->second = it->second.substr(0, it->second.find("\n"));
+                    }
+                    
                     if (it->first == "Status") {
                         std::string status = it->second;
                         std::stringstream ss(status);
@@ -142,6 +149,13 @@ void postFile(std::string &absolutePath, std::string &uri, Request &request) {
                 .addStatusLine("200")
                 .addContentType(type);
             for (std::multimap<std::string, std::string>::iterator it = splitedHeaders.begin(); it != splitedHeaders.end(); it++) {
+                if (it->second.find("\r") != std::string::npos) {
+                    it->second = it->second.substr(0, it->second.find("\r"));
+                }
+                if (it->second.find("\n") != std::string::npos) {
+                    it->second = it->second.substr(0, it->second.find("\n"));
+                }
+
                 if (it->first == "Status") {
                     std::string status = it->second;
                     std::stringstream ss(status);

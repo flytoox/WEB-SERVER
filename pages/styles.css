@@ -252,6 +252,7 @@ label {
     border: none;
     border-radius: 5px;
     border: 1px solid #ababab;
+    margin-bottom: 1rem;
 }
 
 .postForm input[type="submit"] {
