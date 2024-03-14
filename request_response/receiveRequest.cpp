@@ -2,10 +2,11 @@
 
 configFile configurationServers;
 
-static void push_convert(std::string &convert, char *buffer, int r) {
-    for (int i = 0; i != r; i++)
-        convert.push_back(buffer[i]);
-}
+// static void push_convert(std::string &convert, char *buffer, int r) {
+//     for (int i = 0; i != r; i++)
+//         convert.push_back(buffer[i]);
+    
+// }
 
 void reCheckTheServer(configFile &configurationServers, std::string &hostValue, Request &request) {
     try {
@@ -175,9 +176,8 @@ bool parseHeader(std::string &s, Request &request) {
 
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &cnf, fd_set &allsd) {
     configurationServers = cnf;
-    char buffer[1024] = {0};
     std::string res;
-    int recevRequestLen = recv(i , buffer, 1024, 0);
+    int recevRequestLen = recv(i , simultaneousRequests[i].buffer, 10240, 0);
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv(): " << strerror(errno) << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
@@ -186,7 +186,7 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
         simultaneousRequests[i].isTimeOut = false;
         simultaneousRequests[i].setTimeout();
     }
-    push_convert(simultaneousRequests[i].stringUnparsed, buffer, recevRequestLen);
+    simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()
             .addStatusLine("400")

@@ -11,6 +11,7 @@ class Request {
 public:
     std::string stringUnparsed;
     bool isTimeOut;
+    char buffer[10240];
     
 private:
     std::map<std::string, std::string> directives;
