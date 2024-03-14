@@ -48,6 +48,27 @@ std::vector<std::string> customSplitRequest(const std::string& input, const std:
     return result;
 }
 
+void    parseUri(std::string &uri) {
+    std::vector<std::string> v = splitWithChar(uri, '/');
+    std::stack<std::string> s;
+    for (size_t i = 0; i < v.size(); i++) {
+        if (v[i] == "..") {
+            if (!s.empty())
+                s.pop();
+        } else if (v[i] != ".") {
+            s.push(v[i]);
+        }
+    }
+    uri = "";
+    while (!s.empty()) {
+        uri = s.top() + uri;
+        s.pop();
+        if (!s.empty())
+            uri = "/" + uri;
+    }
+    if (uri.empty()) uri = "/";
+}
+
 bool parseFirstLine(std::string &s, Request &request) {
     std::vector<std::string> lines = splitWhiteSpaces(s);
     if (lines.size() != 3 || lines[2] != "HTTP/1.1" || lines[1][0] != '/') {
@@ -55,34 +76,27 @@ bool parseFirstLine(std::string &s, Request &request) {
         return false;
     }
     for (size_t i = 0; i < lines[0].length(); i++) {
-        if (!isalpha(lines[0][i]) && !isupper(lines[0][i])) {
-            std::cerr << "isaplha" << std::endl;
+        if (!isalpha(lines[0][i]) && !isupper(lines[0][i]))
             return false;
-        }
     }
+    parseUri(lines[1]);
     request.setHttpVerb(lines[0]);
     request.setUri(lines[1]);
     request.setHTTPVersion(lines[2]);
     return true;
 }
-//Host:fjoaijfios
+
 bool parseDefaultLine(std::string &s, Request &request) {
     std::vector<std::string> v = splitWithChar(s, ':');
-    if (v.size() < 2) {
-        std::cerr << "Default Line 0" << std::endl;
+    if (v.size() < 2)
         return false;
-    }
-    if (v[0][v[0].length() - 1] == ' ') {
-        std::cerr << "Default Line 1" << std::endl;
+    if (v[0][v[0].length() - 1] == ' ')
         return false;
-    }
     int l = -1;
     while (v[1][++l] == ' ');
     v[1].erase(0, l);
-    if ((v[0] == "Content-Length" || v[0] == "Host" || v[0] == "Transfer-Encoding") && request.getHttpRequestHeaders().count(v[0]))  {
-        std::cerr << "Default Line 2" << std::endl;
+    if ((v[0] == "Content-Length" || v[0] == "Host" || v[0] == "Transfer-Encoding") && request.getHttpRequestHeaders().count(v[0]))
         return false;
-    }
     std::string value = "";
     for (size_t i = 1; i < v.size(); i++) {
         value += v[i];
