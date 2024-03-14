@@ -95,9 +95,9 @@ if (isset($_COOKIE['username']) && isset($_COOKIE['loggedIn'])) {
                     <p style="color: red;"><?php echo $error_message; ?></p>
                 <?php } ?>
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required><br><br>
+                <input type="text" id="username" name="username" required>
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required><br><br>
+                <input type="password" id="password" name="password" required>
                 <input type="submit" value="Login">
             </form>
         </div>
