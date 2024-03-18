@@ -14,6 +14,7 @@ public:
     char buffer[1000240];
     std::string fileName;
     std::string lastBoundary;
+    std::string firstPart;
     
 private:
     std::map<std::string, std::string> directives;

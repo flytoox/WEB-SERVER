@@ -140,8 +140,70 @@ void writeOnFile(const std::string &filename, const std::string &content) {
     file.close();
 }
 
+void    fillFirstPartOfMultipart(Request &request) {
+    size_t pos = request.stringUnparsed.find("\r\n\r\n");
+    if (pos == std::string::npos) {
+        request.firstPart += request.stringUnparsed;
+        request.stringUnparsed = "";
+        return;
+    }
+    request.firstPart += request.stringUnparsed.substr(0, pos + 4);
+    request.stringUnparsed.erase(0, pos + 4);
+    std::string &s = request.firstPart;
+    std::string tmp = request.getBoundary() + "\r\nContent-Disposition: form-data; name=\"";
+    for (int i = 0; i < tmp.length(); i++) {
+        if (s[i] != tmp[i]) {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(400));
+            throw "400";
+        }
+    }
+    size_t pos = s.find("\"; filename=\"");
+    if (pos == std::string::npos) {
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody(request.getPageStatus(400));
+        throw "400";
+    }
+    pos += 13;
+    size_t pos2 = s.find("\"", pos);
+    if (pos2 == std::string::npos) {
+        request.response = responseBuilder()
+        .addStatusLine("400")
+        .addContentType("text/html")
+        .addResponseBody(request.getPageStatus(400));
+        throw "400";
+    }
+    tmp = "\"\r\nContent-Type: ";
+    request.fileName = s.substr(pos, pos2 - pos);
+    for (int i = 0;i < tmp.length(); i++) {
+        if (tmp[i] != s[pos2 + i]) {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(400));
+            throw "400";
+        }
+    }
+
+
+}
+
+bool isGoodFirstPart(std::string &s) {
+    return (s.length() >= 4 && s.substr(s.length() - 4) == "\r\n\r\n");
+}
+
 void multipartBody(Request &request) {
     checkLimitRead(request, request.stringUnparsed.length());
+    if (!isGoodFirstPart(request.firstPart)) {
+        fillFirstPartOfMultipart(request);
+    }
+    if (request.stringUnparsed.empty()) {
+        return;
+    }
     const std::string  &boundary = request.getBoundary();
     if (request.lastBoundary == boundary+"--\r\n") {
         if (!request.stringUnparsed.empty()) {
@@ -151,7 +213,6 @@ void multipartBody(Request &request) {
             .addResponseBody(request.getPageStatus(400));
             throw "400";
         }
-        writeOnFile(request.fileName, request.stringUnparsed);
         request.response = responseBuilder()
             .addStatusLine("201")
             .addContentType("text/html")
@@ -159,19 +220,17 @@ void multipartBody(Request &request) {
             throw "201";
     }
     if (request.stringUnparsed.length() == boundary.length() + 4) {
-        request.lastBoundary = request.stringUnparsed;
-        request.stringUnparsed = "";
+        swap(request.lastBoundary, request.stringUnparsed);
     } else if (request.stringUnparsed.length() < boundary.length() + 4) {
         request.lastBoundary += request.stringUnparsed;
         request.stringUnparsed =  request.lastBoundary.substr(0, request.lastBoundary.length() - boundary.length() - 4);
         request.lastBoundary = request.lastBoundary.substr(request.lastBoundary.length() - boundary.length() - 4);
     } else {
+        request.stringUnparsed.insert(0, request.lastBoundary);
         request.lastBoundary = request.stringUnparsed.substr(request.stringUnparsed.length() - boundary.length() - 4);
         request.stringUnparsed.resize(request.stringUnparsed.length() - boundary.length() - 4);
     }
-
-
-    
+    writeOnFile(request.fileName, request.stringUnparsed);
 }
 
 bool parseBody(Request &request) {
