@@ -5,7 +5,7 @@ SRCS = $(wildcard *.cpp */*.cpp)
 CPP = c++
 
 HEADERS = $(wildcard *.hpp */*.hpp)
-CPPFLAGS = -Wall -Wextra -Werror -g -std=c++98 #-fsanitize=address
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
 
 OBJS = $(SRCS:.cpp=.o)
 
