@@ -105,7 +105,10 @@ std::string CheckPathForSecurity(std::string path) {
 void parseQueriesInURI(Request &request,std::string &uri) {
     
     //* Protect the queries if they exist
-
+    if (request.getHttpVerb() == "DELETE") {
+        uri.erase(uri.find('?'));
+        return ;
+    }
     size_t pos = uri.find('?');
     if (uri.length() == pos + 1)
         return ;

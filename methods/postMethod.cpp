@@ -1,6 +1,6 @@
 #include "../includes/webserve.hpp"
 
-void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &request) {
+void postFolder(std::string &root, std::string &uri, Request &request) {
 
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
@@ -114,7 +114,7 @@ void requestTypeDirectoryPost(std::string &root, std::string &uri, Request &requ
     throw ("403");
 }
 
-void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &request) {
+void postFile(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
@@ -183,81 +183,81 @@ void requestTypeFilePost(std::string &absolutePath, std::string &uri, Request &r
 
 }
 
-void postMethod(Request &request) {
+// void postMethod(Request &request) {
 
-    std::cout << "╔═══════════════════════════╗\n";
-    std::cout << "║        POST Method        ║";std::cout << "\tURI: " << request.getUri() << "\n";
-    std::cout << "╚═══════════════════════════╝\n";
+//     std::cout << "╔═══════════════════════════╗\n";
+//     std::cout << "║        POST Method        ║";std::cout << "\tURI: " << request.getUri() << "\n";
+//     std::cout << "╚═══════════════════════════╝\n";
 
-    uploadRequestBody(request);
+//     uploadRequestBody(request);
 
-    std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
+//     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
 
-    std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
-    std::string value = "";
-    if (itContentType != (request.getHttpRequestHeaders()).end()) {
-        value = itContentType->second;
-    }
+//     std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
+//     std::string value = "";
+//     if (itContentType != (request.getHttpRequestHeaders()).end()) {
+//         value = itContentType->second;
+//     }
 
-    if ( value == "multipart/form-data;" ) {
-        multipartContentType(request);
-        request.response = responseBuilder()
-            .addStatusLine("201")
-            .addContentType("text/html")
-            .addLocationFile(locations["upload_store"])
-            .addResponseBody(request.getPageStatus(201));
-        throw "201" ;
-    }
+//     if ( value == "multipart/form-data;" ) {
+//         multipartContentType(request);
+//         request.response = responseBuilder()
+//             .addStatusLine("201")
+//             .addContentType("text/html")
+//             .addLocationFile(locations["upload_store"])
+//             .addResponseBody(request.getPageStatus(201));
+//         throw "201" ;
+//     }
 
 
-    //* get_requested_resource()
-    std::string root;
-    retrieveRootAndUri(request, root);
+//     //* get_requested_resource()
+//     std::string root;
+//     retrieveRootAndUri(request, root);
 
-    std::string uri = request.getUri();
-    if (uri.find('?') != std::string::npos) {
-        parseQueriesInURI(request, uri);
-    }
+//     std::string uri = request.getUri();
+//     if (uri.find('?') != std::string::npos) {
+//         parseQueriesInURI(request, uri);
+//     }
 
-    uri = decodeUrl(uri);
-    request.setUri(uri);
+//     uri = decodeUrl(uri);
+//     request.setUri(uri);
 
-    std::string absolutePath;
-    std::string result =  CheckPathForSecurity(root+uri);
-	if (result.find(root) == std::string::npos) {
-		request.response = responseBuilder()
-            .addStatusLine("403")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(403));
-        throw "403 Security";
-	}
-    absolutePath = result;
+//     std::string absolutePath;
+//     std::string result =  CheckPathForSecurity(root+uri);
+// 	if (result.find(root) == std::string::npos) {
+// 		request.response = responseBuilder()
+//             .addStatusLine("403")
+//             .addContentType("text/html")
+//             .addResponseBody(request.getPageStatus(403));
+//         throw "403 Security";
+// 	}
+//     absolutePath = result;
 
-    //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
+//     //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
 
-    const char *path = absolutePath.c_str();
-    struct stat fileStat;
+//     const char *path = absolutePath.c_str();
+//     struct stat fileStat;
 
-    if (stat(path, &fileStat ) == 0) {
+//     if (stat(path, &fileStat ) == 0) {
 
-        if (S_ISREG(fileStat.st_mode)) {
-            requestTypeFilePost(absolutePath, uri, request);
-        } else if (S_ISDIR(fileStat.st_mode)) {
-            requestTypeDirectoryPost(absolutePath, uri, request);
-        } else {
-            request.response = responseBuilder()
-                .addStatusLine("502")
-                .addContentType("text/html")
-                .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
-            throw "502";
-        }
-    } else {
+//         if (S_ISREG(fileStat.st_mode)) {
+//             requestTypeFilePost(absolutePath, uri, request);
+//         } else if (S_ISDIR(fileStat.st_mode)) {
+//             requestTypeDirectoryPost(absolutePath, uri, request);
+//         } else {
+//             request.response = responseBuilder()
+//                 .addStatusLine("502")
+//                 .addContentType("text/html")
+//                 .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
+//             throw "502";
+//         }
+//     } else {
 
-        request.response = responseBuilder()
-            .addStatusLine("404")
-            .addContentType("text/html")
-            .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-        throw "404 here";
-    }
+//         request.response = responseBuilder()
+//             .addStatusLine("404")
+//             .addContentType("text/html")
+//             .addResponseBody("<html><h1> 404 Not Found</h1></html>");
+//         throw "404 here";
+//     }
 
-}
+// }

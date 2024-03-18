@@ -11,6 +11,9 @@ class Request {
 public:
     std::string stringUnparsed;
     bool isTimeOut;
+    char buffer[1000240];
+    std::string fileName;
+    std::string lastBoundary;
     
 private:
     std::map<std::string, std::string> directives;

@@ -111,7 +111,7 @@ static std::string deleteAllFolderContent(Request &request,std::string &absolute
 
 
 
-static void deleteDirectory(std::string &absolutePath, std::string &uri, Request &request) {
+void deleteFolder(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::string response; (void)uri;
 
@@ -168,7 +168,7 @@ static void deleteDirectory(std::string &absolutePath, std::string &uri, Request
 
 }
 
-static void deleteFile(std::string &absolutePath, std::string &uri, Request &request) {
+void deleteFile(std::string &absolutePath, std::string &uri, Request &request) {
 
     // bool cgi = checkCGI(request); 
     (void)uri;
@@ -195,107 +195,71 @@ static void deleteFile(std::string &absolutePath, std::string &uri, Request &req
         }
 }
 
-void deleteMethod(Request &request) {
+// void deleteMethod(Request &request) {
 
-    std::string concatenateWithRoot, locationUsed;
+//     std::string concatenateWithRoot, locationUsed;
 
-    retrieveRootAndUri(request, concatenateWithRoot);
-
-
-
-    //NEW SET 
-    std::string uri = request.getUri();
-    // std::cout << "BEFORE URI |" << uri << "|\n";
-    if (uri.find('?') != std::string::npos) {
-        uri.erase(uri.find('?'));
-        // parseQueriesInURI(request, uri);
-    }
-
-    uri = decodeUrl(uri);
-    request.setUri(uri);
-
-    // concatenateWithRoot += uri;
+//     retrieveRootAndUri(request, concatenateWithRoot);
 
 
 
-    // TODO : request.setRoot(concatenateWithRoot);
-    // TODO : Figure out whta's that if statement for below 
+//     //NEW SET 
+//     std::string uri = request.getUri();
+//     // std::cout << "BEFORE URI |" << uri << "|\n";
+//     if (uri.find('?') != std::string::npos) {
+//         uri.erase(uri.find('?'));
+//         // parseQueriesInURI(request, uri);
+//     }
 
+//     uri = decodeUrl(uri);
+//     request.setUri(uri);
 
-    // if ( concatenateWithRoot.empty() ) {
+// 	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
+// 	if (result.find(concatenateWithRoot) == std::string::npos) {
+//         std::string page = request.getPageStatus(403);
+// 		request.response = responseBuilder()
+//             .addStatusLine("403")
+//             .addContentType("text/html")
+//             .addResponseBody(page);
+//             throw "403 Security"; 
+// 	}
+//     std::string absolutePath;
+//     absolutePath = result;
 
-    //     mapConstIterator it = (request.getDirectives()).find("root");
-    //     if (it == request.getDirectives().end() ) {
+//     // std::cout << "DELETE absolutePath|" << absolutePath << "|\n";
+//     // exit (0);
+//     if (absolutePath == concatenateWithRoot) {
+//         std::string page = request.getPageStatus(405);
+//         request.response = responseBuilder()
+//         .addStatusLine("405")
+//         .addContentType("text/html")
+//         .addResponseBody(page);
+//         throw "405";
+//     }
 
-    //         request.response = responseBuilder()
-    //         .addStatusLine("200")
-    //         .addContentType("text/html")
-    //         .addResponseBody("<html><head><title>Welcome to Our Webserver!</title></head><body><p><em>Thank you for using our webserver.</em></p></body></html>");
+//     const char *path = absolutePath.c_str();
+//     struct stat fileStat;
 
-    //         throw "No Root: 200";
-    //     } else {
-    //         concatenateWithRoot = it->second;
-    //     }
-    // }
-	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
-	if (result.find(concatenateWithRoot) == std::string::npos) {
-        std::string page = request.getPageStatus(403);
-		request.response = responseBuilder()
-            .addStatusLine("403")
-            .addContentType("text/html")
-            .addResponseBody(page);
-            throw "403 Security"; 
-	}
-    // request.setRoot(concatenateWithRoot);
-    // exit (0);
+//     if ( stat(path, &fileStat) == 0 ) {
+//         if (S_ISREG(fileStat.st_mode)) {
+//             deleteFile(absolutePath, uri, request);
+//         } else if (S_ISDIR(fileStat.st_mode)) {
+//             deleteDirectory(absolutePath, uri, request);
+//         } else {
+//             std::string page = request.getPageStatus(502);
+//             request.response = responseBuilder()
+//             .addStatusLine("502")
+//             .addContentType("text/html")
+//             .addResponseBody(page);
+//             throw "DELETE 502"; 
+//         }
+//     } else {
+//         std::string page = request.getPageStatus(404);
+//         request.response = responseBuilder()
+//         .addStatusLine("404")
+//         .addContentType("text/html")
+//         .addResponseBody(page);
+//         throw "4041";         
+//     }
 
-    // std::string uri = request.getUri();
-
-    // std::cout << "URI|" << uri << "|\n";
-    // std::cout << "root|" << concatenateWithRoot << "|\n";
-
-    // concatenateWithRoot += uri;
-    std::string absolutePath;
-    absolutePath = result;
-
-    // std::cout << "DELETE absolutePath|" << absolutePath << "|\n";
-
-    std::cout << "DELETE  URI |" << uri << "|\n";
-    std::cout << "DELETE concatenateWithRoot |" << concatenateWithRoot << "|\n";
-    std::cout << "ABSOLUTE PATH |" << result << "|\n";
-    // exit (0);
-    if (absolutePath == concatenateWithRoot) {
-        std::string page = request.getPageStatus(405);
-        request.response = responseBuilder()
-        .addStatusLine("405")
-        .addContentType("text/html")
-        .addResponseBody(page);
-        throw "405";
-    }
-
-    const char *path = absolutePath.c_str();
-    struct stat fileStat;
-
-    if ( stat(path, &fileStat) == 0 ) {
-        if (S_ISREG(fileStat.st_mode)) {
-            deleteFile(absolutePath, uri, request);
-        } else if (S_ISDIR(fileStat.st_mode)) {
-            deleteDirectory(absolutePath, uri, request);
-        } else {
-            std::string page = request.getPageStatus(502);
-            request.response = responseBuilder()
-            .addStatusLine("502")
-            .addContentType("text/html")
-            .addResponseBody(page);
-            throw "DELETE 502"; 
-        }
-    } else {
-        std::string page = request.getPageStatus(404);
-        request.response = responseBuilder()
-        .addStatusLine("404")
-        .addContentType("text/html")
-        .addResponseBody(page);
-        throw "4041";         
-    }
-
-}
+// }

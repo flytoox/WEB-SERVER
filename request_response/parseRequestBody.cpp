@@ -119,7 +119,6 @@ void chunkedRequest(Request &request) {
 }
 
 
-
 // void textContentType(Request &request) {
 
 //     std::string ret = request.getRequestBody();
@@ -300,7 +299,6 @@ void urlencodedContentType(Request &request) {
 void parseRequestBody(Request &request) {
 
     //*Check Length of the Body
-
     std::map<std::string, std::string>::const_iterator itTransferEncoding;
     std::map<std::string, std::string>::const_iterator itContentType;
     itTransferEncoding = (request.getHttpRequestHeaders()).find("Transfer-Encoding");

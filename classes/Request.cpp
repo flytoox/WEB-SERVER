@@ -58,7 +58,6 @@ const std::string &Request::getRequestBody() const  {
     return (this->requestBody);
 }
 
-
 std::map<std::string, std::string> &Request::getHttpRequestHeaders() {
     return (httpRequestHeaders);
 }
