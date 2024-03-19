@@ -23,7 +23,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Set cookies
             setcookie('username', $username, time() + (86400 * 30), "/"); // 86400 = 1 day
             setcookie('loggedIn', true, time() + (86400 * 30), "/");
-            
+            // setcookie('username', $username, time() + 30, "/"); // 30 seconds
+            // setcookie('loggedIn', true, time() + 30, "/"); // 30 seconds
+
             header("Location: /Desktop/WebServ/cgiTests/php/login.php");
             exit();
         } else {
