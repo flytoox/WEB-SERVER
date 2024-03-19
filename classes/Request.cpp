@@ -2,6 +2,7 @@
 #include <fstream>
 
 Request::Request() :
+    binaryRead(0),
     httpVerb (""),
     uri(""),
     httpVersion(""),
