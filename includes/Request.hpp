@@ -11,10 +11,11 @@ class Request {
 public:
     std::string stringUnparsed;
     bool isTimeOut;
-    char buffer[1000240];
+    char buffer[100240];
     std::string fileName;
     std::string lastBoundary;
     std::string firstPart;
+    size_t binaryRead;
     
 private:
     std::map<std::string, std::string> directives;
