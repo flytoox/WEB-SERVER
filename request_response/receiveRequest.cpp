@@ -215,25 +215,25 @@ void multipartBody(Request &request) {
         if (request.stringUnparsed.empty())
             return;
 
-        if (request.stringUnparsed.length() == boundary.length() + 4) {
+        if (request.stringUnparsed.length() == boundary.length() + 6) {
             swap(request.lastBoundary, request.stringUnparsed);
-        } else if (request.stringUnparsed.length() < boundary.length() + 4) {
+        } else if (request.stringUnparsed.length() < boundary.length() + 6) {
             request.lastBoundary += request.stringUnparsed;
-            if (request.lastBoundary.length() > boundary.length() + 4) {
-                request.stringUnparsed = request.lastBoundary.substr(0, request.lastBoundary.length() - boundary.length() - 4);
-                request.lastBoundary = request.lastBoundary.substr(request.lastBoundary.length() - boundary.length() - 4);
+            if (request.lastBoundary.length() > boundary.length() + 6) {
+                request.stringUnparsed = request.lastBoundary.substr(0, request.lastBoundary.length() - boundary.length() - 6);
+                request.lastBoundary = request.lastBoundary.substr(request.lastBoundary.length() - boundary.length() - 6);
             } else
                 request.stringUnparsed = "";
         } else {
             request.stringUnparsed.insert(0, request.lastBoundary);
-            request.lastBoundary = request.stringUnparsed.substr(request.stringUnparsed.length() - boundary.length() - 4);
-            request.stringUnparsed.resize(request.stringUnparsed.length() - boundary.length() - 4);
+            request.lastBoundary = request.stringUnparsed.substr(request.stringUnparsed.length() - boundary.length() - 6);
+            request.stringUnparsed.resize(request.stringUnparsed.length() - boundary.length() - 6);
         }
         checkLimitRead(request, request.binaryRead);
         writeOnFile(request.fileName, request.stringUnparsed);
         request.stringUnparsed = "";
         if (request.binaryRead == request.realContentLength) {
-            if (request.lastBoundary == boundary+"--\r\n") {
+            if (request.lastBoundary == "\r\n"+boundary+"--\r\n") {
                 request.response = responseBuilder()
                     .addStatusLine("201")
                     .addContentType("text/html")
@@ -319,7 +319,7 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
         simultaneousRequests[i].isTimeOut = false;
         simultaneousRequests[i].setTimeout();
     }
-
+    
     simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()
@@ -328,7 +328,6 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
             .addResponseBody(simultaneousRequests[i].getPageStatus(400));
         throw "400";
     }
-    
     const std::string &body = simultaneousRequests[i].getRequestBody();
     bool isTransferEncoding = simultaneousRequests[i].getHttpRequestHeaders().count("Transfer-Encoding");
     if (simultaneousRequests[i].getRequestBodyChunk() && (body.length() >= simultaneousRequests[i].realContentLength || (isTransferEncoding && body.find("0\r\n\r\n") != std::string::npos))) {
