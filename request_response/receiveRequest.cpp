@@ -146,7 +146,7 @@ void writeOnFile(const std::string &filename, const std::string &content) {
         return ;
     std::ofstream file;
     file.open(filename.c_str(), std::ios::app);
-    file << content;
+    file << content.c_str();
     file.close();
 }
 
@@ -233,6 +233,7 @@ void multipartBody(Request &request) {
         //     request.binaryRead -= request.lastBoundary.length();
         checkLimitRead(request, request.binaryRead);
         writeOnFile(request.fileName, request.stringUnparsed);
+        request.stringUnparsed = "";
         // std::cerr << "BINARY READ: " << request.binaryRead << std::endl;
         // std::cerr << "REAL CONTENT LENGTH: " << request.realContentLength << std::endl;
         if (request.binaryRead == request.realContentLength) {
@@ -262,6 +263,7 @@ bool parseBody(Request &request) {
         multipartBody(request);
         return false;
     }
+    std::cerr << "EMM" << std::endl;
     request.binaryRead += request.stringUnparsed.length();
     request.setRequestBody(request.stringUnparsed);
     request.stringUnparsed = "";
@@ -269,7 +271,7 @@ bool parseBody(Request &request) {
         request.reCheck = true;
         reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
     }
-    return checkLimitRead(request, request.binaryRead);
+    return checkLimitRead(request, request.getRequestBody().length());
 }
 
 bool parseHeader(std::string &s, Request &request) {
@@ -312,26 +314,25 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
     configurationServers = cnf;
     std::string res;
     int recevRequestLen = 0;
-    while ((recevRequestLen = recv(i , simultaneousRequests[i].buffer, 1024, 0)) > 0) {
-        if (recevRequestLen) {
-            simultaneousRequests[i].isTimeOut = false;
-            simultaneousRequests[i].setTimeout();
-        }
-        std::cerr << "RECEV REQUEST LEN: " << recevRequestLen << std::endl;
-        simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
-        if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
-            simultaneousRequests[i].response = responseBuilder()
-                .addStatusLine("400")
-                .addContentType("text/html")
-                .addResponseBody(simultaneousRequests[i].getPageStatus(400));
-            throw "400";
-        }
-    }
+    recevRequestLen = recv(i , simultaneousRequests[i].buffer, 9000, 0);
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv(): " << strerror(errno) << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
-    std::cerr << simultaneousRequests[i].buffer << std::endl;
+    if (recevRequestLen) {
+        simultaneousRequests[i].isTimeOut = false;
+        simultaneousRequests[i].setTimeout();
+    }
+    // std::cerr << "RECEV REQUEST LEN: " << recevRequestLen << std::endl;
+    simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
+    if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
+        simultaneousRequests[i].response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(simultaneousRequests[i].getPageStatus(400));
+        throw "400";
+    }
+    // std::cerr << simultaneousRequests[i].buffer << std::endl;
     const std::string &body = simultaneousRequests[i].getRequestBody();
     bool isTransferEncoding = simultaneousRequests[i].getHttpRequestHeaders().count("Transfer-Encoding");
     if (simultaneousRequests[i].getRequestBodyChunk() && (body.length() >= simultaneousRequests[i].realContentLength || (isTransferEncoding && body.find("0\r\n\r\n") != std::string::npos))) {

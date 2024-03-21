@@ -74,7 +74,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 }
 
 void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &simultaneousRequests, int &responseD){
-    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
+    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {
         responseD = *i;
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
             time_t now = time(0);
