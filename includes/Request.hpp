@@ -11,7 +11,7 @@ class Request {
 public:
     std::string stringUnparsed;
     bool isTimeOut;
-    char buffer[9000];
+    char buffer[100000];
     std::string fileName;
     std::string lastBoundary;
     std::string firstPart;
