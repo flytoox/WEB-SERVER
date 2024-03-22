@@ -116,8 +116,6 @@ size_t custAtoi(const std::string &s) {
     return res;
 }
 
-
-
 bool checkLimitRead(Request &request, size_t bodySize) {
     mapConstIterator MaxBodySize = request.getLocationBlockWillBeUsed().find("client_max_body_size");
     if (MaxBodySize != request.getLocationBlockWillBeUsed().end()) {
@@ -207,7 +205,6 @@ bool isGoodFirstPart(std::string &s) {
 
 void multipartBody(Request &request) {
     try {
-        request.binaryRead += request.stringUnparsed.length();
         if (!isGoodFirstPart(request.firstPart)) {
             fillFirstPartOfMultipart(request);
         }
@@ -229,7 +226,6 @@ void multipartBody(Request &request) {
             request.lastBoundary = request.stringUnparsed.substr(request.stringUnparsed.length() - boundary.length() - 6);
             request.stringUnparsed.resize(request.stringUnparsed.length() - boundary.length() - 6);
         }
-        checkLimitRead(request, request.binaryRead);
         writeOnFile(request.fileName, request.stringUnparsed);
         request.stringUnparsed = "";
         if (request.binaryRead == request.realContentLength) {
@@ -253,21 +249,72 @@ void multipartBody(Request &request) {
     }
 }
 
-bool parseBody(Request &request) {
+size_t hexToDec(const std::string &s) {
+    size_t res = 0;
+    for (size_t i = 0; i < s.length(); i++) {
+        res = res * 16 + (s[i] >= '0' && s[i] <= '9' ? s[i] - '0' : s[i] - 'a' + 10);
+    }
+    return res;
+}
 
+void requestChunked(Request &request) {
+    size_t pos = request.stringUnparsed.find("\r\n"), lastPos = 0;
+    if (pos == std::string::npos) {
+        request.chunkedUnparsed += request.stringUnparsed;
+        request.stringUnparsed = "";
+        return;
+    }
+    std::string tmpBody;
+    while (pos != std::string::npos) {
+        if (request.chunkSize == -1) {
+            request.chunkedUnparsed += request.stringUnparsed.substr(lastPos, pos - lastPos);
+            if (request.chunkedUnparsed.empty() && request.binaryRead == request.realContentLength) {
+                request.stringUnparsed = tmpBody;
+                return;
+            }
+            request.chunkSize = hexToDec(request.chunkedUnparsed);
+            request.chunkedUnparsed = "";
+        } else {
+            request.chunkSize -= pos - lastPos;
+            if (!request.chunkSize) request.chunkSize = -1;
+            else if (request.chunkSize < 0) {
+                std::cerr << "Error: Chunked" << std::endl;
+                request.response = responseBuilder()
+                    .addStatusLine("400")
+                    .addContentType("text/html")
+                    .addResponseBody(request.getPageStatus(400));
+                throw "400";
+            }
+            tmpBody += request.stringUnparsed.substr(lastPos, pos - lastPos);
+        }
+        lastPos = pos + 2;
+        pos = request.stringUnparsed.find("\r\n", lastPos);
+    }
+    if (request.chunkSize != -1) {
+        tmpBody += request.stringUnparsed.substr(lastPos);
+        request.chunkedUnparsed = "";
+    } else
+        request.chunkedUnparsed = request.stringUnparsed.substr(lastPos);
+    request.stringUnparsed = tmpBody;
+}
+
+bool parseBody(Request &request) {
+    request.binaryRead += request.stringUnparsed.length();
+    checkLimitRead(request, request.binaryRead);
+    if (request.getHttpRequestHeaders()["Transfer-Encoding"] == "chunked")
+        requestChunked(request);
     if (!request.getBoundary().empty())  {
         multipartBody(request);
         return false;
     }
     std::cerr << "EMM" << std::endl;
-    request.binaryRead += request.stringUnparsed.length();
     request.setRequestBody(request.stringUnparsed);
     request.stringUnparsed = "";
     if (request.reCheck != true) {
         request.reCheck = true;
         reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
     }
-    return checkLimitRead(request, request.getRequestBody().length());
+    return checkLimitRead(request, request.binaryRead);
 }
 
 bool parseHeader(std::string &s, Request &request) {

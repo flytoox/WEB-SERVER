@@ -3,6 +3,7 @@
 
 Request::Request() :
     binaryRead(0),
+    chunkSize(0),
     httpVerb (""),
     uri(""),
     httpVersion(""),
