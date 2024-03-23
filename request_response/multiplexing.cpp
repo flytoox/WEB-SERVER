@@ -14,6 +14,7 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
     // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
+    std::cerr << res << std::endl;
     int sd;
     while (res.length()) {
         std::string chunk = "";
@@ -39,10 +40,8 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
             // newRequest.setTimeout();
             simultaneousRequests[i] = newRequest;
-            std::cerr << "Keep-Alive" << std::endl;
             return ;
-    }        
-    std::cerr << "Close" << std::endl;
+    }
     close(i);
     FD_CLR(i, &allsd);
     FD_CLR(i, &writesd);
