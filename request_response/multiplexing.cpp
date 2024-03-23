@@ -14,7 +14,6 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
     // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
-    std::cerr << res << std::endl;
     int sd;
     while (res.length()) {
         std::string chunk = "";

@@ -199,14 +199,13 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
         std::fstream file(absolutePath.c_str());
 
         if ( file.good() ) {
-            std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
-            std::string content = str;
+            std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
             request.response = responseBuilder()
                 .addStatusLine("200")
                 .addContentType(absolutePath)
-                .addContentLength(content)
-                .addResponseBody(content);
+                .addContentLength(str)
+                .addResponseBody(str);
             throw "200";
         } else {
             request.response = responseBuilder()
