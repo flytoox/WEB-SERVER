@@ -10,12 +10,14 @@ typedef std::pair<std::string, std::string> pair;
 class Request {
 public:
     std::string stringUnparsed;
+    std::string chunkedUnparsed;
     bool isTimeOut;
-    char buffer[100240];
+    char buffer[100000];
     std::string fileName;
     std::string lastBoundary;
     std::string firstPart;
     size_t binaryRead;
+    long long chunkSize;
     
 private:
     std::map<std::string, std::string> directives;

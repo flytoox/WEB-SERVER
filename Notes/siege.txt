@@ -1,1 +1,48 @@
 http://localhost:1111
+
+POST /Desktop/WebServ/cgiTests/php/post.php HTTP/1.1
+Host: localhost:1111
+Content-Length: 6
+Cache-Control: max-age=0
+sec-ch-ua: 
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: ""
+Upgrade-Insecure-Requests: 1
+Origin: http://localhost:1111
+Content-Type: application/x-www-form-urlencoded
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.134 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:1111/Desktop/WebServ/pages/html/post.html
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+Connection: close
+Transfer-Encoding: chunked
+
+8
+data=1
+0
+
+
+    // std::string &s = request.stringUnparsed;
+    // for (size_t i = 0; i < s.length(); i++) {
+    //     if (request.chunkSize == -1 && s[i] != '\r')
+    //         request.chunkedUnparsed += s[i];
+    //     else if (request.chunkSize == -1 && s[i] == '\r') {
+    //         request.chunkSize = hexToDec(request.chunkedUnparsed);
+    //         request.chunkedUnparsed = "";
+    //     } else if (request.chunkSize != -1) {
+    //         long long cnt  = 0;
+    //         for (; cnt < request.chunkSize && i < s.length(); cnt++, i++) {
+    //             request.chunkedUnparsed += s[i];
+    //         }
+    //         request.chunkSize -= cnt;
+    //         if (!request.chunkSize) {
+    //             request.chunkSize = -1;
+    //         }
+    //         tmpBody += s[i];
+    //     }
+    // }

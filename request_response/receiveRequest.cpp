@@ -2,12 +2,6 @@
 
 configFile configurationServers;
 
-// static void push_convert(std::string &convert, char *buffer, int r) {
-//     for (int i = 0; i != r; i++)
-//         convert.push_back(buffer[i]);
-    
-// }
-
 void reCheckTheServer(configFile &configurationServers, std::string &hostValue, Request &request) {
     try {
         if (request.dup == true) {
@@ -30,7 +24,6 @@ void reCheckTheServer(configFile &configurationServers, std::string &hostValue, 
         throw "400";
         std::cout << e.what() << std::endl;
     }
-
 }
 
 
@@ -73,7 +66,6 @@ void    parseUri(std::string &uri) {
 bool parseFirstLine(std::string &s, Request &request) {
     std::vector<std::string> lines = splitWhiteSpaces(s);
     if (lines.size() != 3 || lines[2] != "HTTP/1.1" || lines[1][0] != '/') {
-        // std::cerr << s << std::endl;
         std::cerr << "Error: HTTP" << std::endl;
         return false;
     }
@@ -117,8 +109,6 @@ size_t custAtoi(const std::string &s) {
     return res;
 }
 
-
-
 bool checkLimitRead(Request &request, size_t bodySize) {
     mapConstIterator MaxBodySize = request.getLocationBlockWillBeUsed().find("client_max_body_size");
     if (MaxBodySize != request.getLocationBlockWillBeUsed().end()) {
@@ -145,7 +135,7 @@ void writeOnFile(const std::string &filename, const std::string &content) {
     if (content.empty())
         return ;
     std::ofstream file;
-    file.open(filename.c_str());
+    file.open(filename.c_str(), std::ios::app);
     file << content;
     file.close();
 }
@@ -198,6 +188,7 @@ void    fillFirstPartOfMultipart(Request &request) {
             throw "400";
         }
     }
+    std::remove(request.fileName.c_str());
 }
 
 bool isGoodFirstPart(std::string &s) {
@@ -205,44 +196,128 @@ bool isGoodFirstPart(std::string &s) {
 }
 
 void multipartBody(Request &request) {
-    checkLimitRead(request, request.binaryRead);
-    if (!isGoodFirstPart(request.firstPart)) {
-        fillFirstPartOfMultipart(request);
-    }
-    const std::string  &boundary = request.getBoundary();
-    if (request.stringUnparsed.empty())
-        return;
-
-    if (request.stringUnparsed.length() == boundary.length() + 4) {
-        swap(request.lastBoundary, request.stringUnparsed);
-    } else if (request.stringUnparsed.length() < boundary.length() + 4) {
-        request.lastBoundary += request.stringUnparsed;
-        request.stringUnparsed =  request.lastBoundary.substr(0, request.lastBoundary.length() - boundary.length() - 4);
-        request.lastBoundary = request.lastBoundary.substr(request.lastBoundary.length() - boundary.length() - 4);
-    } else {
-        request.stringUnparsed.insert(0, request.lastBoundary);
-        request.lastBoundary = request.stringUnparsed.substr(request.stringUnparsed.length() - boundary.length() - 4);
-        request.stringUnparsed.resize(request.stringUnparsed.length() - boundary.length() - 4);
-    }
-    writeOnFile(request.fileName, request.stringUnparsed);
-    if (request.binaryRead == request.realContentLength) {
-        if (request.lastBoundary == boundary+"--\r\n") {
-            request.response = responseBuilder()
-                .addStatusLine("201")
-                .addContentType("text/html")
-                .addResponseBody(request.getPageStatus(201));
-                throw "201";
+    try {
+        if (!isGoodFirstPart(request.firstPart)) {
+            fillFirstPartOfMultipart(request);
         }
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(400));
-        throw "400";
+        const std::string  &boundary = request.getBoundary();
+        if (request.stringUnparsed.empty())
+            return;
+
+        if (request.stringUnparsed.length() == boundary.length() + 6) {
+            swap(request.lastBoundary, request.stringUnparsed);
+        } else if (request.stringUnparsed.length() < boundary.length() + 6) {
+            request.lastBoundary += request.stringUnparsed;
+            if (request.lastBoundary.length() > boundary.length() + 6) {
+                request.stringUnparsed = request.lastBoundary.substr(0, request.lastBoundary.length() - boundary.length() - 6);
+                request.lastBoundary = request.lastBoundary.substr(request.lastBoundary.length() - boundary.length() - 6);
+            } else
+                request.stringUnparsed = "";
+        } else {
+            request.stringUnparsed.insert(0, request.lastBoundary);
+            request.lastBoundary = request.stringUnparsed.substr(request.stringUnparsed.length() - boundary.length() - 6);
+            request.stringUnparsed.resize(request.stringUnparsed.length() - boundary.length() - 6);
+        }
+        writeOnFile(request.fileName, request.stringUnparsed);
+        request.stringUnparsed = "";
+        if (request.binaryRead == request.realContentLength) {
+            if (request.lastBoundary == "\r\n"+boundary+"--\r\n") {
+                request.response = responseBuilder()
+                    .addStatusLine("201")
+                    .addContentType("text/html")
+                    .addResponseBody(request.getPageStatus(201));
+                    throw "201";
+            }
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(400));
+            throw "400";
+        }
+    } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        exit(1);
     }
+}
+
+size_t hexToDec(const std::string &s, Request &request) {
+    size_t res = 0;
+    for (size_t i = 0; i < s.length(); i++) {
+        if (isdigit(s[i]) || (s[i] >= 'a' && s[i] <= 'f'))
+            res = res * 16 + (s[i] >= '0' && s[i] <= '9' ? s[i] - '0' : s[i] - 'a' + 10);
+        else {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(400));
+            throw "400";
+        }
+    }
+    return res;
+}
+
+void requestChunked(Request &request) {
+    std::string tmpBody;
+    std::string &s = request.stringUnparsed;
+    std::string &chnkUnparsed = request.chunkedUnparsed;
+    for (size_t i = 0; i < s.length();i++) {
+        if (request.chunkSize == -1 && s[i] != '\r')
+            chnkUnparsed += s[i];
+        else if (request.chunkSize == -1 && s[i] == '\r') {
+            request.chunkSize = hexToDec(chnkUnparsed, request) + 3;
+            std::cerr << "CHUNKED: " << request.chunkSize << std::endl;
+            chnkUnparsed = "";
+        } else if (request.chunkSize != -1) {
+            if (request.chunkSize == 0) {
+                if ((chnkUnparsed.length() >= 3 && chnkUnparsed != "\n\r\n") || (chnkUnparsed == "\n\r\n" && request.binaryRead != request.realContentLength)) {
+                    std::cerr << "Error: Chunked0" << std::endl;
+                    request.response = responseBuilder()
+                        .addStatusLine("400")
+                        .addContentType("text/html")
+                        .addResponseBody(request.getPageStatus(400));
+                    throw "400";
+                }
+                chnkUnparsed += s[i];
+                continue;
+            }
+            long long cnt  = 0;
+            for (; cnt < request.chunkSize && i < s.length(); cnt++, i++)
+                chnkUnparsed += s[i];
+            if (cnt) i--;
+            request.chunkSize -= cnt;
+            if (request.chunkSize == 0) {
+                if (chnkUnparsed[0] != '\n' || chnkUnparsed[chnkUnparsed.length() - 1] != '\n' || chnkUnparsed[chnkUnparsed.length() - 2] != '\r'){
+                    std::cerr << "|" << chnkUnparsed <<"|" <<std::endl;
+                    std::cerr << "Error: Chunked1" << std::endl;
+                    request.response = responseBuilder()
+                        .addStatusLine("400")
+                        .addContentType("text/html")
+                        .addResponseBody(request.getPageStatus(400));
+                    throw "400";
+                }
+                request.chunkSize = -1;
+                for(size_t j = 1; j < chnkUnparsed.length() - 2; j++)
+                    tmpBody += chnkUnparsed[j];
+                chnkUnparsed = "";
+            } else if (request.chunkSize < 0) {
+                    std::cerr << "|" << chnkUnparsed <<"|" <<std::endl;
+                    std::cerr << "Error: Chuned2" << std::endl;
+                request.response = responseBuilder()
+                    .addStatusLine("400")
+                    .addContentType("text/html")
+                    .addResponseBody(request.getPageStatus(400));
+                throw "400";
+            }
+        }
+    }
+    s = tmpBody;
 }
 
 bool parseBody(Request &request) {
     request.binaryRead += request.stringUnparsed.length();
+    checkLimitRead(request, request.binaryRead);
+    if (request.getHttpRequestHeaders()["Transfer-Encoding"] == "chunked")
+        requestChunked(request);
     if (!request.getBoundary().empty())  {
         multipartBody(request);
         return false;
@@ -253,7 +328,6 @@ bool parseBody(Request &request) {
         request.reCheck = true;
         reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
     }
-    
     return checkLimitRead(request, request.binaryRead);
 }
 
@@ -264,7 +338,6 @@ bool parseHeader(std::string &s, Request &request) {
     for (size_t i = 0; i < lines.size(); i++) {
         if (lines[i] == "\r\n" && !request.getHttpVerb().empty()) {
             validateHeader(request);
-            request.setRequestBodyChunk(true);
             s = "";
             for (size_t j = i + 1; j < lines.size(); j++)
                 s += lines[j];
@@ -297,7 +370,8 @@ bool parseHeader(std::string &s, Request &request) {
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &cnf, fd_set &allsd) {
     configurationServers = cnf;
     std::string res;
-    int recevRequestLen = recv(i , simultaneousRequests[i].buffer, 100240, 0);
+    int recevRequestLen = 0;
+    recevRequestLen = recv(i , simultaneousRequests[i].buffer, 100000, 0);
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv(): " << strerror(errno) << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
@@ -306,6 +380,7 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
         simultaneousRequests[i].isTimeOut = false;
         simultaneousRequests[i].setTimeout();
     }
+    
     simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()
@@ -314,10 +389,7 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
             .addResponseBody(simultaneousRequests[i].getPageStatus(400));
         throw "400";
     }
-    const std::string &body = simultaneousRequests[i].getRequestBody();
-    bool isTransferEncoding = simultaneousRequests[i].getHttpRequestHeaders().count("Transfer-Encoding");
-    if (simultaneousRequests[i].getRequestBodyChunk() && (body.length() >= simultaneousRequests[i].realContentLength || (isTransferEncoding && body.find("0\r\n\r\n") != std::string::npos))) {
-        parseRequestBody(simultaneousRequests[i]);
+    if (simultaneousRequests[i].getRequestBodyChunk() && simultaneousRequests[i].binaryRead == simultaneousRequests[i].realContentLength) {
         simultaneousRequests[i].stringUnparsed = "";
         checkRequestedHttpMethod(simultaneousRequests[i]);
     }
