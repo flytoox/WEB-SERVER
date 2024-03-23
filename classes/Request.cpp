@@ -2,6 +2,8 @@
 #include <fstream>
 
 Request::Request() :
+    binaryRead(0),
+    chunkSize(-1),
     httpVerb (""),
     uri(""),
     httpVersion(""),
@@ -57,7 +59,6 @@ const std::string &Request::getRequestHeader() const  {
 const std::string &Request::getRequestBody() const  {
     return (this->requestBody);
 }
-
 
 std::map<std::string, std::string> &Request::getHttpRequestHeaders() {
     return (httpRequestHeaders);

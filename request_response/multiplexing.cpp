@@ -7,13 +7,14 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> 
 }
 
 
-static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests) {
+static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests, std::set<int> &Fds) {
 
     FD_CLR(i, &readsd); 
     FD_SET(i, &writesd);
 
     // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
+    std::cerr << res << std::endl;
     int sd;
     while (res.length()) {
         std::string chunk = "";
@@ -24,29 +25,28 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
         }
 
         if ( FD_ISSET(i, &writesd) && (sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
-            // std::cerr << "Error: send(): " << strerror(errno) << std::endl;
+            std::cerr << "Error: send(): " << strerror(errno) << std::endl;
         }
     }
     // simultaneousRequests[i].setTimeout();
 
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
-    if (all.find("Connection") != all.end()) {
-        if ((all).find("Connection")->second == "keep-alive") {
+    if (all.find("Connection") != all.end() && (all).find("Connection")->second == "keep-alive") {
             // std::cerr << i << std::endl;
             Request newRequest;
-            std::cerr << all.find("Connection")->second << std::endl;
+            // std::cerr << all.find("Connection")->second << std::endl;
             newRequest.setDirectivesAndPages(simultaneousRequests[i].getDirectives(), simultaneousRequests[i].getPages());
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
             // newRequest.setTimeout();
             simultaneousRequests[i] = newRequest;
             return ;
-        }
-    }        
+    }
     close(i);
     FD_CLR(i, &allsd);
     FD_CLR(i, &writesd);
     simultaneousRequests.erase(i);
+    Fds.erase(i);
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -73,7 +73,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 }
 
 void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &simultaneousRequests, int &responseD){
-    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
+    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {
         responseD = *i;
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
             time_t now = time(0);
@@ -84,7 +84,7 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, f
                     .addStatusLine("408")
                     .addContentType("text/html")
                     .addResponseBody(simultaneousRequests[*i].getPageStatus(408));
-                functionToSend(*i, readsd, writesd, allsd, simultaneousRequests);
+                functionToSend(*i, readsd, writesd, allsd, simultaneousRequests, Fds);
             }
         }
     }
@@ -124,10 +124,10 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             }
             checkTimeOut(Fds, ServersSD, allsd, readsd, writesd, simultaneousRequests, responseD);
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {
-                responseD = *i;
                 if (!FD_ISSET(*i, &readsd)) {
                     continue ;
                 }
+                responseD = *i;
                 if (find(ServersSD.begin(), ServersSD.end(), *i) != ServersSD.end()) {
                     //! A Connection's been received
                     struct sockaddr_in clientAddress;
@@ -149,7 +149,8 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             }
         } catch (const char *error) {
             //* RESPONSE
-            functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests);
+            std::cerr << error << std::endl;
+            functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests, Fds);
         }
     }
 }

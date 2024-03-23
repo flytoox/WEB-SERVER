@@ -98,6 +98,7 @@ string convertDomainToIPv4(string &domain)
 }
 
 bool checkOverFlow(std::string &s) {
+	std::cerr << "s: " << s << std::endl;
 	if (s.size() > 19)
 		return (false);
 	for (size_t i = 0; i < s.size(); i++)

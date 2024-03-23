@@ -1,6 +1,6 @@
 #include "../includes/webserve.hpp"
 
-void requestTypeDirectory(std::string &root, std::string &uri, Request &request) {
+void getFolder(std::string &root, std::string &uri, Request &request) {
 
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
@@ -135,7 +135,7 @@ void requestTypeDirectory(std::string &root, std::string &uri, Request &request)
 
 }
 
-void requestTypeFile(std::string &absolutePath, std::string &uri, Request &request) {
+void getFile(std::string &absolutePath, std::string &uri, Request &request) {
 
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
@@ -218,61 +218,61 @@ void requestTypeFile(std::string &absolutePath, std::string &uri, Request &reque
     }
 }
 
-void getMethod(Request &request) {
+// void getMethod(Request &request) {
 
-    std::cout << "╔══════════════════════════╗\n";
-    std::cout << "║        GET Method        ║";std::cout << "\tURI: " << request.getUri() << "\n";
-    std::cout << "╚══════════════════════════╝\n";
+//     std::cout << "╔══════════════════════════╗\n";
+//     std::cout << "║        GET Method        ║";std::cout << "\tURI: " << request.getUri() << "\n";
+//     std::cout << "╚══════════════════════════╝\n";
 
-    std::string concatenateWithRoot;
-    retrieveRootAndUri(request, concatenateWithRoot);
+//     std::string concatenateWithRoot;
+//     retrieveRootAndUri(request, concatenateWithRoot);
 
-    std::string uri = request.getUri();
-    if (uri.find('?') != std::string::npos) {
-        parseQueriesInURI(request, uri);
-    }
-    uri = decodeUrl(uri);
-    request.setUri(uri);
+//     std::string uri = request.getUri();
+//     if (uri.find('?') != std::string::npos) {
+//         parseQueriesInURI(request, uri);
+//     }
+//     uri = decodeUrl(uri);
+//     request.setUri(uri);
 
-	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
-	if (result.find(concatenateWithRoot) == std::string::npos) {
-		request.response = responseBuilder()
-            .addStatusLine("403")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(403));
-            throw "403 Security";
-	}
+// 	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
+// 	if (result.find(concatenateWithRoot) == std::string::npos) {
+// 		request.response = responseBuilder()
+//             .addStatusLine("403")
+//             .addContentType("text/html")
+//             .addResponseBody(request.getPageStatus(403));
+//             throw "403 Security";
+// 	}
 
-    concatenateWithRoot = result;
-    const char *path = concatenateWithRoot.c_str();
-    struct stat fileStat;
+//     concatenateWithRoot = result;
+//     const char *path = concatenateWithRoot.c_str();
+//     struct stat fileStat;
 
-    if ( stat(path, &fileStat) == 0 ) {
-        if (S_ISREG(fileStat.st_mode)) {
-            requestTypeFile(concatenateWithRoot, uri, request);
-        } else if (S_ISDIR(fileStat.st_mode)) {
-            requestTypeDirectory(concatenateWithRoot, uri, request);
-        } else {
-            request.response = responseBuilder()
-            .addStatusLine("500")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(500));
-            throw "500";
-        }
-    } else if (uri == "/favicon.ico") {
-        std::ifstream file("./pages/response_pages/favicon.ico");
-        std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
-        request.response = responseBuilder()
-            .addStatusLine("200")
-            .addContentType("image/x-icon")
-            .addResponseBody(content);
-        throw "200";
-    } else {
-        request.response = responseBuilder()
-            .addStatusLine("404")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(404));
-        throw "404";
-    }
+//     if ( stat(path, &fileStat) == 0 ) {
+//         if (S_ISREG(fileStat.st_mode)) {
+//             requestTypeFile(concatenateWithRoot, uri, request);
+//         } else if (S_ISDIR(fileStat.st_mode)) {
+//             requestTypeDirectory(concatenateWithRoot, uri, request);
+//         } else {
+//             request.response = responseBuilder()
+//             .addStatusLine("500")
+//             .addContentType("text/html")
+//             .addResponseBody(request.getPageStatus(500));
+//             throw "500";
+//         }
+//     } else if (uri == "/favicon.ico") {
+//         std::ifstream file("./pages/response_pages/favicon.ico");
+//         std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
+//         request.response = responseBuilder()
+//             .addStatusLine("200")
+//             .addContentType("image/x-icon")
+//             .addResponseBody(content);
+//         throw "200";
+//     } else {
+//         request.response = responseBuilder()
+//             .addStatusLine("404")
+//             .addContentType("text/html")
+//             .addResponseBody(request.getPageStatus(404));
+//         throw "404";
+//     }
 
-}
+// }
