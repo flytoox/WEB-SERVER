@@ -17,7 +17,7 @@ std::string readFromPipeAndClose(int readEnd) {
     close(readEnd);
 
     if (bytesRead == -1) {
-        std::cerr << "Error reading from pipe: " << strerror(errno) << "\n";
+        std::cerr << "Error reading from pipe" << "\n";
     }
 
     return ss.str();

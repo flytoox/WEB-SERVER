@@ -2,6 +2,8 @@
 
 void postFolder(std::string &root, std::string &uri, Request &request) {
 
+    std::cout << "[---------POST---------] { d } [ " << uri << " ]" << "\n";
+
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
             .addStatusLine("301")
@@ -59,9 +61,7 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                std::cout << "╔══════════════════════╗\n";
-                std::cout << "║         CGI          ║\n";
-                std::cout << "╚══════════════════════╝\n";
+                std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
 
                 response = handleCgiPost(absolutePath, binaryPath, request);
                 std::string headers = response.first;
@@ -75,7 +75,6 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
 
                 std::multimap<std::string, std::string> splitedHeaders = parseResponseHeaders(headers);
 
-                // Set the initial HTTP response headers
                 request.response = responseBuilder()
                     .addStatusLine("200")
                     .addContentType(type);
@@ -86,7 +85,7 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
                     if (it->second.find("\n") != std::string::npos) {
                         it->second = it->second.substr(0, it->second.find("\n"));
                     }
-                    
+
                     if (it->first == "Status") {
                         std::string status = it->second;
                         std::stringstream ss(status);
@@ -116,6 +115,8 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
 
 void postFile(std::string &absolutePath, std::string &uri, Request &request) {
 
+    std::cout << "[---------POST---------] { f } [ " << uri << " ]" << "\n";
+
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
     std::string file = uri.erase(0, pos);
@@ -128,9 +129,7 @@ void postFile(std::string &absolutePath, std::string &uri, Request &request) {
 
         if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-            std::cout << "╔══════════════════════╗\n";
-            std::cout << "║         CGI          ║\n";
-            std::cout << "╚══════════════════════╝\n";
+            std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
 
             response = handleCgiPost(absolutePath, binaryPath, request);
             std::string headers = response.first;
@@ -182,82 +181,3 @@ void postFile(std::string &absolutePath, std::string &uri, Request &request) {
     throw "403";
 
 }
-
-// void postMethod(Request &request) {
-
-//     std::cout << "╔═══════════════════════════╗\n";
-//     std::cout << "║        POST Method        ║";std::cout << "\tURI: " << request.getUri() << "\n";
-//     std::cout << "╚═══════════════════════════╝\n";
-
-//     uploadRequestBody(request);
-
-//     std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
-
-//     std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
-//     std::string value = "";
-//     if (itContentType != (request.getHttpRequestHeaders()).end()) {
-//         value = itContentType->second;
-//     }
-
-//     if ( value == "multipart/form-data;" ) {
-//         multipartContentType(request);
-//         request.response = responseBuilder()
-//             .addStatusLine("201")
-//             .addContentType("text/html")
-//             .addLocationFile(locations["upload_store"])
-//             .addResponseBody(request.getPageStatus(201));
-//         throw "201" ;
-//     }
-
-
-//     //* get_requested_resource()
-//     std::string root;
-//     retrieveRootAndUri(request, root);
-
-//     std::string uri = request.getUri();
-//     if (uri.find('?') != std::string::npos) {
-//         parseQueriesInURI(request, uri);
-//     }
-
-//     uri = decodeUrl(uri);
-//     request.setUri(uri);
-
-//     std::string absolutePath;
-//     std::string result =  CheckPathForSecurity(root+uri);
-// 	if (result.find(root) == std::string::npos) {
-// 		request.response = responseBuilder()
-//             .addStatusLine("403")
-//             .addContentType("text/html")
-//             .addResponseBody(request.getPageStatus(403));
-//         throw "403 Security";
-// 	}
-//     absolutePath = result;
-
-//     //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
-
-//     const char *path = absolutePath.c_str();
-//     struct stat fileStat;
-
-//     if (stat(path, &fileStat ) == 0) {
-
-//         if (S_ISREG(fileStat.st_mode)) {
-//             requestTypeFilePost(absolutePath, uri, request);
-//         } else if (S_ISDIR(fileStat.st_mode)) {
-//             requestTypeDirectoryPost(absolutePath, uri, request);
-//         } else {
-//             request.response = responseBuilder()
-//                 .addStatusLine("502")
-//                 .addContentType("text/html")
-//                 .addResponseBody("<html><h1>502 Bad Gateway</h1></html>");
-//             throw "502";
-//         }
-//     } else {
-
-//         request.response = responseBuilder()
-//             .addStatusLine("404")
-//             .addContentType("text/html")
-//             .addResponseBody("<html><h1> 404 Not Found</h1></html>");
-//         throw "404 here";
-//     }
-
-// }

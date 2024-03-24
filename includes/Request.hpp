@@ -11,7 +11,6 @@ class Request {
 public:
     std::string stringUnparsed;
     std::string chunkedUnparsed;
-    bool isTimeOut;
     char buffer[100000];
     std::string fileName;
     std::string lastBoundary;

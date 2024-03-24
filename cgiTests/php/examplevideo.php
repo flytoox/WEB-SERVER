@@ -2,7 +2,7 @@
 // video.php
 
 // Set the path to the video file
-$videoPath = '/Users/aait-mal/Downloads/LP.mp4';
+$videoPath = '/Users/aait-mal/goinfre/vid.mp4';
 
 // Check if the file exists
 if (file_exists($videoPath)) {

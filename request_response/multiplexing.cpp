@@ -9,12 +9,10 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> 
 
 static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& simultaneousRequests, std::set<int> &Fds) {
 
-    FD_CLR(i, &readsd); 
+    FD_CLR(i, &readsd);
     FD_SET(i, &writesd);
 
-    // (void)readsd; (void)writesd;
     std::string res = simultaneousRequests[i].response.build();
-    std::cerr << res << std::endl;
     int sd;
     while (res.length()) {
         std::string chunk = "";
@@ -25,20 +23,16 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
         }
 
         if ( FD_ISSET(i, &writesd) && (sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
-            std::cerr << "Error: send(): " << strerror(errno) << std::endl;
+            std::cerr << "Error: send()" << std::endl;
         }
     }
-    // simultaneousRequests[i].setTimeout();
 
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (simultaneousRequests[i]).getHttpRequestHeaders();
     if (all.find("Connection") != all.end() && (all).find("Connection")->second == "keep-alive") {
-            // std::cerr << i << std::endl;
             Request newRequest;
-            // std::cerr << all.find("Connection")->second << std::endl;
             newRequest.setDirectivesAndPages(simultaneousRequests[i].getDirectives(), simultaneousRequests[i].getPages());
             newRequest.setLocationsBlock(simultaneousRequests[i].getLocationsBlock());
-            // newRequest.setTimeout();
             simultaneousRequests[i] = newRequest;
             return ;
     }
@@ -51,7 +45,6 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
 
-    //Done: chooseTheServer that will be used
     Server serverUsed;
 
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it) {
@@ -73,13 +66,12 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 }
 
 void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &simultaneousRequests, int &responseD){
-    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &readsd); i++) {
+    for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
         responseD = *i;
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
             time_t now = time(0);
             time_t elapsedSeconds = now - simultaneousRequests[*i].getTimeout();
             if (elapsedSeconds >= 10) {
-
                 (simultaneousRequests[*i]).response = responseBuilder()
                     .addStatusLine("408")
                     .addContentType("text/html")
@@ -108,7 +100,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     int responseD = 0;
-    for (FOREVER) {    
+    for (FOREVER) {
         try {
             readsd = allsd;
             int ret = -1;
@@ -134,7 +126,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     socklen_t addrlen =  sizeof(clientAddress);
                     int clientSD = accept(*i , (struct sockaddr *)&clientAddress , &addrlen);
                     if (clientSD == -1 ) {
-                        std::cerr << "Error: accept(): " << strerror(errno) << std::endl;
+                        std::cerr << "Error: accept()" << std::endl;
                         continue ;
                     }
                     FD_SET(clientSD, &allsd);
@@ -149,7 +141,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             }
         } catch (const char *error) {
             //* RESPONSE
-            std::cerr << error << std::endl;
+            std::cerr << "status: " << error << std::endl;
             functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests, Fds);
         }
     }

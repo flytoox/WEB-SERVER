@@ -21,7 +21,7 @@ std::vector<std::string> splitUri(const std::string& input, const std::string& d
 static std::string fetchTheExactDirectory(const std::string uri) {
 
     //? Example: /root/etc/bin/index.html -> location_match_directory = /root/etc/bin/
-    //? Example: /Desktop -> /Desktop
+    //? Example:  ->
 
     DIR *dir_ptr; dir_ptr = opendir(uri.c_str());
     if (dir_ptr != NULL) {
@@ -202,7 +202,7 @@ void validateHeader(Request &request) {
             .addStatusLine("414")
             .addContentType("text/html")
             .addResponseBody(request.getPageStatus(414));
-        throw "414" ;            
+        throw "414" ;
     }
     std::map<std::string, std::string> httpRequestHeaders = request.getHttpRequestHeaders();
     std::string transferEncoding = httpRequestHeaders["Transfer-Encoding"];

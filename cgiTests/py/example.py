@@ -1,6 +1,7 @@
 print("Custom header: header1\r\n")
-print("Content-length: 100\r\n")
-print ("Content-Type: text/html\r\n\r\n")
+print("Content-length: 3000\r\n")
+print("Content-Type: text/html\r")
+print("\r")
 
 print("<!DOCTYPE html>")
 print("<html lang=\"en\">")

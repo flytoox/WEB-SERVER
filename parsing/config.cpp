@@ -6,7 +6,7 @@
 /*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/09 23:01:18 by adnane           ###   ########.fr       */
+/*   Updated: 2024/03/24 17:19:35 by adnane           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,6 @@ string convertDomainToIPv4(string &domain)
 }
 
 bool checkOverFlow(std::string &s) {
-	std::cerr << "s: " << s << std::endl;
 	if (s.size() > 19)
 		return (false);
 	for (size_t i = 0; i < s.size(); i++)

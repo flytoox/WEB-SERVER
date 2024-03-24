@@ -2,29 +2,9 @@
 
 void method(Request &request, void (*fileFunc)(std::string &, std::string &, Request &), void (*folderFunc)(std::string &, std::string &, Request &)) {
 
-    if (request.getHttpVerb() == "POST") {
+    if (request.getHttpVerb() == "POST")
         uploadRequestBody(request);
-        std::map<std::string, std::string> locations = request.getLocationBlockWillBeUsed();
 
-        std::map<std::string, std::string>::const_iterator itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
-        std::string value = "";
-        if (itContentType != (request.getHttpRequestHeaders()).end()) {
-            value = itContentType->second;
-        }
-
-        if (value == "multipart/form-data;") {
-            multipartContentType(request);
-            request.response = responseBuilder()
-                .addStatusLine("201")
-                .addContentType("text/html")
-                .addLocationFile(locations["upload_store"])
-                .addResponseBody(request.getPageStatus(201));
-            throw "201" ;
-        }
-    }
-
-
-    //* get_requested_resource()
     std::string root;
     retrieveRootAndUri(request, root);
 

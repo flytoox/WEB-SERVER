@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   methodsUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:28:49 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/13 16:05:02 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/24 17:22:22 by adnane           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void autoIndexFunction(std::string absolutePath, Request &request) {
 
     dir_ptr = opendir(absolutePath.c_str());
     if (dir_ptr == NULL) {
-        std::cerr << "Error: opendir(): " << strerror(errno) << std::endl;
+        std::cerr << "Error: opendir()" << std::endl;
 		request.response = responseBuilder()
             .addStatusLine("403")
             .addContentType("text/html")
@@ -40,11 +40,11 @@ void autoIndexFunction(std::string absolutePath, Request &request) {
 		} else if (read_dir->d_type == DT_DIR) {
 			response += "<a href= \"" + link  + "\"/> "+ read_dir->d_name + "/ </a>\r\n" ;
 		}
-	} 
+	}
     response += "</pre><hr></body></html>";
 
     if (closedir(dir_ptr) == -1) {
-        std::cerr << "Error: closedir(): " << strerror(errno) << std::endl;
+        std::cerr << "Error: closedir()" << std::endl;
 		request.response = responseBuilder()
             .addStatusLine("403")
             .addContentType("text/html")
@@ -71,7 +71,7 @@ void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot) {
             .addContentType("text/html")
             .addResponseBody(request.getPageStatus(418));
         throw ("200");
-    }    
+    }
 
     concatenateWithRoot = (itRoot)->second;
 }
@@ -102,16 +102,19 @@ std::string CheckPathForSecurity(std::string path) {
 	return result;
 }
 
-void parseQueriesInURI(Request &request,std::string &uri) {
-    
-    //* Protect the queries if they exist
+void parseQueriesInURI(Request &request, std::string &uri) {
+
+    size_t pos = uri.find('?');
+	if (pos == std::string::npos)
+		return ;
+
+    if (uri.length() == pos + 1)
+        return ;
+
     if (request.getHttpVerb() == "DELETE") {
         uri.erase(uri.find('?'));
         return ;
     }
-    size_t pos = uri.find('?');
-    if (uri.length() == pos + 1)
-        return ;
 
     std::string queriesString = uri.substr(uri.find('?') + 1);
     request.setQueryString(queriesString);
@@ -152,18 +155,17 @@ void parseQueriesInURI(Request &request,std::string &uri) {
 
     request.setUrlencodedResponse(mapTopush);
 
-    // Remove queries from uri
     uri.erase(uri.find('?'));
 }
 
 void uploadRequestBody(Request &request) {
 
     std::map<std::string, std::string>::const_iterator itContentType;
+    itContentType = request.getHttpRequestHeaders().find("Content-Type");
 
-    itContentType = (request.getHttpRequestHeaders()).find("Content-Type");
     if ( itContentType != (request.getHttpRequestHeaders()).end()) {
-
         std::string value = itContentType->second;
+
         if (value == "text/plain") {
             std::string ret = request.getRequestBody();
             request.response = responseBuilder()
@@ -183,10 +185,26 @@ void uploadRequestBody(Request &request) {
     }
 }
 
-std::string lower(std::string str) {
-    std::string ret = "";
-    for (std::string::iterator it = str.begin(); it != str.end(); it++) {
-        ret += std::tolower(*it);
+void urlencodedContentType(Request &request) {
+
+    std::string res = request.getRequestBody();
+    std::map<std::string, std::string> mapTopush;
+
+    std::vector<std::string> keyValueVector = splitString(res, "&");
+
+    for (const_vector_it it = keyValueVector.begin(); it != keyValueVector.end(); it++) {
+        std::string keyValue = (*it);
+        size_t signPos = keyValue.find('=');
+        if (signPos != std::string::npos) {
+            pair pair = std::make_pair(keyValue.substr(0, signPos), keyValue.substr(signPos + 1));
+            mapTopush.insert(pair);
+        } else {
+            request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(400));
+            throw "400";
+        }
     }
-    return ret;
+    request.setUrlencodedResponse(mapTopush);
 }

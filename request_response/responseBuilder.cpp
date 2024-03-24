@@ -27,7 +27,7 @@ STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
     if (type == "500")
         return INTERNAL_SERVER_ERROR;
     if (type == "501")
-        return NOT_IMPLEMENTED;    
+        return NOT_IMPLEMENTED;
     if (type == "302")
         return FOUND;
     if (type == "408")
@@ -100,26 +100,17 @@ void responseBuilder::defineStatusLine(const std::string &type) {
 
 void responseBuilder::defineContentType(const std::string &extension) {
 
-    // res += extension == "mp4" ? "video/mp4" : "text/html";
-
     if (extension == "text/html"){
         headersResponses.insert(std::make_pair(CONTENT_TYPE, extension));
         return ;
     }
     std::string type;
 
-    // std::cout << "ALL |" << extension << "|\n";
-
     size_t lastSlashPos = extension.find_last_of('.');
-
-    // Extract the substring starting from the position after the last '/'
     std::string version = extension.substr(lastSlashPos + 1);
-
-    // std::cout << "version |" << version << "|\n"; exit (0);
 
     type = defineMimeType(version);
     headersResponses.insert(std::make_pair(CONTENT_TYPE, type));
-
 }
 
 
@@ -129,9 +120,6 @@ responseBuilder& responseBuilder::addStatusLine(const std::string &type) {
 }
 
 responseBuilder& responseBuilder::addContentType(const std::string &extension) {
-    // std::cout << "HA L3AAAAR|" << extension << "|\n";
-    // exit (0);
-    //if contenr type is not defined, define it
     if (headersResponses.find(CONTENT_TYPE) == headersResponses.end())
         defineContentType(extension);
     return (*this);
@@ -168,8 +156,8 @@ responseBuilder& responseBuilder::addLocationFile(const std::string &location) {
 
 responseBuilder& responseBuilder::addContentLength(const std::string &content) {
 
-   unsigned long number = content.size();
-   std::ostringstream oss ;
+    unsigned long number = content.size();
+    std::ostringstream oss ;
 
     oss << number ;
     if (headersResponses.find(CONTENT_LENGTH) == headersResponses.end())
