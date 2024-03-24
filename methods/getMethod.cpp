@@ -2,6 +2,8 @@
 
 void getFolder(std::string &root, std::string &uri, Request &request) {
 
+    std::cout << "[---------GET---------] { d } [ " << uri << " ]" << "\n";
+
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
             .addStatusLine("301")
@@ -42,7 +44,6 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
         // Decide which index file to use
         for (size_t i = 0; i < splitedPaths.size(); i++) {
-            // std::fstream file(root+'/'+splitedPaths[i]);
             std::fstream file((root + '/' + splitedPaths[i]).c_str());
             if ( file.good() ) {
                 absolutePath = CheckPathForSecurity(root+'/'+splitedPaths[i]);
@@ -62,9 +63,7 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
                 if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                    std::cout << "╔══════════════════════╗\n";
-                    std::cout << "║         CGI          ║\n";
-                    std::cout << "╚══════════════════════╝\n";
+                    std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
 
                     response = handleCgiGet(absolutePath, binaryPath, request);
                     std::string headers = response.first;
@@ -88,7 +87,7 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
                         if (it->second.find("\n") != std::string::npos) {
                             it->second = it->second.substr(0, it->second.find("\n"));
                         }
-                        
+
                         if (it->first == "Status") {
                             std::string status = it->second;
                             std::stringstream ss(status);
@@ -137,6 +136,8 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
 void getFile(std::string &absolutePath, std::string &uri, Request &request) {
 
+    std::cout << "[---------GET---------] { f } [ " << uri << " ]" << "\n";
+
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
     std::string file = uri.erase(0, pos);
@@ -150,9 +151,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                std::cout << "╔══════════════════════╗\n";
-                std::cout << "║         CGI          ║\n";
-                std::cout << "╚══════════════════════╝\n";
+                std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
 
                 response = handleCgiGet(absolutePath, binaryPath, request);
                 std::string headers = response.first;
@@ -216,62 +215,3 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
         }
     }
 }
-
-// void getMethod(Request &request) {
-
-//     std::cout << "╔══════════════════════════╗\n";
-//     std::cout << "║        GET Method        ║";std::cout << "\tURI: " << request.getUri() << "\n";
-//     std::cout << "╚══════════════════════════╝\n";
-
-//     std::string concatenateWithRoot;
-//     retrieveRootAndUri(request, concatenateWithRoot);
-
-//     std::string uri = request.getUri();
-//     if (uri.find('?') != std::string::npos) {
-//         parseQueriesInURI(request, uri);
-//     }
-//     uri = decodeUrl(uri);
-//     request.setUri(uri);
-
-// 	std::string result =  CheckPathForSecurity(concatenateWithRoot+uri);
-// 	if (result.find(concatenateWithRoot) == std::string::npos) {
-// 		request.response = responseBuilder()
-//             .addStatusLine("403")
-//             .addContentType("text/html")
-//             .addResponseBody(request.getPageStatus(403));
-//             throw "403 Security";
-// 	}
-
-//     concatenateWithRoot = result;
-//     const char *path = concatenateWithRoot.c_str();
-//     struct stat fileStat;
-
-//     if ( stat(path, &fileStat) == 0 ) {
-//         if (S_ISREG(fileStat.st_mode)) {
-//             requestTypeFile(concatenateWithRoot, uri, request);
-//         } else if (S_ISDIR(fileStat.st_mode)) {
-//             requestTypeDirectory(concatenateWithRoot, uri, request);
-//         } else {
-//             request.response = responseBuilder()
-//             .addStatusLine("500")
-//             .addContentType("text/html")
-//             .addResponseBody(request.getPageStatus(500));
-//             throw "500";
-//         }
-//     } else if (uri == "/favicon.ico") {
-//         std::ifstream file("./pages/response_pages/favicon.ico");
-//         std::string content = (std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
-//         request.response = responseBuilder()
-//             .addStatusLine("200")
-//             .addContentType("image/x-icon")
-//             .addResponseBody(content);
-//         throw "200";
-//     } else {
-//         request.response = responseBuilder()
-//             .addStatusLine("404")
-//             .addContentType("text/html")
-//             .addResponseBody(request.getPageStatus(404));
-//         throw "404";
-//     }
-
-// }

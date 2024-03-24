@@ -1,6 +1,5 @@
 #include "../includes/webserve.hpp"
 
-
 void checkRequestedHttpMethod(Request &request) {
 
     std::string httpMethod = request.getHttpVerb();

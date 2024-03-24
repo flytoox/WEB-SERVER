@@ -189,7 +189,7 @@ void    fillFirstPartOfMultipart(Request &request) {
         }
     }
     pos = request.fileName.find_last_of(".");
-    if (pos == std::string::npos) 
+    if (pos == std::string::npos)
         pos = request.fileName.length();
     while (std::ifstream(request.fileName.c_str()))
         request.fileName.insert(pos, "_");
@@ -378,12 +378,12 @@ void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i
     int recevRequestLen = 0;
     recevRequestLen = recv(i , simultaneousRequests[i].buffer, 100000, 0);
     if (recevRequestLen < 0) {
-        std::cerr << "Error: recv(): " << strerror(errno) << std::endl;
+        std::cerr << "Error: recv()" << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
     if (recevRequestLen)
         simultaneousRequests[i].setTimeout();
-    
+
     simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
     if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
         simultaneousRequests[i].response = responseBuilder()

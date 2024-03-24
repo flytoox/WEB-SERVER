@@ -27,14 +27,19 @@ void checkBasicErrors(std::string path) {
 
 int main(int argc, char **argv) {
 
+	std::string path = "default.conf";
     configFile	configurationServers;
-	if (argc != 2) {
+
+	if (argc > 2) {
 		std::cerr << "Error: invalid number of arguments" << std::endl;
 		return (1);
+	} else if (argc == 2) {
+		path = argv[1];
 	}
+
 	signal(SIGPIPE, SIG_IGN);
-	checkBasicErrors(argv[1]);
-	parseConfigFile(configurationServers, argv[1]);
+	checkBasicErrors(path);
+	parseConfigFile(configurationServers, path);
 	return 0;
 }
 

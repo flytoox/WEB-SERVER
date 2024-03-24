@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   webserve.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aait-mal <aait-mal@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/24 17:24:49 by adnane            #+#    #+#             */
+/*   Updated: 2024/03/24 17:25:54 by aait-mal         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include "configFile.hpp"
@@ -16,8 +28,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/_endian.h>
-// #include <endian.h>
+// #include <sys/_endian.h>
+#include <endian.h>
 #include <stdexcept>
 #include <sys/types.h>
 #include <netdb.h>
@@ -31,102 +43,49 @@
 #include<algorithm>
 #include <sys/wait.h>
 #include <signal.h>
-
 #include <cstdio>
-#include <sys/errno.h>
-
 #include <dirent.h>
 #include <sys/stat.h>
-
 #include <fcntl.h>
+
 //! Typedef
-
-
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
 typedef std::vector<std::map<std::string, std::string> >::const_iterator vectorToMapIterator;
 
 //! multiplexing.cpp
-
 void funcMultiplexingBySelect(configFile &configurationServers);
 
-//! re_configureRequestClass.cpp
-//TODO: remove the requestOutput after checking the output request
-
-//void parseRequestPerBuffer(std::string &buffer, std::string &requestOutput);
-std::string &parseRequestPerBuffer(std::string &buffer, std::string &requestOutput);
-void configureTheHttpHeaderRequestClass(std::string &header, Request &request);
-
-
-
-// //! parseRequest.cpp
-
-// void checkRequestFormat(Request &request, std::string &requestOutput);
-// std::string &fetchLocation(std::string &uri, Request &request);
-
-
 //! parseRequestHeader.cpp
-
-
-void parseAndSetRequestHeader(Request &request);
 void validateHeader(Request &request);
 
-
-//! parseRequestBody.cpp
-
-std::vector<std::string> splitString(const std::string& input, const std::string& delimiter);
-
-
-//! parseRequestBody.cpp
-
-
-void parseRequestBody(Request &request);
-
-
-//! validateHeader.cpp
-
-//! checkHttpMethod.cpp
-
-
+//! checkRequestedHttpMethod.cpp
 void checkRequestedHttpMethod(Request &request);
 
 //! getMethod.cpp
 void getFolder(std::string &root, std::string &uri, Request &request);
 void getFile(std::string &absolutePath, std::string &uri, Request &request);
-void getMethod(Request &request);
-std::string CheckPathForSecurity(std::string path);
 void autoIndexFunction(std::string absolutePath, Request &request);
 void retrieveRootAndUri(Request &request,std::string& concatenateWithRoot);
+std::string CheckPathForSecurity(std::string path);
 
 //! postMethod.cpp
 void postFile(std::string &absolutePath, std::string &uri, Request &request);
 void postFolder(std::string &root, std::string &uri, Request &request);
 void parseQueriesInURI(Request &request,std::string &uri);
-void postMethod(Request &request);
 void uploadRequestBody(Request &request);
 
 //! deleteMEthod.cpp
 void deleteFolder(std::string &absolutePath, std::string &uri, Request &request);
-void deleteMethod(Request &request);
 void deleteFile(std::string &absolutePath, std::string &uri, Request &request);
-//! parseRequestBody.cpp
 
-int hexaToDec(std::string &res);
-void chunkedRequest(Request &request);
-void textContentType(Request &request);
-void pureBinary(std::string &image, std::string &destination);
-void multipartContentType(Request &request);
+//! parseRequestBody.cpp
 void urlencodedContentType(Request &request);
 
-//GetConfig
-std::vector<std::string> splitWithChar(std::string s, char delim);
-
 //! receiveRequest.cpp
-
 void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
 bool checkOverFlow(std::string &s);
 
-
-
+//! methodsUtils.cpp
 void method(Request &request, void (*fileFunc)(std::string &, std::string &, Request &), void (*folderFunc)(std::string &, std::string &, Request &));
