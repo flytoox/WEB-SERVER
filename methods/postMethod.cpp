@@ -2,7 +2,7 @@
 
 void postFolder(std::string &root, std::string &uri, Request &request) {
 
-    std::cout << "[---------POST---------] { d } [ " << uri << " ]" << "\n";
+    std::cout << "[---------POST--------] { d } [ " << uri << " ]" << "\n";
 
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
@@ -61,7 +61,7 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
+                std::cout << "[--------[CGI]--------] " << "\n";
 
                 response = handleCgiPost(absolutePath, binaryPath, request);
                 std::string headers = response.first;
@@ -115,7 +115,7 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
 
 void postFile(std::string &absolutePath, std::string &uri, Request &request) {
 
-    std::cout << "[---------POST---------] { f } [ " << uri << " ]" << "\n";
+    std::cout << "[---------POST--------] { f } [ " << uri << " ]" << "\n";
 
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
@@ -129,7 +129,7 @@ void postFile(std::string &absolutePath, std::string &uri, Request &request) {
 
         if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-            std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
+            std::cout << "[--------[CGI]--------] " << "\n";
 
             response = handleCgiPost(absolutePath, binaryPath, request);
             std::string headers = response.first;

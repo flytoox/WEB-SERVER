@@ -141,7 +141,6 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
             }
         } catch (const char *error) {
             //* RESPONSE
-            std::cerr << "status: " << error << std::endl;
             functionToSend(responseD, readsd, writesd, allsd, simultaneousRequests, Fds);
         }
     }

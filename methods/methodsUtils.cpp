@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   methodsUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:28:49 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/24 17:22:22 by adnane           ###   ########.fr       */
+/*   Updated: 2024/03/24 22:18:17 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void parseQueriesInURI(Request &request, std::string &uri) {
             request.response = responseBuilder()
                 .addStatusLine("400")
                 .addContentType("text/html")
-                .addResponseBody("<html><body><h1>400 Bad Request123</h1></body></html>");
+                .addResponseBody(request.getPageStatus(400));
             throw "400";
         }
     }

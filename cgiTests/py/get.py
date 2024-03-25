@@ -3,7 +3,7 @@ import time
 
 def main():
     # Change the URL to match your CGI script URL
-    url = 'http://localhost:1111/WebServ/cgiTests/py/get.py'
+    url = 'http://localhost:1111/Desktop/WebServ/cgiTests/py/get.py'
 
     # Make HTTP GET request to itself
     response = requests.get(url)

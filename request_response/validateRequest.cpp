@@ -53,82 +53,12 @@ static std::string fetchTheExactDirectory(const std::string uri) {
     return (concatenateDirectories);
 }
 
-// static void removeLastOccurrence(std::string &str) {
-
-//     size_t pos = str.rfind('/');
-//     std::cout << "i: |" << pos << "|\n";
-
-//     if (pos == 0 && pos != std::string::npos) {
-//         str = str[0];
-//     } else if ( pos != std::string::npos ) {
-//         str.erase(pos, str.length() - 1);
-//     }
-
-// }
-
-//! CAUTION
-static void removeExtraBackslashes(std::string& str) {
-    std::string result;
-    bool previousIsForwardSlash = false;
-
-    for (size_t i = 0; i < str.length(); ++i) {
-        if (str[i] == '/' && previousIsForwardSlash) {
-            // Skip consecutive forward slashes
-            continue;
-        }
-
-        result += str[i];
-        previousIsForwardSlash = (str[i] == '/');
-    }
-
-    // Update the original string
-    str = result;
-}
-
 static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &request, std::string uri)
 {
-    //! erase all the backslashes at the end of URI
-    //TODO : /////////////////
-    //* WE remove it for stat function and then we check if it exsits
-    //* if yes and it's a directory, then handle it without moving 301 Permenatntly
-    //* if no it's a directory , add '/' to move permenantly
-    if (uri.length() != 1) {
-        while (1) {
-            if (uri[uri.length() - 1] == '/')
-            {
-                request.setSaveLastBS(true);
-                uri.erase(uri.length() - 1);
-            }
-            else
-                break ;
-        }
-    } else {
-        request.setSaveLastBS(true);
-    }
-
-    //! erase the double slash and count how many for saving the uri if it's only /regular
-    int backSlashcount = 0;
-    if (uri.length() != 1) {
-        removeExtraBackslashes(uri);
-    }
-
-    int countDown = uri.length();
-
-    if (countDown != 1) {
-        while (countDown--) {
-            if (uri[countDown] == '/')
-                backSlashcount++;
-        }
-
-    }
-
-    //TODO: RESET URI
-    request.setUri(uri);
-
     std::vector<std::map<std::string, std::string> > locationsBlock = request.getLocationsBlock();
     std::map<std::string, std::string> found ;
 
-    for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
+    for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
 
         std::map<std::string, std::string> mapIterator = (*it);
         std::string location_match = mapIterator["location"];
@@ -139,7 +69,7 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
 
     }
 
-    for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); ++it) {
+    for (vectorToMapIterator it = locationsBlock.begin(); it != locationsBlock.end(); it++) {
 
         std::map<std::string, std::string> mapIterator = (*it);
         std::string location_match = mapIterator["location"];

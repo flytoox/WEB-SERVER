@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:25:42 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/24 17:00:47 by adnane           ###   ########.fr       */
+/*   Updated: 2024/03/25 00:35:53 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@ std::vector<std::string> splitWithChar(std::string s, char delim) {
 	std::string item;
 
 	while (getline (ss, item, delim)) {
-		result.push_back (item);
+        if (!item.empty())
+		    result.push_back (item);
 	}
 
 	return result;

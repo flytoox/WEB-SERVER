@@ -63,7 +63,7 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
                 if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                    std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
+                    std::cout << "[--------[CGI]--------] " << "\n";
 
                     response = handleCgiGet(absolutePath, binaryPath, request);
                     std::string headers = response.first;
@@ -109,9 +109,7 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
         std::fstream file(absolutePath.c_str());
         if ( file.good() ) {
-
-            std::string str ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()) ;
-            std::string content = str;
+            std::string content ((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
             request.response = responseBuilder()
                 .addStatusLine("200")
@@ -120,7 +118,7 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
             throw "200";
         }
     }
-
+    
     //* Index File does not exist, check for autoindex
     if (directives["autoindex"] == "on") {
         autoIndexFunction(root, request);
@@ -151,7 +149,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                std::cout << "[---------CGI---------] [ " << uri << " ]" << "\n";
+                std::cout << "[--------[CGI]--------] " << "\n";
 
                 response = handleCgiGet(absolutePath, binaryPath, request);
                 std::string headers = response.first;

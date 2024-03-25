@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   method.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/24 22:00:44 by aait-mal          #+#    #+#             */
+/*   Updated: 2024/03/25 01:12:06 by aait-mal         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/webserve.hpp"
 
 void method(Request &request, void (*fileFunc)(std::string &, std::string &, Request &), void (*folderFunc)(std::string &, std::string &, Request &)) {
@@ -16,16 +28,9 @@ void method(Request &request, void (*fileFunc)(std::string &, std::string &, Req
     uri = decodeUrl(uri);
     request.setUri(uri);
 
-    std::string absolutePath =  CheckPathForSecurity(root+uri);
-	if (absolutePath.find(root) == std::string::npos) {
-		request.response = responseBuilder()
-            .addStatusLine("403")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(403));
-        throw "403 Security";
-	}
+    std::string absolutePath = root + uri;
     if (request.getHttpVerb() == "DELETE") {
-        if (absolutePath == root) {
+        if (absolutePath == root+"/" || absolutePath == root) {
             request.response = responseBuilder()
             .addStatusLine("405")
             .addContentType("text/html")
@@ -33,8 +38,6 @@ void method(Request &request, void (*fileFunc)(std::string &, std::string &, Req
             throw "405";
         }
     }
-    //TODO: fix this error http://localhost:1111/../../bin/ls the response don't get send
-
     const char *path = absolutePath.c_str();
     struct stat fileStat;
 
