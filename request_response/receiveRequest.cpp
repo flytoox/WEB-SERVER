@@ -368,7 +368,8 @@ bool parseHeader(std::string &s, Request &request) {
             s = lines[i];
             return false;
         }
-        if ((!request.getHttpVerb().empty() && !parseDefaultLine(lines[i], request)) || (request.getHttpVerb().empty() && !parseFirstLine(lines[i], request))) {
+        if ((!request.getHttpVerb().empty() && !parseDefaultLine(lines[i], request))
+            || (request.getHttpVerb().empty() && !parseFirstLine(lines[i], request))) {
             return true;
         }
     }

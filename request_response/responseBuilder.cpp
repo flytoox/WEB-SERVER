@@ -137,6 +137,7 @@ responseBuilder& responseBuilder::addContentLength() {
     size_t length = body.length();
     std::stringstream ss;
 
+    if (length) length += 2;
     ss << length;
     if (headersResponses.find(CONTENT_LENGTH) == headersResponses.end())
         headersResponses.insert(std::make_pair(CONTENT_LENGTH, ss.str()));
@@ -156,9 +157,11 @@ responseBuilder& responseBuilder::addLocationFile(const std::string &location) {
 
 responseBuilder& responseBuilder::addContentLength(const std::string &content) {
 
-    unsigned long number = content.size();
+    size_t number = content.size();
     std::ostringstream oss ;
 
+    if (number) number += 2;
+    
     oss << number ;
     if (headersResponses.find(CONTENT_LENGTH) == headersResponses.end())
         headersResponses.insert(std::make_pair(CONTENT_LENGTH, oss.str()));
@@ -175,20 +178,17 @@ responseBuilder& responseBuilder::addResponseBody(const std::string &responseBod
 
 }
 
-std::string responseBuilder::build() {
+std::string &responseBuilder::build() {
 
-    std::stringstream response;
+    res = "HTTP/1.1 " + resultMsg + CRLF;
 
-    response << HTTP_VERSION << " " << resultMsg << CRLF;
-
-    for (std::multimap<std::string, std::string>::iterator it = headersResponses.begin(); it !=  headersResponses.end(); it++) {
-        response << it->first << it->second << CRLF;
-    }
-    response << "Keep-Alive: timeout=5" << CRLF;
-    response << CRLF;
-
+    for (std::multimap<std::string, std::string>::iterator it = headersResponses.begin(); it !=  headersResponses.end(); it++)
+        res += it->first + it->second + CRLF;
+    
+    res += "Keep-Alive: timeout=5\r\n\r\n";
     if (body.length() != 0) {
-        response << body << CRLF;
+        res.insert(res.length(), body);
+        res.insert(res.length(), CRLF);
     }
-    return response.str();
+    return res;
 }

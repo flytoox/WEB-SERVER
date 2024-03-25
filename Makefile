@@ -2,10 +2,10 @@ NAME = webserv
 
 SRCS = $(wildcard *.cpp */*.cpp)
 
-CPP = c++
+CPP = g++
 
 HEADERS = $(wildcard *.hpp */*.hpp)
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Wunused-function  -Wunused-variable
 
 OBJS = $(SRCS:.cpp=.o)
 

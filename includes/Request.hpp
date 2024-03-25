@@ -23,7 +23,6 @@ private:
     std::map<std::string, std::string> locationBlockWillBeUsed;
     std::map<std::string, std::map<int, std::string> > pages;
 
-    std::map<std::string, std::string> cgiDirectives;
 
     std::vector<std::map<std::string, std::string> > locationsBlock;
 
@@ -36,27 +35,18 @@ private:
 
     std::string requestHeader;
     std::string requestBody;
-
     std::string queryString;
 
-    // bool allowRequestBodyChunk;
     bool requestBodyChunk;
-    // bool responseChunk;
 
     //test
     std::string requestOutputTest;
 
     //Response
-
-    std::vector<std::string> chunkedResponse;
-    std::string textResponse;
-    std::vector<std::string> multipartReponse;
     std::map<std::string, std::string> urlencodedResponse;
 
     bool saveLastBS;
 
-    std::vector<std::string> responseVector;
-    std::string root;
     time_t timeout;
 
 
@@ -87,7 +77,6 @@ public:
     const std::string &getBoundary(void) const;
 
 
-    const std::string &getRequestHeader() const ;
     const std::string &getRequestBody() const ;
 
     std::map<std::string, std::string> &getHttpRequestHeaders();
@@ -95,28 +84,17 @@ public:
     const std::string getPageStatus(int status) const ;
 
     bool getRequestBodyChunk(void);
-   //  bool getResponseChunk(void) const;
 
    const std::string &getQueryString(void) const;
 
     //! Responses
 
-    const std::vector<std::string> &getChunkedResponse() const ;
-    const std::string &getTextResponse() const ;
-    const std::vector<std::string> &getMultipartReponse() const ;
-    const std::map<std::string, std::string> &getUrlencodedResponse() const ;
 
     bool getSaveLastBS(void) const;
-
-    const std::vector<std::string>& getResponseVector() const ;
-    const std::string& getRoot() const;
-    const std::map<std::string, std::string> &getCgiDirectives() const ;
-
 
     //* SETTERS
 
     void setTimeout();
-    void setRequestHeader(std::string &setter);
     void setRequestBody(std::string &setter);
 
 
@@ -138,20 +116,12 @@ public:
     //test
 
 
-    void setrequestOutputTest(std::string &setter);
-    const std::string &getrequestOutputTest(void) const;
 
     //! Responses
 
-    void setChunkedResponse(std::vector<std::string> &setter);
-    void setTextResponse(std::string &setter);
-    void setMultipartResponse(std::vector<std::string> &setter);
     void setUrlencodedResponse(std::map<std::string, std::string> &setter);
 
     void setSaveLastBS(bool chunk) ;
-    void setResponseVector(std::string &setter);
-    void setRoot(std::string &setter);
-    void setCgiDirectives(std::map<std::string, std::string> &setter);
 
 
     ~Request() ;
