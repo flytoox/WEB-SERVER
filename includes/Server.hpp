@@ -34,7 +34,6 @@ public:
     void listenToIncomingConxs();
 
     int getSocketDescriptor() const;
-    std::string getServerName() const;
     std::map<std::string, std::string> const& getdirectives(void) const ;
     std::map<std::string, std::map<int, std::string> > const& getPages(void) const ;
     std::vector<std::map<std::string, std::string> > const& getlocationsBlock(void) const;

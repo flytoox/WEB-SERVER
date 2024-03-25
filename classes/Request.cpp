@@ -52,9 +52,6 @@ const std::string &Request::getHTTPVersion(void) const {
 //     return (this->requestBody);
 // }
 
-const std::string &Request::getRequestHeader() const  {
-    return (this->requestHeader);
-}
 
 const std::string &Request::getRequestBody() const  {
     return (this->requestBody);
@@ -80,40 +77,14 @@ const std::string &Request::getBoundary(void) const {
     return (this->boundary);
 }
 
-const std::vector<std::string>& Request::getChunkedResponse() const {
-    return (this->chunkedResponse);
-}
-
-const std::string& Request::getTextResponse() const {
-    return (this->textResponse);
-}
-
-const std::vector<std::string>& Request::getMultipartReponse() const  {
-    return (this->multipartReponse);
-}
-
-const std::map<std::string, std::string> &Request::getUrlencodedResponse() const {
-    return (this->urlencodedResponse);
-}
 
 
 bool Request::getSaveLastBS(void) const {
     return (this->saveLastBS);
 }
 
-const std::vector<std::string>& Request::getResponseVector() const {
-    return (this->responseVector);
-}
 
 
-const std::string& Request::getRoot() const {
-    return (this->root);
-}
-
-
-const std::map<std::string, std::string> &Request::getCgiDirectives() const  {
-    return (this->cgiDirectives);
-}
 
 const std::string &Request::getQueryString() const {
     return (this->queryString);
@@ -139,9 +110,6 @@ void Request::setRequestBody(std::string &setter) {
     requestBody += setter;
 }
 
-void Request::setRequestHeader(std::string &setter) {
-    this->requestHeader += setter;
-}
 
 
 void Request::setDirectivesAndPages(std::map<std::string, std::string> directives, std::map<std::string, std::map<int, std::string> > pages) {
@@ -185,17 +153,6 @@ void Request::setHttpRequestHeaders(pair setPair) {
     httpRequestHeaders[setPair.first] = setPair.second;
 }
 
-void Request::setChunkedResponse(std::vector<std::string> &setter) {
-    this->chunkedResponse = setter;
-}
-
-void Request::setTextResponse(std::string &setter) {
-    this->textResponse = setter;
-}
-
-void Request::setMultipartResponse(std::vector<std::string> &setter) {
-    this->multipartReponse = setter;
-}
 
 void Request::setUrlencodedResponse(std::map<std::string, std::string> &setter) {
     this->urlencodedResponse = setter;
@@ -206,17 +163,6 @@ void Request::setSaveLastBS(bool chunk) {
     this->saveLastBS = chunk;
 }
 
-void Request::setResponseVector(std::string &setter) {
-    responseVector.push_back(setter);
-}
-
-void Request::setRoot(std::string &setter) {
-    this->root = setter;
-}
-
-void Request::setCgiDirectives(std::map<std::string, std::string> &setter) {
-    this->cgiDirectives = setter;
-}
 
 void Request::setQueryString(std::string &setter) {
     this->queryString = setter;
@@ -236,11 +182,4 @@ const std::string Request::getPageStatus(int status) const {
     return (page);
 }
 
-void Request::setrequestOutputTest(std::string &setter) {
-    this->requestOutputTest = setter;
-}
 
-
-const std::string& Request::getrequestOutputTest(void) const {
-    return ( this->requestOutputTest);
-}

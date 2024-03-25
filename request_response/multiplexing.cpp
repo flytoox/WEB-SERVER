@@ -12,16 +12,13 @@ static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &alls
     FD_CLR(i, &readsd);
     FD_SET(i, &writesd);
 
-    std::string res = simultaneousRequests[i].response.build();
+    std::string &res = simultaneousRequests[i].response.build();
     int sd;
-    while (res.length()) {
+    size_t pos = 0;
+    while (pos < res.length()) {
         std::string chunk = "";
-        if (res.length() > 65500) {
-            chunk = res.substr(0, 65500); res.erase(0, 65500);
-        } else {
-            chunk = res; res.clear();
-        }
-
+        chunk = res.substr(pos, 65500);
+        pos += 65500;
         if ( FD_ISSET(i, &writesd) && (sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
             std::cerr << "Error: send()" << std::endl;
         }
