@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserve.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 17:24:49 by adnane            #+#    #+#             */
-/*   Updated: 2024/03/24 17:25:54 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/24 22:02:25 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
-// #include <sys/_endian.h>
-#include <endian.h>
+#include <sys/_endian.h>
+// #include <endian.h>
 #include <stdexcept>
 #include <sys/types.h>
 #include <netdb.h>

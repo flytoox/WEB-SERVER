@@ -20,7 +20,7 @@ void reCheckTheServer(configFile &configurationServers, std::string &hostValue, 
         request.response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody("<html><h1>400 Bad Request22</h1></html>");
+            .addResponseBody(request.getPageStatus(400));
         throw "400";
         std::cout << e.what() << std::endl;
     }
@@ -42,8 +42,11 @@ std::vector<std::string> customSplitRequest(const std::string& input, const std:
     return result;
 }
 
-void    parseUri(std::string &uri) {
+void    parseUri( Request &request, std::string &uri) {
+    if (uri.empty()) return;
     std::vector<std::string> v = splitWithChar(uri, '/');
+    bool hasBs = (uri[uri.length() - 1] == '/');
+    request.setSaveLastBS(hasBs);
     std::stack<std::string> s;
     for (size_t i = 0; i < v.size(); i++) {
         if (v[i] == "..") {
@@ -55,12 +58,11 @@ void    parseUri(std::string &uri) {
     }
     uri = "";
     while (!s.empty()) {
-        uri = s.top() + uri;
+        uri = "/" + s.top() + uri;
         s.pop();
-        if (!s.empty())
-            uri = "/" + uri;
     }
     if (uri.empty()) uri = "/";
+    request.setUri(uri);
 }
 
 bool parseFirstLine(std::string &s, Request &request) {
@@ -73,9 +75,9 @@ bool parseFirstLine(std::string &s, Request &request) {
         if (!isalpha(lines[0][i]) && !isupper(lines[0][i]))
             return false;
     }
-    parseUri(lines[1]);
+    parseUri(request, lines[1]);
     request.setHttpVerb(lines[0]);
-    request.setUri(lines[1]);
+    // request.setUri(lines[1]);
     request.setHTTPVersion(lines[2]);
     return true;
 }
@@ -229,8 +231,9 @@ void multipartBody(Request &request) {
                 request.response = responseBuilder()
                     .addStatusLine("201")
                     .addContentType("text/html")
+                    .addLocationFile(request.fileName)
                     .addResponseBody(request.getPageStatus(201));
-                    throw "201";
+                throw "201";
             }
             std::remove(request.fileName.c_str());
             request.response = responseBuilder()

@@ -21,6 +21,6 @@ setcookie('username', '', time() - 3600, '/');
 setcookie('loggedIn', '', time() - 3600, '/');
 
 // Redirect to login page
-header("Location: /WebServ/cgiTests/php/login.php");
+header("Location: /Desktop/WebServ/cgiTests/php/login.php");
 exit();
 ?>
