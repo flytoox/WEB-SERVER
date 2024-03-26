@@ -24,9 +24,9 @@ void checkBasicErrors(std::string path) {
 		exit(1);
 	}
 }
-
+void f() {system("leaks webserv");}
 int main(int argc, char **argv) {
-
+	atexit(f);
 	std::string path = "default.conf";
     configFile	configurationServers;
 

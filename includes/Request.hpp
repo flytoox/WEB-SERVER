@@ -11,12 +11,13 @@ class Request {
 public:
     std::string stringUnparsed;
     std::string chunkedUnparsed;
-    char buffer[100000];
+    char buffer[1024];
     std::string fileName;
     std::string lastBoundary;
     std::string firstPart;
     size_t binaryRead;
     long long chunkSize;
+    bool checkTimeout;
     
 private:
     std::map<std::string, std::string> directives;

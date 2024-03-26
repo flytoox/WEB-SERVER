@@ -4,6 +4,7 @@
 Request::Request() :
     binaryRead(0),
     chunkSize(-1),
+    checkTimeout(false),
     httpVerb (""),
     uri(""),
     httpVersion(""),
