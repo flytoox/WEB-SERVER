@@ -134,7 +134,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     requests.insert(std::make_pair(clientSD, request));
                 } else {
                     //* REQUEST
-                    receiveRequestPerBuffer(requests, *i, configurationServers, allsd);
+                    receiveRequestPerBuffer(requests[*i], *i, configurationServers, allsd);
                 }
             }
         } catch (const char *error) {

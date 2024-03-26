@@ -11,7 +11,7 @@ class Request {
 public:
     std::string stringUnparsed;
     std::string chunkedUnparsed;
-    char buffer[1024];
+    char buffer[91337];
     std::string fileName;
     std::string lastBoundary;
     std::string firstPart;
@@ -130,4 +130,9 @@ public:
 
 };
 
-
+void parseUri( Request &request, std::string &uri);
+void fillFirstPartOfMultipart(Request &request);
+void multipartBody(Request &request);
+void requestChunked(Request &request);
+bool parseFirstLine(std::string &s, Request &request);
+bool parseDefaultLine(std::string &s, Request &request);
