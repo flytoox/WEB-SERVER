@@ -1,6 +1,5 @@
 #include "../includes/webserve.hpp"
 
-configFile configurationServers;
 
 void reCheckTheServer(configFile &configurationServers, std::string &hostValue, Request &request) {
     try {
@@ -136,10 +135,12 @@ bool checkLimitRead(Request &request, size_t bodySize) {
 void writeOnFile(const std::string &filename, const std::string &content) {
     if (content.empty())
         return ;
-    std::ofstream file;
-    file.open(filename.c_str(), std::ios::app);
+    std::ofstream file(filename, std::ios::app);
+    if (!file.is_open()) {
+        std::cerr << "Error: file not open" << std::endl;
+        return ;
+    }
     file << content;
-    file.close();
 }
 
 void    fillFirstPartOfMultipart(Request &request) {
@@ -184,9 +185,9 @@ void    fillFirstPartOfMultipart(Request &request) {
     for (size_t i = 0;i < tmp.length(); i++) {
         if (tmp[i] != s[pos2 + i]) {
             request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(400));
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(400));
             throw "400";
         }
     }
@@ -321,7 +322,7 @@ void requestChunked(Request &request) {
     s = tmpBody;
 }
 
-bool parseBody(Request &request) {
+bool parseBody(Request &request, configFile &configurationServers) {
     request.binaryRead += request.stringUnparsed.length();
     checkLimitRead(request, request.binaryRead);
     if (request.getHttpRequestHeaders()["Transfer-Encoding"] == "chunked")
@@ -339,9 +340,9 @@ bool parseBody(Request &request) {
     return checkLimitRead(request, request.binaryRead);
 }
 
-bool parseHeader(std::string &s, Request &request) {
+bool parseHeader(std::string &s, Request &request, configFile &configurationServers) {
     if (request.getRequestBodyChunk())
-        return parseBody(request);
+        return parseBody(request, configurationServers);
     std::vector<std::string> lines = customSplitRequest(s, "\r\n");
     for (size_t i = 0; i < lines.size(); i++) {
         if (lines[i] == "\r\n" && !request.getHttpVerb().empty()) {
@@ -360,7 +361,7 @@ bool parseHeader(std::string &s, Request &request) {
                 request.realContentLength = custAtoi(request.getHttpRequestHeaders()["Content-Length"]);
             } else request.realContentLength = 0;
             request.setRequestBodyChunk(true);
-            return parseBody(request);
+            return parseBody(request, configurationServers);
         } else if (lines[i] == "\r\n") {
             continue;
         }
@@ -376,28 +377,30 @@ bool parseHeader(std::string &s, Request &request) {
     return false;
 }
 
-void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &cnf, fd_set &allsd) {
-    configurationServers = cnf;
+void receiveRequestPerBuffer(std::map<int, Request> &requests, int i, configFile &cnf, fd_set &allsd) {
     std::string res;
     int recevRequestLen = 0;
-    recevRequestLen = recv(i , simultaneousRequests[i].buffer, 100000, 0);
+    recevRequestLen = recv(i , requests[i].buffer, 1024, 0);
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv()" << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
-    if (recevRequestLen)
-        simultaneousRequests[i].setTimeout();
+    if (recevRequestLen) {
+        requests[i].checkTimeout = true;
+        requests[i].setTimeout();
+    }
 
-    simultaneousRequests[i].stringUnparsed.append(simultaneousRequests[i].buffer, recevRequestLen);
-    if (parseHeader(simultaneousRequests[i].stringUnparsed, simultaneousRequests[i])) {
-        simultaneousRequests[i].response = responseBuilder()
+    requests[i].stringUnparsed.append(requests[i].buffer, recevRequestLen);
+    if (parseHeader(requests[i].stringUnparsed, requests[i], cnf)) {
+        requests[i].response = responseBuilder()
             .addStatusLine("400")
             .addContentType("text/html")
-            .addResponseBody(simultaneousRequests[i].getPageStatus(400));
+            .addResponseBody(requests[i].getPageStatus(400));
         throw "400";
     }
-    if (simultaneousRequests[i].getRequestBodyChunk() && simultaneousRequests[i].binaryRead == simultaneousRequests[i].realContentLength) {
-        simultaneousRequests[i].stringUnparsed = "";
-        checkRequestedHttpMethod(simultaneousRequests[i]);
+    if (requests[i].getRequestBodyChunk() && requests[i].binaryRead == requests[i].realContentLength) {
+        requests[i].checkTimeout = false;
+        requests[i].stringUnparsed = "";
+        checkRequestedHttpMethod(requests[i]);
     }
 }

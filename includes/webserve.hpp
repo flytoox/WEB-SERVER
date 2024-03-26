@@ -6,7 +6,7 @@
 /*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 17:24:49 by adnane            #+#    #+#             */
-/*   Updated: 2024/03/24 22:02:25 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/26 02:22:13 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void deleteFile(std::string &absolutePath, std::string &uri, Request &request);
 void urlencodedContentType(Request &request);
 
 //! receiveRequest.cpp
-void receiveRequestPerBuffer(std::map<int, Request> &simultaneousRequests, int i, configFile &configurationServers, fd_set &allsd);
+void receiveRequestPerBuffer(std::map<int, Request> &requests, int i, configFile &configurationServers, fd_set &allsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
 bool checkOverFlow(std::string &s);
 

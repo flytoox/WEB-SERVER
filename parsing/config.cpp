@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adnane <adnane@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/24 17:19:35 by adnane           ###   ########.fr       */
+/*   Updated: 2024/03/25 23:20:56 by aait-mal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,19 +82,19 @@ string convertDomainToIPv4(string &domain)
     hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo(domain.c_str(), NULL, &hints, &result) != 0)
         return "";
-
+	std::string ret ="";
     for (p = result; p != NULL; p = p->ai_next)
     {
         if (p->ai_family == AF_INET)
         {
             struct sockaddr_in *ipv4 = reinterpret_cast<struct sockaddr_in *>(p->ai_addr);
             inet_ntop(AF_INET, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
-            freeaddrinfo(result);
-            return ipstr;
+			ret = ipstr;
+            break;
         }
     }
     freeaddrinfo(result);
-    return "";
+    return ret;
 }
 
 bool checkOverFlow(std::string &s) {

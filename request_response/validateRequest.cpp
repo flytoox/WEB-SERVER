@@ -146,7 +146,6 @@ void validateHeader(Request &request) {
     }
 
 
-
     //! Skipped: if => no location match the request uri
 
 
@@ -189,8 +188,12 @@ void validateHeader(Request &request) {
         handleUploadingError(request, "403");
     }
     DIR *dir_ptr = opendir(location["upload_store"].c_str());
-    if (dir_ptr == NULL) {
+    if (dir_ptr == NULL)
         handleUploadingError(request, "500");
+
+    if (closedir(dir_ptr) == -1) {
+        std::cerr << "Error: cannot close the directory" << std::endl;
+        throw "Error: closedir()";
     }
 }
 
