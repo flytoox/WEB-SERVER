@@ -5,6 +5,8 @@ Request::Request() :
     binaryRead(0),
     chunkSize(-1),
     checkTimeout(false),
+    fileFd(-1),
+    FD(-1),
     httpVerb (""),
     uri(""),
     httpVersion(""),
@@ -182,5 +184,7 @@ const std::string Request::getPageStatus(int status) const {
     std::string page = getPages().at(LocationName).at(status);
     return (page);
 }
+
+
 
 

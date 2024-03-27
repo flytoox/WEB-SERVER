@@ -94,7 +94,6 @@ void responseBuilder::defineStatusLine(const std::string &type) {
         case 14 : ret = RESPONSE_FOUND; break ;
         case 15 : ret = RESPONSE_REQUEST_TIMEOUT; break ;
     }
-
     resultMsg = ret;
 }
 

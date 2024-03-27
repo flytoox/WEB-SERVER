@@ -18,6 +18,9 @@ public:
     size_t binaryRead;
     long long chunkSize;
     bool checkTimeout;
+    int fileFd;
+    char bufferFile[65500];
+    int FD;
     
 private:
     std::map<std::string, std::string> directives;
@@ -126,7 +129,7 @@ public:
 
 
     ~Request() ;
-    std::string hey;
+    //create a copy constructor
 
 };
 

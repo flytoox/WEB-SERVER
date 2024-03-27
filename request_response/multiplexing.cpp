@@ -7,35 +7,37 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> 
 }
 
 
-static void functionToSend(int i , fd_set &readsd, fd_set &writesd, fd_set &allsd,std::map<int, Request>& requests, std::set<int> &Fds) {
+static void functionToSend(int i , fd_set &readsd, fd_set &allsd,std::map<int, Request>& requests, std::set<int> &Fds, bool isGetFile) {
 
     FD_CLR(i, &readsd);
-    FD_SET(i, &writesd);
-
-    std::string &res = requests[i].response.build();
-    int sd;
-    size_t pos = 0;
-    while (pos < res.length()) {
-        std::string chunk = "";
-        chunk = res.substr(pos, 65500);
-        pos += 65500;
-        if ( FD_ISSET(i, &writesd) && (sd = send(i, chunk.c_str(), chunk.length(), 0)) == -1) {
-            std::cerr << "Error: send()" << std::endl;
+    if (!isGetFile) {
+        std::string &res = requests[i].response.build();
+        size_t pos = 0;
+        while (pos < res.length()) {
+            std::string chunk = "";
+            chunk = res.substr(pos, 65500);
+            pos += 65500;
+            if (send(i, chunk.c_str(), chunk.length(), 0) == -1) {
+                std::cerr << "Error: send()" << std::endl;
+            }
         }
     }
 
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (requests[i]).getHttpRequestHeaders();
     if (all.find("Connection") != all.end() && (all).find("Connection")->second == "keep-alive") {
-            Request newRequest;
-            newRequest.setDirectivesAndPages(requests[i].getDirectives(), requests[i].getPages());
-            newRequest.setLocationsBlock(requests[i].getLocationsBlock());
-            requests[i] = newRequest;
-            return ;
+        // std::cerr << "Keep-Alive" << std::endl;
+        // Request newRequest;
+        // newRequest.setDirectivesAndPages(requests[i].getDirectives(), requests[i].getPages());
+        // newRequest.setLocationsBlock(requests[i].getLocationsBlock());
+        // newRequest.FD = i;
+        // newRequest.fileFd = requests[i].fileFd;
+        // newRequest.
+        // requests[i] = newRequest;
+        return ;
     }
     close(i);
     FD_CLR(i, &allsd);
-    FD_CLR(i, &writesd);
     requests.erase(i);
     Fds.erase(i);
 }
@@ -61,7 +63,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     request.setLocationsBlock(serverLocationsBlock);
 }
 
-void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, fd_set &writesd, std::map<int, Request> &requests, int &responseD){
+void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, std::map<int, Request> &requests, int &responseD){
     for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
         if (!requests[*i].checkTimeout) continue;
         responseD = *i;
@@ -74,7 +76,7 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, f
                     .addStatusLine("408")
                     .addContentType("text/html")
                     .addResponseBody(requests[*i].getPageStatus(408));
-                functionToSend(*i, readsd, writesd, allsd, requests, Fds);
+                functionToSend(*i, readsd, allsd, requests, Fds, false);
             }
         }
     }
@@ -83,7 +85,7 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, f
 void funcMultiplexingBySelect(configFile &configurationServers) {
 
     std::set<int> ServersSD;
-    fd_set readsd, writesd, allsd;
+    fd_set readsd, allsd, writesd;
     std::map<int, Request> requests;
     std::set<int> Fds;
 
@@ -101,20 +103,22 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
     for (FOREVER) {
         try {
             readsd = allsd;
+            writesd = allsd;
             int ret = -1;
-            while ((ret = select(*Fds.rbegin() + 1, &readsd, 0, 0, &timeout)) <= 0) {
+            while ((ret = select(*Fds.rbegin() + 1, &readsd, &writesd, 0, &timeout)) <= 0) {
                 if (ret == -1) {
                     std::cerr << "Error: select()" << std::endl;
                     exit(1);
                 }
-                checkTimeOut(Fds, ServersSD, allsd, readsd, writesd, requests, responseD);
+                checkTimeOut(Fds, ServersSD, allsd, readsd, requests, responseD);
                 readsd = allsd;
                 timeout.tv_sec = 1;
                 timeout.tv_usec = 0;
+                std::cout << "Timeout" << std::endl;
             }
-            checkTimeOut(Fds, ServersSD, allsd, readsd, writesd, requests, responseD);
+            checkTimeOut(Fds, ServersSD, allsd, readsd, requests, responseD);
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {
-                if (!FD_ISSET(*i, &readsd)) {
+                if (!FD_ISSET(*i, &readsd) && !FD_ISSET(*i, &writesd)) {
                     continue ;
                 }
                 responseD = *i;
@@ -131,15 +135,18 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     Fds.insert(clientSD);
                     Request request;
                     configureRequestClass(request, configurationServers, *i);
+                    request.FD = clientSD;
                     requests.insert(std::make_pair(clientSD, request));
                 } else {
                     //* REQUEST
-                    receiveRequestPerBuffer(requests[*i], *i, configurationServers, allsd);
+                    receiveRequestPerBuffer(requests[*i], *i, configurationServers, allsd, readsd);
                 }
             }
         } catch (const char *error) {
             //* RESPONSE
-            functionToSend(responseD, readsd, writesd, allsd, requests, Fds);
+            std::cerr << "Error:: " << error << std::endl;
+            std::string err = error;
+            functionToSend(responseD, readsd, allsd, requests, Fds, err == "GET_FILE");
         }
     }
 }

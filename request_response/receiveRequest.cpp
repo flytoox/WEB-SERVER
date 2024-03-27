@@ -80,8 +80,12 @@ bool parseHeader(std::string &s, Request &request, configFile &configurationServ
     return false;
 }
 
-void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &allsd) {
-    int recevRequestLen = recv(i , request.buffer, 91337, 0);
+void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &allsd, fd_set &readsd) {
+    int recevRequestLen = 0;
+    std::cerr << "HOLA0\n";
+    if (FD_ISSET(i, &readsd))
+        recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
+    std::cerr << "HOLA\n";
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv()" << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
@@ -99,9 +103,10 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &a
             .addResponseBody(request.getPageStatus(400));
         throw "400";
     }
-    if (request.getRequestBodyChunk() && request.binaryRead == request.realContentLength) {
+    if ((request.getRequestBodyChunk() && request.binaryRead == request.realContentLength) || request.fileFd != -1) {
         request.checkTimeout = false;
         request.stringUnparsed = "";
         checkRequestedHttpMethod(request);
     }
+    std::cout << "HOLA1\n";
 }

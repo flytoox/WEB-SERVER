@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 17:24:49 by adnane            #+#    #+#             */
-/*   Updated: 2024/03/26 17:29:20 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/27 02:31:36 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void deleteFile(std::string &absolutePath, std::string &uri, Request &request);
 void urlencodedContentType(Request &request);
 
 //! receiveRequest.cpp
-void receiveRequestPerBuffer(Request &request, int i, configFile &configurationServers, fd_set &allsd);
+void receiveRequestPerBuffer(Request &request, int i, configFile &configurationServers, fd_set &allsd, fd_set &readsd);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
 bool checkOverFlow(std::string &s);
 
