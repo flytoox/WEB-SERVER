@@ -2,7 +2,7 @@
 
 void getFolder(std::string &root, std::string &uri, Request &request) {
 
-    std::cout << "[---------GET---------] { d } [ " << uri << " ]" << "\n";
+    // std::cout << "[---------GET---------] { d } [ " << uri << " ]" << "\n";
 
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
@@ -134,7 +134,7 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
 void getFile(std::string &absolutePath, std::string &uri, Request &request) {
 
-    std::cout << "[---------GET---------] { f } [ " << uri << " ]" << "\n";
+    // std::cout << "[---------GET---------] { f } [ " << uri << " ]" << "\n";
 
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
@@ -248,6 +248,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
             if ((send(request.FD, res.c_str(), res.length(), 0)) == -1) {
                 std::cerr << "Errgor: "<< strerror(errno) << std::endl;
             }
+            return ;
         }
         ssize_t readBytes = read(request.fileFd, request.bufferFile, sizeof(request.bufferFile));
         if (readBytes == -1) {
@@ -257,16 +258,19 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
                 .addResponseBody(request.getPageStatus(500));
             throw "500";
         }
-        std::cout << "Read bytes: " << readBytes << std::endl;
-        if (send(request.FD, request.bufferFile, readBytes, 0) == -1)
-            std::cerr << "ss: "<< strerror(errno) << std::endl;
-        std::cout << "send " << readBytes << std::endl;
         if ((unsigned long)readBytes < sizeof(request.bufferFile)) {
+            std::string res;
+            res.insert(res.length(), request.bufferFile, readBytes);
+            res.insert(res.length(), "\r\n");
             close(request.fileFd);
             request.fileFd = -1;
-            if (send(request.FD, "\r\n", 2, 0) == -1)
+            if (send(request.FD, res.c_str(), res.length(), 0) == -1)
                 std::cerr << "Error: send()" << std::endl;
+            throw "GET_FILE";
         }
-        std::cout << "File sent" << std::endl;
-        throw "GET_FILE";
+        if (send(request.FD, request.bufferFile, readBytes, 0) == -1)
+            std::cerr <<readBytes<<' ' << request.FD <<" ss: "<< strerror(errno) << std::endl;
+        // std::cout << "send " << readBytes << std::endl;
+        // std::cout << "File sent" << std::endl;
+        // re
 }

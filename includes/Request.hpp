@@ -19,7 +19,7 @@ public:
     long long chunkSize;
     bool checkTimeout;
     int fileFd;
-    char bufferFile[65500];
+    char bufferFile[1024];
     int FD;
     
 private:
@@ -100,6 +100,7 @@ public:
 
     void setTimeout();
     void setRequestBody(std::string &setter);
+    void clearRequestBody();
 
 
     void setHttpRequestHeaders(pair setPair);

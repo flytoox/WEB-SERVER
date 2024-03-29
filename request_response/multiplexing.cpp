@@ -26,14 +26,12 @@ static void functionToSend(int i , fd_set &readsd, fd_set &allsd,std::map<int, R
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (requests[i]).getHttpRequestHeaders();
     if (all.find("Connection") != all.end() && (all).find("Connection")->second == "keep-alive") {
-        // std::cerr << "Keep-Alive" << std::endl;
-        // Request newRequest;
-        // newRequest.setDirectivesAndPages(requests[i].getDirectives(), requests[i].getPages());
-        // newRequest.setLocationsBlock(requests[i].getLocationsBlock());
-        // newRequest.FD = i;
-        // newRequest.fileFd = requests[i].fileFd;
-        // newRequest.
-        // requests[i] = newRequest;
+        std::cerr << "Keep-Alive" << std::endl;
+        Request newRequest;
+        newRequest.setDirectivesAndPages(requests[i].getDirectives(), requests[i].getPages());
+        newRequest.setLocationsBlock(requests[i].getLocationsBlock());
+        newRequest.FD = i;
+        requests[i] = newRequest;
         return ;
     }
     close(i);
@@ -114,7 +112,6 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                 readsd = allsd;
                 timeout.tv_sec = 1;
                 timeout.tv_usec = 0;
-                std::cout << "Timeout" << std::endl;
             }
             checkTimeOut(Fds, ServersSD, allsd, readsd, requests, responseD);
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {

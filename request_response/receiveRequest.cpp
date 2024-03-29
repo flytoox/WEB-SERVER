@@ -82,12 +82,18 @@ bool parseHeader(std::string &s, Request &request, configFile &configurationServ
 
 void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &allsd, fd_set &readsd) {
     int recevRequestLen = 0;
-    std::cerr << "HOLA0\n";
+    // std::cout << "1\n";
     if (FD_ISSET(i, &readsd))
         recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
-    std::cerr << "HOLA\n";
+    else {
+        checkRequestedHttpMethod(request);
+        return ;
+    }
+    if (!recevRequestLen)
+        return ;
+    // std::cout << "2\n";
     if (recevRequestLen < 0) {
-        std::cerr << "Error: recv()" << std::endl;
+        std::cerr << "Error: recv()--" << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
     if (recevRequestLen) {
@@ -108,5 +114,4 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &a
         request.stringUnparsed = "";
         checkRequestedHttpMethod(request);
     }
-    std::cout << "HOLA1\n";
 }

@@ -186,5 +186,6 @@ const std::string Request::getPageStatus(int status) const {
 }
 
 
-
-
+void Request::clearRequestBody() {
+    this->requestBody = "";
+}
