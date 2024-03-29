@@ -9,6 +9,8 @@ typedef std::pair<std::string, std::string> pair;
 
 class Request {
 public:
+    bool done;
+    std::streampos lastPos;
     std::string stringUnparsed;
     std::string chunkedUnparsed;
     char buffer[91337];
@@ -18,8 +20,7 @@ public:
     size_t binaryRead;
     long long chunkSize;
     bool checkTimeout;
-    int fileFd;
-    char bufferFile[1024];
+    char bufferFile[1499];
     int FD;
     
 private:

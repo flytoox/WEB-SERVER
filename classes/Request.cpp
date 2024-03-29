@@ -2,10 +2,11 @@
 #include <fstream>
 
 Request::Request() :
+    done(false),
+    lastPos(-1),
     binaryRead(0),
     chunkSize(-1),
     checkTimeout(false),
-    fileFd(-1),
     FD(-1),
     httpVerb (""),
     uri(""),

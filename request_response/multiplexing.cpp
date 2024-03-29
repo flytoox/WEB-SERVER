@@ -26,7 +26,6 @@ static void functionToSend(int i , fd_set &readsd, fd_set &allsd,std::map<int, R
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (requests[i]).getHttpRequestHeaders();
     if (all.find("Connection") != all.end() && (all).find("Connection")->second == "keep-alive") {
-        std::cerr << "Keep-Alive" << std::endl;
         Request newRequest;
         newRequest.setDirectivesAndPages(requests[i].getDirectives(), requests[i].getPages());
         newRequest.setLocationsBlock(requests[i].getLocationsBlock());
@@ -63,6 +62,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 
 void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, std::map<int, Request> &requests, int &responseD){
     for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
+        std::cout << *i << std::endl;
         if (!requests[*i].checkTimeout) continue;
         responseD = *i;
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {

@@ -83,8 +83,16 @@ bool parseHeader(std::string &s, Request &request, configFile &configurationServ
 void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &allsd, fd_set &readsd) {
     int recevRequestLen = 0;
     // std::cout << "1\n";
-    if (FD_ISSET(i, &readsd))
+    if (FD_ISSET(i, &readsd)) {
+        if (request.done){
+            Request newRequest;
+            newRequest.setDirectivesAndPages(request.getDirectives(), request.getPages());
+            newRequest.setLocationsBlock(request.getLocationsBlock());
+            newRequest.FD = i;
+            request = newRequest;
+        }
         recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
+    }
     else {
         checkRequestedHttpMethod(request);
         return ;
@@ -109,7 +117,8 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &a
             .addResponseBody(request.getPageStatus(400));
         throw "400";
     }
-    if ((request.getRequestBodyChunk() && request.binaryRead == request.realContentLength) || request.fileFd != -1) {
+    if ((request.getRequestBodyChunk() && request.binaryRead == request.realContentLength)) {
+        request.done = true;
         request.checkTimeout = false;
         request.stringUnparsed = "";
         checkRequestedHttpMethod(request);

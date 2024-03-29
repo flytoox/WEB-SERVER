@@ -191,42 +191,13 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
                 throw ("CGI");
             }
         }
-
-        /*
-            request.response = responseBuilder()
-                .addStatusLine("200")
-                .addContentType(absolutePath)
-                .addContentLength(str)
-                .addResponseBody(str);
         
-       
-           res = "HTTP/1.1 " + resultMsg + CRLF;
-
-        for (std::multimap<std::string, std::string>::iterator it = headersResponses.begin(); it !=  headersResponses.end(); it++)
-            res += it->first + it->second + CRLF;
-        
-        res += "Keep-Alive: timeout=5\r\n\r\n";
-        if (body.length() != 0) {
-            res.insert(res.length(), body);
-            res.insert(res.length(), CRLF);
-        }
-       
-       */
-        
-        if (request.fileFd == -1) {
-            request.fileFd = open(absolutePath.c_str(), O_RDONLY);
-            if (request.fileFd == -1) {
-                request.response = responseBuilder()
-                    .addStatusLine("500")
-                    .addContentType("text/html")
-                    .addResponseBody(request.getPageStatus(500));
-                throw "500";
-            }
-            std::ifstream file(absolutePath, std::ifstream::ate | std::ifstream::binary);
+        std::ifstream inputFile(absolutePath, std::ifstream::ate | std::ifstream::binary);
+        if (request.lastPos == -1) {
             long fileSize = 0;
 
-            if (file.good())
-                fileSize = file.tellg();
+            if (inputFile.good())
+                fileSize = inputFile.tellg();
             else {
                 request.response = responseBuilder()
                     .addStatusLine("500")
@@ -234,9 +205,6 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
                     .addResponseBody(request.getPageStatus(500));
                 throw "500";
             }
-
-            file.close();
-
             request.response = responseBuilder()
                 .addStatusLine("200")
                 .addContentType(absolutePath);
@@ -248,9 +216,13 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
             if ((send(request.FD, res.c_str(), res.length(), 0)) == -1) {
                 std::cerr << "Errgor: "<< strerror(errno) << std::endl;
             }
+            request.lastPos = 0;
+            inputFile.close();
             return ;
         }
-        ssize_t readBytes = read(request.fileFd, request.bufferFile, sizeof(request.bufferFile));
+        inputFile.seekg(request.lastPos);
+        inputFile.read(request.bufferFile, sizeof(request.bufferFile));
+        ssize_t readBytes = inputFile.gcount();
         if (readBytes == -1) {
             request.response = responseBuilder()
                 .addStatusLine("500")
@@ -262,15 +234,13 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
             std::string res;
             res.insert(res.length(), request.bufferFile, readBytes);
             res.insert(res.length(), "\r\n");
-            close(request.fileFd);
-            request.fileFd = -1;
             if (send(request.FD, res.c_str(), res.length(), 0) == -1)
                 std::cerr << "Error: send()" << std::endl;
+            inputFile.close();
             throw "GET_FILE";
         }
         if (send(request.FD, request.bufferFile, readBytes, 0) == -1)
-            std::cerr <<readBytes<<' ' << request.FD <<" ss: "<< strerror(errno) << std::endl;
-        // std::cout << "send " << readBytes << std::endl;
-        // std::cout << "File sent" << std::endl;
-        // re
+            std::cerr << "Error: send()" << std::endl;
+        request.lastPos = inputFile.tellg();
+        inputFile.close();
 }
