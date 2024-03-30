@@ -120,9 +120,10 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
     }
     
     //* Index File does not exist, check for autoindex
-    if (directives["autoindex"] == "on") {
+    if (directives.find("autoindex") != directives.end() && directives["autoindex"] == "on"){
         autoIndexFunction(root, request);
     } else {
+        std::cerr << "TWO 413\n";
         request.response = responseBuilder()
         .addStatusLine("403")
         .addContentType("text/html")

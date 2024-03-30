@@ -20,7 +20,7 @@ public:
     size_t binaryRead;
     long long chunkSize;
     bool checkTimeout;
-    char bufferFile[1499];
+    char bufferFile[1024];
     int FD;
     
 private:

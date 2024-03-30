@@ -105,7 +105,7 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
             }
         }
     }
-
+    std::cerr << "THREE 413\n";
     request.response = responseBuilder()
         .addStatusLine("403")
         .addContentType("text/html")
@@ -120,7 +120,6 @@ void postFile(std::string &absolutePath, std::string &uri, Request &request) {
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
     std::string file = uri.erase(0, pos);
-
     if ( file.find('.') != std::string::npos ) {
 
         std::string extension = file.substr(file.find_last_of('.'));
@@ -173,7 +172,7 @@ void postFile(std::string &absolutePath, std::string &uri, Request &request) {
             throw ("CGI");
         }
     }
-
+    std::cerr <<  uri<< " FOUR 413\n";
     request.response = responseBuilder()
         .addStatusLine("403")
         .addContentType("text/html")

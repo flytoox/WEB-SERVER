@@ -19,7 +19,7 @@
       <form class="uploadForm" action="/Desktop/WebServ/pages/html/upload.html" method="post" enctype="multipart/form-data">
         <label for="file" class="choose">
           <h2>Choose File</h2>
-          <input id="file" name="file" type="file" onchange="updateFileName(this)" />
+          <input id="file" name="file" type="file" onchange="updateFileName(this)" required />
           <span id="file-name-placeholder" class="file-name-placeholder">No file chosen</span>
         </label>
         <button type="submit" class="custom-upload-button">Upload</button>

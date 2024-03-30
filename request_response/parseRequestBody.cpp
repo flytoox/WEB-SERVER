@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 17:27:16 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/26 17:27:17 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/29 18:28:39 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ void multipartBody(Request &request) {
         request.stringUnparsed = "";
         if (request.binaryRead == request.realContentLength) {
             if (request.lastBoundary == "\r\n"+boundary+"--\r\n") {
+                request.done = true;
                 request.response = responseBuilder()
                     .addStatusLine("201")
                     .addContentType("text/html")

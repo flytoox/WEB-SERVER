@@ -26,6 +26,7 @@ void reCheckTheServer(configFile &configurationServers, std::string &hostValue, 
 }
 
 bool parseBody(Request &request, configFile &configurationServers) {
+    (void) configurationServers;
     request.binaryRead += request.stringUnparsed.length();
     checkLimitRead(request, request.binaryRead);
     if (request.getHttpRequestHeaders()["Transfer-Encoding"] == "chunked")
@@ -36,20 +37,24 @@ bool parseBody(Request &request, configFile &configurationServers) {
     }
     request.setRequestBody(request.stringUnparsed);
     request.stringUnparsed = "";
-    if (request.reCheck != true) {
-        request.reCheck = true;
-        reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
-    }
+
     return checkLimitRead(request, request.binaryRead);
 }
 
 bool parseHeader(std::string &s, Request &request, configFile &configurationServers) {
+    if (request.stringUnparsed.empty())
+        return false;
     if (request.getRequestBodyChunk())
         return parseBody(request, configurationServers);
     std::vector<std::string> lines = customSplitRequest(s, "\r\n");
     for (size_t i = 0; i < lines.size(); i++) {
         if (lines[i] == "\r\n" && !request.getHttpVerb().empty()) {
             validateHeader(request);
+            if (request.reCheck != true) {
+                std::cout << "recheck\n";
+                request.reCheck = true;
+                reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
+            }
             s = "";
             for (size_t j = i + 1; j < lines.size(); j++)
                 s += lines[j];
@@ -84,6 +89,20 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &a
     int recevRequestLen = 0;
     // std::cout << "1\n";
     if (FD_ISSET(i, &readsd)) {
+        recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
+    }
+    // else {
+    //     checkRequestedHttpMethod(request);
+    //     return ;
+    // }
+    // if (!recevRequestLen)
+    //     return ;
+    // std::cout << "2\n";
+    if (recevRequestLen < 0) {
+        std::cerr << "Error: recv()--" << std::endl;
+        close(i), FD_CLR(i, &allsd); return ;
+    }
+    if (recevRequestLen) {
         if (request.done){
             Request newRequest;
             newRequest.setDirectivesAndPages(request.getDirectives(), request.getPages());
@@ -91,20 +110,6 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &a
             newRequest.FD = i;
             request = newRequest;
         }
-        recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
-    }
-    else {
-        checkRequestedHttpMethod(request);
-        return ;
-    }
-    if (!recevRequestLen)
-        return ;
-    // std::cout << "2\n";
-    if (recevRequestLen < 0) {
-        std::cerr << "Error: recv()--" << std::endl;
-        close(i), FD_CLR(i, &allsd); return ;
-    }
-    if (recevRequestLen) {
         request.checkTimeout = true;
         request.setTimeout();
     }

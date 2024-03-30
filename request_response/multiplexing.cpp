@@ -15,8 +15,8 @@ static void functionToSend(int i , fd_set &readsd, fd_set &allsd,std::map<int, R
         size_t pos = 0;
         while (pos < res.length()) {
             std::string chunk = "";
-            chunk = res.substr(pos, 65500);
-            pos += 65500;
+            chunk = res.substr(pos, 1024);
+            pos += 1024;
             if (send(i, chunk.c_str(), chunk.length(), 0) == -1) {
                 std::cerr << "Error: send()" << std::endl;
             }
@@ -62,13 +62,11 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
 
 void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, std::map<int, Request> &requests, int &responseD){
     for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
-        std::cout << *i << std::endl;
         if (!requests[*i].checkTimeout) continue;
         responseD = *i;
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
             time_t now = time(0);
             time_t elapsedSeconds = now - requests[*i].getTimeout();
-            std::cerr << "Elapsed seconds: " << elapsedSeconds << std::endl;
             if (elapsedSeconds >= 10) {
                 (requests[*i]).response = responseBuilder()
                     .addStatusLine("408")

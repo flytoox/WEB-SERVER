@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   methodsUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:28:49 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/24 22:18:17 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/29 21:35:22 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,7 +180,7 @@ void uploadRequestBody(Request &request) {
                 .addStatusLine("400")
                 .addContentType("text/html")
                 .addResponseBody(request.getPageStatus(400));
-            throw "400 CT";
+            throw "400";
         }
     }
 }

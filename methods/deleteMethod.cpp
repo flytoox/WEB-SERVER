@@ -11,6 +11,7 @@ static void errorOccurredOnDeleteion(Request &request, std::string path) {
         throw "500";
     } else {
         std::string page = request.getPageStatus(403);
+        std::cerr << "ONE 413\n";
         request.response = responseBuilder()
             .addStatusLine("403")
             .addContentType("text/html")
