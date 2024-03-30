@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/25 23:20:56 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/03/30 21:35:14 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,11 +66,6 @@ void	GetDirectives(string &word, map<string, string> &directives, string &key) {
 		directives[key] = word;
 	}
 
-}
-
-void fatal(string expression) {
-    cerr << expression << endl;
-    exit (1);
 }
 
 string convertDomainToIPv4(string &domain)
@@ -134,10 +129,9 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 	server.preHost = host;
 	string ultimateHost = convertDomainToIPv4(host);
 	if (ultimateHost.empty()) {
-		//throw expceptions
-		cout << "Invalid\n"; exit (0);
+		cerr << "Invalid convert Domain To IPv4\n";
+		exit (1);
 	}
-    //serverAddress.sin_addr.s_addr = inet_pton(AF_INET, ultimateHost.c_str(), &serverAddress.sin_addr);
 	serverAddress.sin_addr.s_addr = inet_addr(ultimateHost.c_str());
     serverAddress.sin_port = htons(port);
 }
@@ -157,7 +151,8 @@ void Server::runServers(std::vector<Server> &servers) {
 
 
 		if (( servers[i].socketD = socket(AF_INET, SOCK_STREAM, 0) ) < 0) {
-			fatal("Error: Fail to create a Socket for Server 1");
+			std::cerr <<"Error: Fail to create a Socket for Server 1\n";
+			exit(1);
 		}
 		int add = 1;
 		setsockopt(servers[i].socketD, SOL_SOCKET, SO_REUSEADDR, &add, sizeof(add));

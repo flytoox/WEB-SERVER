@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 17:28:24 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/26 17:28:34 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/30 00:33:30 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 bool parseFirstLine(std::string &s, Request &request) {
     std::vector<std::string> lines = splitWhiteSpaces(s);
     if (lines.size() != 3 || lines[2] != "HTTP/1.1" || lines[1][0] != '/') {
-        std::cerr << "Error: HTTP" << std::endl;
         return false;
     }
     for (size_t i = 0; i < lines[0].length(); i++) {

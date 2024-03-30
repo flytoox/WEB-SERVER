@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 12:25:42 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/29 01:31:53 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/30 00:31:24 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ bool checkLimitRead(Request &request, size_t bodySize) {
     if (MaxBodySize != request.getLocationBlockWillBeUsed().end()) {
         size_t sizeMax = custAtoi(MaxBodySize->second);
         if (bodySize > sizeMax) {
-            std::cout << "FIRST" << std::endl;
             request.response = responseBuilder()
             .addStatusLine("413")
             .addContentType("text/html")
@@ -39,8 +38,6 @@ bool checkLimitRead(Request &request, size_t bodySize) {
         }
     }
     if (request.realContentLength < bodySize) {
-        std::cout << request.stringUnparsed << std::endl;
-        std::cout << "SECOND " << request.realContentLength << ' ' << bodySize << std::endl;
         request.response = responseBuilder()
         .addStatusLine("413")
         .addContentType("text/html")

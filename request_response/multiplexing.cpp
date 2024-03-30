@@ -7,7 +7,7 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> 
 }
 
 
-static void functionToSend(int i , fd_set &readsd, fd_set &allsd,std::map<int, Request>& requests, std::set<int> &Fds, bool isGetFile) {
+static void functionToSend(int i ,std::map<int, Request>& requests, std::set<int> &Fds, bool isGetFile) {
 
     FD_CLR(i, &readsd);
     if (!isGetFile) {
@@ -19,6 +19,7 @@ static void functionToSend(int i , fd_set &readsd, fd_set &allsd,std::map<int, R
             pos += 1024;
             if (send(i, chunk.c_str(), chunk.length(), 0) == -1) {
                 std::cerr << "Error: send()" << std::endl;
+                exit(1);
             }
         }
     }
@@ -60,7 +61,7 @@ void configureRequestClass(Request &request, configFile &configurationServers, i
     request.setLocationsBlock(serverLocationsBlock);
 }
 
-void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, fd_set &readsd, std::map<int, Request> &requests, int &responseD){
+void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, std::map<int, Request> &requests, int &responseD){
     for (std::set<int>::iterator i = Fds.begin() ; i != Fds.end() && FD_ISSET(*i, &allsd); i++) {
         if (!requests[*i].checkTimeout) continue;
         responseD = *i;
@@ -72,7 +73,7 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, f
                     .addStatusLine("408")
                     .addContentType("text/html")
                     .addResponseBody(requests[*i].getPageStatus(408));
-                functionToSend(*i, readsd, allsd, requests, Fds, false);
+                functionToSend(*i, requests, Fds, false);
             }
         }
     }
@@ -81,7 +82,6 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, fd_set &allsd, f
 void funcMultiplexingBySelect(configFile &configurationServers) {
 
     std::set<int> ServersSD;
-    fd_set readsd, allsd, writesd;
     std::map<int, Request> requests;
     std::set<int> Fds;
 
@@ -106,12 +106,12 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     std::cerr << "Error: select()" << std::endl;
                     exit(1);
                 }
-                checkTimeOut(Fds, ServersSD, allsd, readsd, requests, responseD);
+                checkTimeOut(Fds, ServersSD, requests, responseD);
                 readsd = allsd;
                 timeout.tv_sec = 1;
                 timeout.tv_usec = 0;
             }
-            checkTimeOut(Fds, ServersSD, allsd, readsd, requests, responseD);
+            checkTimeOut(Fds, ServersSD, requests, responseD);
             for (std::set<int>::iterator i = Fds.begin(); i != Fds.end(); i++) {
                 if (!FD_ISSET(*i, &readsd) && !FD_ISSET(*i, &writesd)) {
                     continue ;
@@ -134,14 +134,13 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
                     requests.insert(std::make_pair(clientSD, request));
                 } else {
                     //* REQUEST
-                    receiveRequestPerBuffer(requests[*i], *i, configurationServers, allsd, readsd);
+                    receiveRequestPerBuffer(requests[*i], *i, configurationServers);
                 }
             }
         } catch (const char *error) {
             //* RESPONSE
-            std::cerr << "Error:: " << error << std::endl;
             std::string err = error;
-            functionToSend(responseD, readsd, allsd, requests, Fds, err == "GET_FILE");
+            functionToSend(responseD, requests, Fds, err == "GET_FILE");
         }
     }
 }

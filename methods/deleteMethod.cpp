@@ -11,7 +11,6 @@ static void errorOccurredOnDeleteion(Request &request, std::string path) {
         throw "500";
     } else {
         std::string page = request.getPageStatus(403);
-        std::cerr << "ONE 413\n";
         request.response = responseBuilder()
             .addStatusLine("403")
             .addContentType("text/html")
@@ -58,9 +57,7 @@ static std::string deleteAllFolderContent(Request &request,std::string &absolute
 
 
 void deleteFolder(std::string &absolutePath, std::string &uri, Request &request) {
-
-    std::cout << "[---------DELETE---------] { d } [ " << uri << " ]" << "\n";
-
+    (void) uri;
     std::string response;
 
     if (!request.getSaveLastBS()) {
@@ -84,9 +81,7 @@ void deleteFolder(std::string &absolutePath, std::string &uri, Request &request)
 }
 
 void deleteFile(std::string &absolutePath, std::string &uri, Request &request) {
-
-    std::cout << "[---------DELETE---------] { f } [ " << uri << " ]" << "\n";
-
+    (void) uri;
     int out = std::remove(absolutePath.c_str());
 
     if (out != 0) {

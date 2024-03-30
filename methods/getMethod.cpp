@@ -2,7 +2,6 @@
 
 void getFolder(std::string &root, std::string &uri, Request &request) {
 
-    // std::cout << "[---------GET---------] { d } [ " << uri << " ]" << "\n";
 
     if ( !request.getSaveLastBS() ) {
         request.response = responseBuilder()
@@ -63,8 +62,6 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
                 if (isValidCGI(locationBlock, extension, binaryPath)) {
 
-                    std::cout << "[--------[CGI]--------] " << "\n";
-
                     response = handleCgiGet(absolutePath, binaryPath, request);
                     std::string headers = response.first;
                     std::string body = response.second;
@@ -123,7 +120,6 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
     if (directives.find("autoindex") != directives.end() && directives["autoindex"] == "on"){
         autoIndexFunction(root, request);
     } else {
-        std::cerr << "TWO 413\n";
         request.response = responseBuilder()
         .addStatusLine("403")
         .addContentType("text/html")
@@ -135,7 +131,6 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
 
 void getFile(std::string &absolutePath, std::string &uri, Request &request) {
 
-    // std::cout << "[---------GET---------] { f } [ " << uri << " ]" << "\n";
 
     std::pair<std::string, std::string> response;
     size_t pos = uri.rfind('/');
@@ -148,8 +143,6 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
             std::string binaryPath;
 
             if (isValidCGI(locationBlock, extension, binaryPath)) {
-
-                std::cout << "[--------[CGI]--------] " << "\n";
 
                 response = handleCgiGet(absolutePath, binaryPath, request);
                 std::string headers = response.first;
@@ -192,7 +185,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
                 throw ("CGI");
             }
         }
-        
+        if (!FD_ISSET(request.FD, &writesd)) return ;
         std::ifstream inputFile(absolutePath, std::ifstream::ate | std::ifstream::binary);
         if (request.lastPos == -1) {
             long fileSize = 0;
@@ -215,7 +208,12 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
                 res += it->first + it->second + CRLF;
             res += "Keep-Alive: timeout=5\r\n\r\n";
             if ((send(request.FD, res.c_str(), res.length(), 0)) == -1) {
-                std::cerr << "Errgor: "<< strerror(errno) << std::endl;
+                std::cerr << "Error: Send" << std::endl;
+                request.response = responseBuilder()
+                    .addStatusLine("500")
+                    .addContentType("text/html")
+                    .addResponseBody(request.getPageStatus(500));
+                throw "500"; 
             }
             request.lastPos = 0;
             inputFile.close();
@@ -235,13 +233,25 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
             std::string res;
             res.insert(res.length(), request.bufferFile, readBytes);
             res.insert(res.length(), "\r\n");
-            if (send(request.FD, res.c_str(), res.length(), 0) == -1)
+            if (send(request.FD, res.c_str(), res.length(), 0) == -1) {
                 std::cerr << "Error: send()" << std::endl;
+                request.response = responseBuilder()
+                    .addStatusLine("500")
+                    .addContentType("text/html")
+                    .addResponseBody(request.getPageStatus(500));
+                throw "500";
+            }
             inputFile.close();
             throw "GET_FILE";
         }
-        if (send(request.FD, request.bufferFile, readBytes, 0) == -1)
+        if (send(request.FD, request.bufferFile, readBytes, 0) == -1) {
             std::cerr << "Error: send()" << std::endl;
+            request.response = responseBuilder()
+                .addStatusLine("500")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(500));
+            throw "500";
+        }
         request.lastPos = inputFile.tellg();
         inputFile.close();
 }

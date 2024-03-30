@@ -20,23 +20,14 @@ std::vector<std::string> splitUri(const std::string& input, const std::string& d
 
 static std::string fetchTheExactDirectory(const std::string uri) {
 
-    //? Example: /root/etc/bin/index.html -> location_match_directory = /root/etc/bin/
-    //? Example:  ->
-
     DIR *dir_ptr; dir_ptr = opendir(uri.c_str());
     if (dir_ptr != NULL) {
         if (closedir(dir_ptr) == -1) {
-        std::cout << "Error: cannot close the directory" << std::endl;
-        throw "Error: closedir()"; }
+            std::cerr << "Error: cannot close the directory" << std::endl;
+            throw "Error: closedir()";
+        }
         return (uri);
     }
-
-    //! REASON
-    // if (closedir(dir_ptr) == -1) {
-    //     std::cout << "Error: cannot close the directory" << std::endl;
-    //     throw "Error: closedir()";
-    // }
-
     std::vector<std::string> vectorDirectory = splitUri(uri, "/");
     if ( vectorDirectory.size() == 1 ) {
         return (uri);
@@ -144,10 +135,6 @@ void validateHeader(Request &request) {
             .addResponseBody(request.getPageStatus(501));
         throw "501" ;
     }
-
-
-    //! Skipped: if => no location match the request uri
-
 
     if (location.find("return") != location.end() ) {
 

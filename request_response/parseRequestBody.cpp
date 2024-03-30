@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 17:27:16 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/29 18:28:39 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/30 00:33:25 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,12 +151,10 @@ void requestChunked(Request &request) {
             chnkUnparsed += s[i];
         else if (request.chunkSize == -1 && s[i] == '\r') {
             request.chunkSize = hexToDec(chnkUnparsed, request) + 3;
-            std::cerr << "CHUNKED: " << request.chunkSize << std::endl;
             chnkUnparsed = "";
         } else if (request.chunkSize != -1) {
             if (request.chunkSize == 0) {
                 if ((chnkUnparsed.length() >= 3 && chnkUnparsed != "\n\r\n") || (chnkUnparsed == "\n\r\n" && request.binaryRead != request.realContentLength)) {
-                    std::cerr << "Error: Chunked0" << std::endl;
                     request.response = responseBuilder()
                         .addStatusLine("400")
                         .addContentType("text/html")
@@ -173,8 +171,6 @@ void requestChunked(Request &request) {
             request.chunkSize -= cnt;
             if (request.chunkSize == 0) {
                 if (chnkUnparsed[0] != '\n' || chnkUnparsed[chnkUnparsed.length() - 1] != '\n' || chnkUnparsed[chnkUnparsed.length() - 2] != '\r'){
-                    std::cerr << "|" << chnkUnparsed <<"|" <<std::endl;
-                    std::cerr << "Error: Chunked1" << std::endl;
                     request.response = responseBuilder()
                         .addStatusLine("400")
                         .addContentType("text/html")
@@ -186,8 +182,6 @@ void requestChunked(Request &request) {
                     tmpBody += chnkUnparsed[j];
                 chnkUnparsed = "";
             } else if (request.chunkSize < 0) {
-                    std::cerr << "|" << chnkUnparsed <<"|" <<std::endl;
-                    std::cerr << "Error: Chuned2" << std::endl;
                 request.response = responseBuilder()
                     .addStatusLine("400")
                     .addContentType("text/html")

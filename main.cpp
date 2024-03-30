@@ -1,4 +1,7 @@
 #include "includes/webserve.hpp"
+fd_set allsd;
+fd_set writesd;
+fd_set readsd;
 
 void parseConfigFile(configFile &configurationServers, std::string path) {
 	try {
@@ -24,9 +27,8 @@ void checkBasicErrors(std::string path) {
 		exit(1);
 	}
 }
-void f() {system("leaks webserv");}
+
 int main(int argc, char **argv) {
-	atexit(f);
 	std::string path = "default.conf";
     configFile	configurationServers;
 
@@ -36,7 +38,6 @@ int main(int argc, char **argv) {
 	} else if (argc == 2) {
 		path = argv[1];
 	}
-
 	signal(SIGPIPE, SIG_IGN);
 	checkBasicErrors(path);
 	parseConfigFile(configurationServers, path);

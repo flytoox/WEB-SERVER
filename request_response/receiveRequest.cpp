@@ -2,31 +2,21 @@
 
 
 void reCheckTheServer(configFile &configurationServers, std::string &hostValue, Request &request) {
-    try {
-        if (request.dup == true) {
-            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); it++) {
-                std::map<std::string, std::string>tmp = it->getdirectives();
-                if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost) {
-                    std::map<std::string, std::string> serverDirectives = it->getdirectives();
-                    std::vector<std::map<std::string, std::string> > serverLocationsBlock = it->getlocationsBlock();
-                    request.setDirectivesAndPages(serverDirectives, it->getPages());
-                    request.setLocationsBlock(serverLocationsBlock);
-                    break ;
-                }
+    if (request.dup == true) {
+        for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); it++) {
+            std::map<std::string, std::string>tmp = it->getdirectives();
+            if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost) {
+                std::map<std::string, std::string> serverDirectives = it->getdirectives();
+                std::vector<std::map<std::string, std::string> > serverLocationsBlock = it->getlocationsBlock();
+                request.setDirectivesAndPages(serverDirectives, it->getPages());
+                request.setLocationsBlock(serverLocationsBlock);
+                break ;
             }
         }
-    } catch (std::exception &e) {
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(400));
-        throw "400";
-        std::cout << e.what() << std::endl;
     }
 }
 
-bool parseBody(Request &request, configFile &configurationServers) {
-    (void) configurationServers;
+bool parseBody(Request &request) {
     request.binaryRead += request.stringUnparsed.length();
     checkLimitRead(request, request.binaryRead);
     if (request.getHttpRequestHeaders()["Transfer-Encoding"] == "chunked")
@@ -45,13 +35,12 @@ bool parseHeader(std::string &s, Request &request, configFile &configurationServ
     if (request.stringUnparsed.empty())
         return false;
     if (request.getRequestBodyChunk())
-        return parseBody(request, configurationServers);
+        return parseBody(request);
     std::vector<std::string> lines = customSplitRequest(s, "\r\n");
     for (size_t i = 0; i < lines.size(); i++) {
         if (lines[i] == "\r\n" && !request.getHttpVerb().empty()) {
             validateHeader(request);
             if (request.reCheck != true) {
-                std::cout << "recheck\n";
                 request.reCheck = true;
                 reCheckTheServer(configurationServers, request.getHttpRequestHeaders()["Host"], request);
             }
@@ -69,7 +58,7 @@ bool parseHeader(std::string &s, Request &request, configFile &configurationServ
                 request.realContentLength = custAtoi(request.getHttpRequestHeaders()["Content-Length"]);
             } else request.realContentLength = 0;
             request.setRequestBodyChunk(true);
-            return parseBody(request, configurationServers);
+            return parseBody(request);
         } else if (lines[i] == "\r\n") {
             continue;
         }
@@ -85,21 +74,13 @@ bool parseHeader(std::string &s, Request &request, configFile &configurationServ
     return false;
 }
 
-void receiveRequestPerBuffer(Request &request, int i, configFile &cnf, fd_set &allsd, fd_set &readsd) {
+void receiveRequestPerBuffer(Request &request, int i, configFile &cnf) {
     int recevRequestLen = 0;
-    // std::cout << "1\n";
     if (FD_ISSET(i, &readsd)) {
         recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
     }
-    // else {
-    //     checkRequestedHttpMethod(request);
-    //     return ;
-    // }
-    // if (!recevRequestLen)
-    //     return ;
-    // std::cout << "2\n";
     if (recevRequestLen < 0) {
-        std::cerr << "Error: recv()--" << std::endl;
+        std::cerr << "Error: recv()" << std::endl;
         close(i), FD_CLR(i, &allsd); return ;
     }
     if (recevRequestLen) {

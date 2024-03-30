@@ -67,7 +67,7 @@ std::pair<std::string, std::string> handleCgiGet(const std::string& file, const 
         return splitHeadersAndBody(response);
     } catch (const std::exception& e) {
         std::cerr << "CGI Exception: " << e.what() << "\n";
-        return std::make_pair(std::string(), std::string());
+        return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
     }
 }
 
@@ -153,6 +153,6 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file, const
         return splitHeadersAndBody(response);
     } catch (const std::exception& e) {
         std::cerr << "CGI Exception: " << e.what() << "\n";
-        return std::make_pair(std::string(), std::string());
+        return std::make_pair("Content-Type: text/html\r\n", request.getPageStatus(500));
     }
 }

@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 17:24:49 by adnane            #+#    #+#             */
-/*   Updated: 2024/03/27 02:31:36 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/30 00:52:45 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,15 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+    
+#ifndef GLOBALS_HPP
+#define GLOBALS_HPP
 
+extern fd_set allsd;
+extern fd_set writesd;
+extern fd_set readsd;
+
+#endif
 //! Typedef
 typedef std::map<std::string, std::string>::const_iterator               mapConstIterator;
 typedef std::vector<std::string>::const_iterator                         const_vector_it;
@@ -83,7 +91,7 @@ void deleteFile(std::string &absolutePath, std::string &uri, Request &request);
 void urlencodedContentType(Request &request);
 
 //! receiveRequest.cpp
-void receiveRequestPerBuffer(Request &request, int i, configFile &configurationServers, fd_set &allsd, fd_set &readsd);
+void receiveRequestPerBuffer(Request &request, int i, configFile &configurationServers);
 void reCheckTheServer(configFile &configurationServers, std::string &header, Request &request);
 bool checkOverFlow(std::string &s);
 

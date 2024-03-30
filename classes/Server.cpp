@@ -17,8 +17,6 @@ void Server::setDirectives(std::map<std::string, std::string> &newDirectives) {
 
 void Server::bindSockets() {
 
-
-    //std::cout << "socket Descriptor: " << socketD << std::endl;
     if (bind(socketD, (struct sockaddr *)&(serverAddress), sizeof(serverAddress)) < 0) {
         std::cerr << "Error: bind() " << std::endl;
         exit (1);
