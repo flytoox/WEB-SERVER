@@ -1,6 +1,6 @@
 <?php
 // Specify the path to the existing WebP image file
-$imagePath = "/Users/aait-mal/goinfre/sola7fat.webp";
+$imagePath = "/Users/obelaizi/goinfre/sola7fat.webp";
 
 // Check if the image file exists
 if (file_exists($imagePath)) {

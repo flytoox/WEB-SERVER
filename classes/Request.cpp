@@ -49,14 +49,6 @@ const std::string &Request::getHTTPVersion(void) const {
     return (this->httpVersion );
 }
 
-// std::map<std::string, std::string> &Request::getRequestHeader() const {
-//     return (this->requestHeader);
-// }
-// std::vector<std::map<std::string, std::string> > &Request::getRequestBody() const {
-//     return (this->requestBody);
-// }
-
-
 const std::string &Request::getRequestBody() const  {
     return (this->requestBody);
 }
@@ -69,9 +61,6 @@ const std::map<std::string, std::string> &Request::getLocationBlockWillBeUsed() 
     return (this->locationBlockWillBeUsed);
 }
 
-// bool Request::getAllowRequestBodyChunk(void) const {
-//     return (this->allowRequestBodyChunk);
-// }
 
 bool Request::getRequestBodyChunk(void) {
     return (this->requestBodyChunk);
@@ -93,12 +82,7 @@ bool Request::getSaveLastBS(void) const {
 const std::string &Request::getQueryString() const {
     return (this->queryString);
 }
-//* SETTERS
 
-
-// void Request::setJoiningTheWholeRequest(std::string &request) {
-//     this->httpRequest += request;
-// }
 void Request::setTimeout() {
     this->timeout = time(0);
 }
@@ -143,11 +127,6 @@ void Request::setLocationBlockWillBeUsed(std::map<std::string, std::string> &oth
     this->locationBlockWillBeUsed = other;
 }
 
-
-// void Request::setAllowRequestBodyChunk(bool chunk) {
-//     this->allowRequestBodyChunk = chunk;
-// }
-
 void Request::setRequestBodyChunk(bool chunk) {
     this->requestBodyChunk = chunk;
 }
@@ -175,8 +154,6 @@ void Request::setQueryString(std::string &setter) {
 Request::~Request() {}
 
 
-
-//test
 const std::string Request::getPageStatus(int status) const {
     if (!getLocationBlockWillBeUsed().count("location")) {
         return (getPages().at(".").at(status));

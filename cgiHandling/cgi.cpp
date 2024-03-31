@@ -86,8 +86,11 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file, const
         std::map<std::string, std::string> parsedHeaders = parseHeaders(headersMap);
         std::map<std::string, std::string> envVars;
 
-        std::string postData = request.getRequestBody();
-        std::ofstream tmpFile("tmpFile");
+        const std::string &postData = request.getRequestBody();
+        std::string fileName = "/tmp/tmpFile";
+        while (std::ifstream(fileName.c_str()))
+            fileName += "_";
+        std::ofstream tmpFile(fileName);
         tmpFile << postData;
         tmpFile.close();
 
@@ -99,19 +102,19 @@ std::pair<std::string, std::string> handleCgiPost(const std::string& file, const
         } else if (pid == 0) {
             close(pipe.getReadEnd());
             redirectStdoutStderr(pipe);
-
-            int tmpFileDescriptor = open("tmpFile", O_RDONLY);
+            int tmpFileDescriptor = open(fileName.c_str(), O_RDONLY);
             if (tmpFileDescriptor < 0) {
                 std::cerr << "Error opening tmpFile for reading.\n";
                 exit(EXIT_FAILURE);
             }
             if (dup2(tmpFileDescriptor, STDIN_FILENO) == -1) {
                 std::cerr << "Error redirecting standard input.\n";
+                close(tmpFileDescriptor);
                 exit(EXIT_FAILURE);
             }
 
             close(tmpFileDescriptor);
-            remove("tmpFile");
+            std::remove(fileName.c_str());
 
             envVars = fillEnv(parsedHeaders);
             envVars["SCRIPT_NAME"] = file;

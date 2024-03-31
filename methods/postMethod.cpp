@@ -14,7 +14,6 @@ void postFolder(std::string &root, std::string &uri, Request &request) {
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
     mapConstIterator it = directives.find("index");
 
-    //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
 

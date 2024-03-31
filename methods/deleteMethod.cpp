@@ -54,8 +54,6 @@ static std::string deleteAllFolderContent(Request &request,std::string &absolute
     return ("");
 }
 
-
-
 void deleteFolder(std::string &absolutePath, std::string &uri, Request &request) {
     (void) uri;
     std::string response;
@@ -71,12 +69,21 @@ void deleteFolder(std::string &absolutePath, std::string &uri, Request &request)
 
     std::string check = deleteAllFolderContent(request, absolutePath, 0);
     if (check.empty()) {
-        std::string page = request.getPageStatus(204);
-        request.response = responseBuilder()
-            .addStatusLine("204")
-            .addContentType("text/html")
-            .addResponseBody(page);
-        throw "55204";
+        if (rmdir(absolutePath.c_str()) != 0) {
+            std::string page = request.getPageStatus(502);
+            request.response = responseBuilder()
+                .addStatusLine("502")
+                .addContentType("text/html")
+                .addResponseBody(page);
+            throw "Error(): rmdir system call";
+        } else {
+            std::string page = request.getPageStatus(204);
+            request.response = responseBuilder()
+                .addStatusLine("204")
+                .addContentType("text/html")
+                .addResponseBody(page);
+            throw "204";
+        }
     }
 }
 

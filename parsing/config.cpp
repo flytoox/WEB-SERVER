@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/30 21:35:14 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/31 00:18:35 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,6 @@ void Server::overrideLocations(Server &s) {
 	}
 }
 
-//if you find listen && port the same -> duplicated : true
 void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
     bzero(&serverAddress, sizeof(serverAddress));
@@ -208,6 +207,8 @@ vector<Server> Server::parsingFile(string s) {
 					throw runtime_error("Error: wrong number of arguments on " + v[0] + " line " + lineNumStr.str() );
 				if (st.empty())
 					throw runtime_error("Error: The location on line "+ lineNumStr.str() +" block should be inside server Block");
+				if (st.top() == "location")
+					throw runtime_error("Error: Can't have a block inside a block");
 				st.push(v[0]);// on location brackets
 				if (server.directives.empty())
 					server.directives = directives;
@@ -237,6 +238,8 @@ vector<Server> Server::parsingFile(string s) {
 			if ((v[0] == "host" || v[0] == "listen" || v[0] == "server_name") && (st.top() == "location")) {
 				throw runtime_error("Error: on line " + lineNumStr.str()  + " \"" +  v[0] + "\" can't be inside location block");
 			}
+			if (v[0] == "location")
+				throw runtime_error("Error: location shouldn't be directive on line " + lineNumStr.str());
 			if ((v[0] == "cgi_bin" || v[0] == "error_page") && directives.count(v[0]) && st.top() == "location")
                 directives[v[0]] += '\n' + v[1];
 			else directives[v[0]] = v[1];

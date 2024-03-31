@@ -78,7 +78,7 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf) {
     int recevRequestLen = 0;
     if (FD_ISSET(i, &readsd)) {
         recevRequestLen = recv(i , request.buffer, sizeof(request.buffer), 0);
-    }
+    } 
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv()" << std::endl;
         close(i), FD_CLR(i, &allsd); return ;

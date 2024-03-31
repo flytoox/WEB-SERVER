@@ -16,8 +16,3 @@ void configFile::setTheVector( std::vector<Server> servers) {
     this->servers = servers;
 }
 configFile::~configFile() {}
-
-
-
-//TODO : take the directives and add them in each location block, if the directive exists in location block --> override
-//TODO: if all the servers don't have these [root, listen, host] -> generate an error > exit(1) 

@@ -1,7 +1,7 @@
 #include "../includes/webserve.hpp"
 
 void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> &allSocketsVector) {
-
+    signal(SIGPIPE, SIG_IGN);
     for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); ++it)
         allSocketsVector.insert(it->getSocketDescriptor());
 }
@@ -13,13 +13,14 @@ static void functionToSend(int i ,std::map<int, Request>& requests, std::set<int
     if (!isGetFile) {
         std::string &res = requests[i].response.build();
         size_t pos = 0;
+        if (!FD_ISSET(i, &writesd)) return ;
         while (pos < res.length()) {
             std::string chunk = "";
             chunk = res.substr(pos, 1024);
             pos += 1024;
             if (send(i, chunk.c_str(), chunk.length(), 0) == -1) {
                 std::cerr << "Error: send()" << std::endl;
-                exit(1);
+                return ;
             }
         }
     }
@@ -68,7 +69,7 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, std::map<int, Re
         if (std::find(ServersSD.begin(), ServersSD.end(), *i) == ServersSD.end()) {
             time_t now = time(0);
             time_t elapsedSeconds = now - requests[*i].getTimeout();
-            if (elapsedSeconds >= 10) {
+            if (elapsedSeconds >= 60) {
                 (requests[*i]).response = responseBuilder()
                     .addStatusLine("408")
                     .addContentType("text/html")

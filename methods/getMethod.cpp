@@ -15,18 +15,15 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
     std::map<std::string, std::string> directives = request.getLocationBlockWillBeUsed();
     mapConstIterator it = directives.find("index");
 
-    //* Index file if it exists
     if (it != directives.end()) {
         std::string indexFile = it->second;
 
-        // Remove extra "/" from start of root
         for (size_t i = 0; i < root.length(); i++) {
             if (root[i] == '/' && root[i+1] && root[i+1] == '/') {
                 root = root.erase(i, 1);
             }
         }
 
-        // If index file contains the root directory in it remove it
         if (indexFile.find(root) != std::string::npos) {
             indexFile = indexFile.substr(root.length());
         }
@@ -34,14 +31,12 @@ void getFolder(std::string &root, std::string &uri, Request &request) {
         std::string absolutePath = "";
         std::vector<std::string> splitedPaths;
 
-        // Insert all index files splitted by space into a vector
         std::istringstream iss(indexFile);
         std::string token;
         while (std::getline(iss, token, ' ')) {
             splitedPaths.push_back(token);
         }
 
-        // Decide which index file to use
         for (size_t i = 0; i < splitedPaths.size(); i++) {
             std::fstream file((root + '/' + splitedPaths[i]).c_str());
             if ( file.good() ) {

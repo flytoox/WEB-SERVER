@@ -118,20 +118,12 @@ public:
     void setRequestBodyChunk(bool chunk) ;
 
     void setQueryString(std::string &setter);
-
-    //test
-
-
-
-    //! Responses
-
     void setUrlencodedResponse(std::map<std::string, std::string> &setter);
 
     void setSaveLastBS(bool chunk) ;
 
 
     ~Request() ;
-    //create a copy constructor
 
 };
 
