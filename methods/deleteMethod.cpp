@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   deleteMethod.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/31 01:41:51 by obelaizi          #+#    #+#             */
+/*   Updated: 2024/03/31 01:41:52 by obelaizi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/webserve.hpp"
 
 static void errorOccurredOnDeleteion(Request &request, std::string path) {

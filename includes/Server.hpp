@@ -7,7 +7,7 @@
 #include <stack>
 #include <netinet/in.h>
 #include <vector>
-#include <string.h>
+#include <cstring>
 #include <sys/socket.h>
 #include <fstream>
 #include <sstream>

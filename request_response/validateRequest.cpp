@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   validateRequest.cpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/31 01:41:34 by obelaizi          #+#    #+#             */
+/*   Updated: 2024/03/31 01:41:35 by obelaizi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/webserve.hpp"
 static void handleUploadingError(Request &request, std::string statusCode);
 

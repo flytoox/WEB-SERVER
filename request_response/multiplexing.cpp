@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   multiplexing.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/31 01:41:18 by obelaizi          #+#    #+#             */
+/*   Updated: 2024/03/31 01:41:19 by obelaizi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/webserve.hpp"
 
 void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> &allSocketsVector) {

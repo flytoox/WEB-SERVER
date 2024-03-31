@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   postMethod.cpp                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/31 01:42:14 by obelaizi          #+#    #+#             */
+/*   Updated: 2024/03/31 01:42:15 by obelaizi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/webserve.hpp"
 
 void postFolder(std::string &root, std::string &uri, Request &request) {

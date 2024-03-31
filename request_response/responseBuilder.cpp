@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   responseBuilder.cpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/31 01:41:33 by obelaizi          #+#    #+#             */
+/*   Updated: 2024/03/31 01:41:34 by obelaizi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/webserve.hpp"
 
 STATUS_CODE_ENUM defineStatusCode(const std::string &type) {

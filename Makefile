@@ -2,10 +2,10 @@ NAME = webserv
 
 SRCS = $(wildcard *.cpp */*.cpp)
 
-CPP = g++
+CPP = c++
 
 HEADERS = $(wildcard *.hpp */*.hpp)
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -g 
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98
 
 OBJS = $(SRCS:.cpp=.o)
 

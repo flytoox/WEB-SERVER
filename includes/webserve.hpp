@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 17:24:49 by adnane            #+#    #+#             */
-/*   Updated: 2024/03/30 00:52:45 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/03/31 01:40:10 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 #include <map>
 #include <fstream>
 #include <netinet/in.h>
-#include <string.h>
+#include <cstring.h>
 #include <sys/socket.h>
 #include <sys/_endian.h>
 // #include <endian.h>
