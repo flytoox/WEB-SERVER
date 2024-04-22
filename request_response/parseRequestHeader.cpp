@@ -3,14 +3,52 @@
 /*                                                        :::      ::::::::   */
 /*   parseRequestHeader.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 17:28:24 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/30 00:33:30 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/22 16:58:25 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
+
+void    parseUri( Request &request, std::string &uri) {
+    if (uri.empty()) return;
+    std::vector<std::string> v = splitWithChar(uri, '/');
+    bool hasBs = (uri[uri.length() - 1] == '/');
+    request.setSaveLastBS(hasBs);
+    std::stack<std::string> s;
+    for (size_t i = 0; i < v.size(); i++) {
+        if (v[i] == "..") {
+            if (!s.empty())
+                s.pop();
+        } else if (v[i] != ".") {
+            s.push(v[i]);
+        }
+    }
+    if (s.empty()) {
+        uri = "/";
+        request.setUri(uri);
+        return;
+    }
+    std::string lst = s.top();
+    s.pop();
+    size_t pos = lst.rfind('?');
+    if (pos != std::string::npos) {
+        std::string queryString = lst.substr(pos + 1);
+        request.setQueryString(queryString);
+        lst = lst.substr(0, pos);
+    }
+    if (lst.empty()) request.setSaveLastBS(true);
+    else s.push(lst);
+    uri = "";
+    while (!s.empty()) {
+        uri = "/" + s.top() + uri;
+        s.pop();
+    }
+    if (uri.empty()) uri = "/";
+    request.setUri(uri);
+}
 
 bool parseFirstLine(std::string &s, Request &request) {
     std::vector<std::string> lines = splitWhiteSpaces(s);

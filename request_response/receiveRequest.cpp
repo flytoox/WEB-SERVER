@@ -6,25 +6,32 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/31 01:41:30 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/31 01:41:31 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/04 16:27:34 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
 
-
 void reCheckTheServer(configFile &configurationServers, std::string &hostValue, Request &request) {
-    if (request.dup == true) {
-        for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); it++) {
-            std::map<std::string, std::string>tmp = it->getdirectives();
-            if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost) {
-                std::map<std::string, std::string> serverDirectives = it->getdirectives();
-                std::vector<std::map<std::string, std::string> > serverLocationsBlock = it->getlocationsBlock();
-                request.setDirectivesAndPages(serverDirectives, it->getPages());
-                request.setLocationsBlock(serverLocationsBlock);
-                break ;
+    try {
+        if (request.dup == true) {
+            for (const_iterator it = (configurationServers.getServers()).begin(); it != (configurationServers.getServers()).end(); it++) {
+                std::map<std::string, std::string>tmp = it->getdirectives();
+                if (tmp["server_name"] == hostValue && tmp["listen"] == request.RePort && tmp["host"] == request.ReHost) {
+                    std::map<std::string, std::string> serverDirectives = it->getdirectives();
+                    std::vector<std::map<std::string, std::string> > serverLocationsBlock = it->getlocationsBlock();
+                    request.setDirectivesAndPages(serverDirectives, it->getPages());
+                    request.setLocationsBlock(serverLocationsBlock);
+                    break ;
+                }
             }
         }
+    } catch (std::exception &e) {
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(400));
+        throw "400";
     }
 }
 
@@ -39,11 +46,11 @@ bool parseBody(Request &request) {
     }
     request.setRequestBody(request.stringUnparsed);
     request.stringUnparsed = "";
-
     return checkLimitRead(request, request.binaryRead);
 }
 
 bool parseHeader(std::string &s, Request &request, configFile &configurationServers) {
+    (void)configurationServers;
     if (request.stringUnparsed.empty())
         return false;
     if (request.getRequestBodyChunk())
@@ -93,7 +100,7 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf) {
     } 
     if (recevRequestLen < 0) {
         std::cerr << "Error: recv()" << std::endl;
-        close(i), FD_CLR(i, &allsd); return ;
+        throw "REMOVE_THE_CLIENT";
     }
     if (recevRequestLen) {
         if (request.done){
@@ -105,15 +112,14 @@ void receiveRequestPerBuffer(Request &request, int i, configFile &cnf) {
         }
         request.checkTimeout = true;
         request.setTimeout();
-    }
-
-    request.stringUnparsed.append(request.buffer, recevRequestLen);
-    if (parseHeader(request.stringUnparsed, request, cnf)) {
-        request.response = responseBuilder()
-            .addStatusLine("400")
-            .addContentType("text/html")
-            .addResponseBody(request.getPageStatus(400));
-        throw "400";
+        request.stringUnparsed.append(request.buffer, recevRequestLen);
+        if (parseHeader(request.stringUnparsed, request, cnf)) {
+            request.response = responseBuilder()
+                .addStatusLine("400")
+                .addContentType("text/html")
+                .addResponseBody(request.getPageStatus(400));
+            throw "400";
+        }
     }
     if ((request.getRequestBodyChunk() && request.binaryRead == request.realContentLength)) {
         request.done = true;

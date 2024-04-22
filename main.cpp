@@ -30,13 +30,16 @@ void checkBasicErrors(std::string path) {
 
 int main(int argc, char **argv) {
     configFile	configurationServers;
+	std::string path = "lconfig.conf";
 
-	if (argc != 2) {
-		std::cerr << "Error: invalid number of arguments" << std::endl;
-		return (1);
+	if (argc == 2) {
+		path = argv[1];
+	} else if (argc > 2) {
+		std::cerr << "Error: too many arguments" << std::endl;
+		exit(1);
 	}
-	checkBasicErrors(argv[1]);
-	parseConfigFile(configurationServers, argv[1]);
+	checkBasicErrors(path);
+	parseConfigFile(configurationServers, path);
 	return 0;
 }
 

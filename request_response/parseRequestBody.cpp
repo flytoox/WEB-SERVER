@@ -3,37 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parseRequestBody.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 17:27:16 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/31 01:41:24 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/22 16:51:48 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
-
-void    parseUri( Request &request, std::string &uri) {
-    if (uri.empty()) return;
-    std::vector<std::string> v = splitWithChar(uri, '/');
-    bool hasBs = (uri[uri.length() - 1] == '/');
-    request.setSaveLastBS(hasBs);
-    std::stack<std::string> s;
-    for (size_t i = 0; i < v.size(); i++) {
-        if (v[i] == "..") {
-            if (!s.empty())
-                s.pop();
-        } else if (v[i] != ".") {
-            s.push(v[i]);
-        }
-    }
-    uri = "";
-    while (!s.empty()) {
-        uri = "/" + s.top() + uri;
-        s.pop();
-    }
-    if (uri.empty()) uri = "/";
-    request.setUri(uri);
-}
 
 void    fillFirstPartOfMultipart(Request &request) {
     size_t pos = request.stringUnparsed.find("\r\n\r\n");
@@ -137,8 +114,12 @@ void multipartBody(Request &request) {
             throw "400";
         }
     } catch (std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        exit(1);
+        std::remove(request.fileName.c_str());
+        request.response = responseBuilder()
+            .addStatusLine("400")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(400));
+        throw "400";
     }
 }
 

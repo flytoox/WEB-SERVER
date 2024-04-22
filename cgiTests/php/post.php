@@ -9,6 +9,8 @@ header("Content-Type: text/html");
 echo "<!DOCTYPE html>\n";
 echo "<html>\n";
 echo "<head>\n";
+echo "    <meta charset=\"UTF-8\">\n";
+echo "    <link rel=\"icon\" href=\"/Desktop/WebServ/pages/response_pages/favicon.ico\">\n";
 echo "    <title>CGI Example</title>\n";
 echo "    <link rel=\"stylesheet\" href=\"/Desktop/WebServ/pages/styles.css\">\n";
 echo "</head>\n";

@@ -5,6 +5,8 @@
     echo "<!DOCTYPE html>\n";
     echo "<html>\n";
     echo "<head>\n";
+    echo "    <meta charset=\"UTF-8\">\n";
+    echo "    <link rel=\"icon\" href=\"/Desktop/WebServ/pages/response_pages/favicon.ico\">\n";
     echo "    <title>CGI Example</title>\n";
     echo "    <link rel=\"stylesheet\" href=\"/Desktop/WebServ/pages/styles.css\">\n";
     echo "</head>\n";
@@ -22,15 +24,7 @@
     echo "    <div class=\"head\">\n";
     echo "        <h1 class=\"bigTitle\">Hello, <font class=\"special\">CGI</font>!</h1>\n";
     echo "        <p>This is an example of a CGI script.</p>\n";
-    echo "        <p>Bellow are some more examples image/video.</p>\n";
     echo "    </div>\n";
-    echo "    <div>\n";
-    echo "        <ul class=\"links\">\n";
-    echo "            <li class=\"linkItem\"><a href=\"/Desktop/WebServ/cgiTests/php/exampleImage.php\">Image</a></li>\n";
-    echo "            <li class=\"linkItem\"><a href=\"/Desktop/WebServ/cgiTests/php/exampleVideo.php\">Video</a></li>\n";
-    echo "        </ul>\n";
-    echo "    </div>";
-    echo "    <div class=\"separator\"></div>\n";
     echo "    <div>\n";
     echo "        <h2>Query String Test</h2>\n";
     echo "        <div class=\"separator\"></div>\n";

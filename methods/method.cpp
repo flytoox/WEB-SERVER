@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   method.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:00:44 by aait-mal          #+#    #+#             */
-/*   Updated: 2024/03/25 01:12:06 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/04/22 16:52:43 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
 
 void method(Request &request, void (*fileFunc)(std::string &, std::string &, Request &), void (*folderFunc)(std::string &, std::string &, Request &)) {
-
+    
     if (request.getHttpVerb() == "POST")
         uploadRequestBody(request);
 
@@ -21,10 +21,6 @@ void method(Request &request, void (*fileFunc)(std::string &, std::string &, Req
     retrieveRootAndUri(request, root);
 
     std::string uri = request.getUri();
-    if (uri.find('?') != std::string::npos) {
-        parseQueriesInURI(request, uri);
-    }
-
     uri = decodeUrl(uri);
     request.setUri(uri);
 
@@ -42,7 +38,6 @@ void method(Request &request, void (*fileFunc)(std::string &, std::string &, Req
     struct stat fileStat;
 
     if (stat(path, &fileStat ) == 0) {
-
         if (S_ISREG(fileStat.st_mode)) {
             fileFunc(absolutePath, uri, request);
         } else if (S_ISDIR(fileStat.st_mode)) {

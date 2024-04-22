@@ -6,12 +6,12 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/31 01:41:34 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/31 01:41:35 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/04 16:10:56 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
-static void handleUploadingError(Request &request, std::string statusCode);
+static void handleUploadingError(Request &request, const char *statusCode);
 
 
 std::vector<std::string> splitUri(const std::string& input, const std::string& delimiter) {
@@ -98,9 +98,26 @@ static std::map<std::string, std::string> fetchSuitableLocationBlock(Request &re
     return (found);
 }
 
-
 void validateHeader(Request &request) {
-
+    if (request.getHttpVerb() == "PUT" || request.getHttpVerb() == "OPTIONS"
+        || request.getHttpVerb() == "TRACE" || request.getHttpVerb() == "CONNECT"
+        || request.getHttpVerb() == "PATCH" || request.getHttpVerb() == "PROPFIND"
+        || request.getHttpVerb() == "PROPPATCH" || request.getHttpVerb() == "MKCOL"
+        || request.getHttpVerb() == "COPY" || request.getHttpVerb() == "MOVE"
+        || request.getHttpVerb() == "LOCK" || request.getHttpVerb() == "UNLOCK"
+        || request.getHttpVerb() == "REPORT" || request.getHttpVerb() == "MKACTIVITY"
+        || request.getHttpVerb() == "CHECKOUT" || request.getHttpVerb() == "MERGE"
+        || request.getHttpVerb() == "M-SEARCH" || request.getHttpVerb() == "NOTIFY"
+        || request.getHttpVerb() == "SUBSCRIBE" || request.getHttpVerb() == "UNSUBSCRIBE"
+        || request.getHttpVerb() == "PURGE" || request.getHttpVerb() == "LINK"
+        || request.getHttpVerb() == "UNLINK" || request.getHttpVerb() == "HEAD") {
+        request.response = responseBuilder()
+            .addStatusLine("501")
+            .addContentType("text/html")
+            .addResponseBody(request.getPageStatus(501));
+        throw "501";
+    }
+    
     if (request.getHttpVerb() != "POST" && request.getHttpVerb() != "GET" && request.getHttpVerb() != "DELETE") {
         request.response = responseBuilder()
             .addStatusLine("405")
@@ -150,27 +167,23 @@ void validateHeader(Request &request) {
 
     if (location.find("return") != location.end() ) {
 
-		std::string changeLocation = location["return"];
-		std::vector<std::string> vectorReturn = splitString(changeLocation, " ");
-		changeLocation = *(vectorReturn.end() - 1);
+		std::vector<std::string> v = splitString(location["return"], " ");
+		std::string changeLocation = v[1], statusCode = v[0];
+        if (changeLocation.find("://") == std::string::npos)
+            changeLocation = "http://" + changeLocation;
 
-		if ( changeLocation.length() ) {
-			if (changeLocation.substr(0, 8) != "https://") {
-				changeLocation.insert(0, "https://");
-			}
-			request.response = responseBuilder()
-				.addStatusLine(*vectorReturn.begin())
-				.addLocation(changeLocation)
-				.addContentType("text/html")
-				.addResponseBody("<html><h1>" + (*vectorReturn.begin()) + "</h1></html>");
+        request.response = responseBuilder()
+            .addStatusLine(statusCode)
+            .addLocationFile(changeLocation)
+            .addContentType("text/html")
+            .addResponseBody("<html><h1>" + statusCode + "</h1></html>");
 
-			throw "return directive";
-		}
+        throw "return directive";
     }
     if (!httpRequestHeaders.count("Content-Type") || httpRequestHeaders["Content-Type"].find("multipart/form-data;") == std::string::npos) return ;
     std::string contentType = httpRequestHeaders["Content-Type"];
     size_t pos = contentType.find("multipart/form-data; boundary=");
-     if (pos != std::string::npos) {
+    if (pos != std::string::npos) {
         std::string boun = contentType.substr(pos + 30);
         boun.insert(0, "--");
         request.setBoundary(boun);
@@ -183,9 +196,10 @@ void validateHeader(Request &request) {
             .addResponseBody(request.getPageStatus(400));
         throw "400";
     }
-    if (location["upload_enable"] == "off" || location.find("upload_store") == location.end()) {
+
+    if (!location.count("upload_enable") || location["upload_enable"] != "on" || !location.count("upload_store"))
         handleUploadingError(request, "403");
-    }
+    
     DIR *dir_ptr = opendir(location["upload_store"].c_str());
     if (dir_ptr == NULL)
         handleUploadingError(request, "500");
@@ -197,16 +211,16 @@ void validateHeader(Request &request) {
 }
 
 
-static void handleUploadingError(Request &request, std::string statusCode) {
+static void handleUploadingError(Request &request, const char * statusCode) {
 
-	int status = std::atoi(statusCode.c_str());
+	int status = std::atoi(statusCode);
 
-	std::pair<std::string, std::string> p = std::make_pair("Connection", "closed");
+	std::pair<std::string, std::string> p = std::make_pair("Connection", "close");
 	request.setHttpRequestHeaders(p);
-	std::string page = request.getPageStatus(status);
+    
 	request.response = responseBuilder()
 		.addStatusLine(statusCode)
 		.addContentType("text/html")
-		.addResponseBody(page);
-		throw ((const char *)statusCode.c_str());
+		.addResponseBody(request.getPageStatus(status));
+	throw statusCode;
 }

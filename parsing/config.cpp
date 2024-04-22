@@ -6,13 +6,14 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/08 18:35:45 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/31 00:18:35 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/04 23:30:03 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
 
 using namespace std;
+
 
 bool checkReturnOnLocation(vector<map<string, string> > &locationsBlock) {
 	for (size_t i = 0; i < locationsBlock.size(); i++) {
@@ -137,13 +138,17 @@ void adjustServerAddress(Server &server, struct sockaddr_in &serverAddress) {
 
 void Server::runServers(std::vector<Server> &servers) {
 	std::set<std::pair<std::string, std::string> > Check;
-	for (size_t i = 0; i < servers.size(); i++)
-	{
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (servers[i].directives.count("host") && servers[i].directives["host"] == "127.0.0.1")
+			servers[i].directives["host"] = "localhost";
 		for (size_t j = 0; j < servers.size(); j++) {
 			if (i == j) continue;
 			if (servers[i].directives["listen"] == servers[j].directives["listen"]
-			 && servers[i].directives["host"] == servers[j].directives["host"])
-			 servers[i].duplicated = true, servers[j].duplicated = true;
+				&& servers[i].directives["host"] == servers[j].directives["host"] && servers[i].directives["server_name"] == servers[j].directives["server_name"])
+			throw runtime_error("Error: Duplicate servers");
+			if (servers[i].directives["listen"] == servers[j].directives["listen"]
+				&& servers[i].directives["host"] == servers[j].directives["host"])
+				servers[i].duplicated = true, servers[j].duplicated = true;
 		}
 		adjustServerAddress(servers[i], servers[i].serverAddress);
 		servers[i].setServerAddress(servers[i].serverAddress);
@@ -219,6 +224,7 @@ vector<Server> Server::parsingFile(string s) {
 			if (v.size() == 1 && v[0] == "}") {
 				if (st.empty()) throw runtime_error("Error: } without {");
 				if (st.top() == "server") {
+					server.directives.insert(directives.begin(), directives.end());
 					server.locationsBlock = locationsBlock;
 					servers.push_back(server);
 					directives.clear();
@@ -240,7 +246,7 @@ vector<Server> Server::parsingFile(string s) {
 			}
 			if (v[0] == "location")
 				throw runtime_error("Error: location shouldn't be directive on line " + lineNumStr.str());
-			if ((v[0] == "cgi_bin" || v[0] == "error_page") && directives.count(v[0]) && st.top() == "location")
+			if ((v[0] == "cgi_bin" || v[0] == "error_page") && directives.count(v[0]))
                 directives[v[0]] += '\n' + v[1];
 			else directives[v[0]] = v[1];
 			if (v[0] == "root" && v.size() > 2)
@@ -251,8 +257,6 @@ vector<Server> Server::parsingFile(string s) {
 				if (v[i] == "") continue;
 				directives[v[0]] += " " + v[i];
 			}
-			if (st.top() == "server")
-				server.directives.insert(directives.begin(), directives.end());
 		}
 		file.close();
 	}
@@ -270,10 +274,10 @@ vector<Server> Server::parsingFile(string s) {
 				throw runtime_error("Error: Invalid return on server Num " + lineNumStr.str());
 			fillErrorPages(servers[i]);
 		}
+		runServers(servers);
 	} catch (runtime_error &e) {
 		cerr << e.what() << endl;
 		exit(1);
 	}
-	runServers(servers);
 	return (servers);
 }

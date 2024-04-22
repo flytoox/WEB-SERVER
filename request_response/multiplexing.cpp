@@ -6,7 +6,7 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/31 01:41:18 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/31 01:41:19 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/04 16:27:57 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,20 @@ void getAllTheConfiguredSockets(configFile &configurationServers, std::set<int> 
 }
 
 
-static void functionToSend(int i ,std::map<int, Request>& requests, std::set<int> &Fds, bool isGetFile) {
+static void functionToSend(int i ,std::map<int, Request>& requests, std::set<int> &Fds, bool isGetFile, bool shouldBeRemoved) {
 
     FD_CLR(i, &readsd);
+    if (shouldBeRemoved) {
+        Fds.erase(i);
+        close(i);
+        requests.erase(i);
+        FD_CLR(i, &allsd);
+        return ;
+    }
     if (!isGetFile) {
         std::string &res = requests[i].response.build();
         size_t pos = 0;
+
         if (!FD_ISSET(i, &writesd)) return ;
         while (pos < res.length()) {
             std::string chunk = "";
@@ -32,11 +40,14 @@ static void functionToSend(int i ,std::map<int, Request>& requests, std::set<int
             pos += 1024;
             if (send(i, chunk.c_str(), chunk.length(), 0) == -1) {
                 std::cerr << "Error: send()" << std::endl;
+                Fds.erase(i);
+                close(i);
+                requests.erase(i);
+                FD_CLR(i, &allsd);
                 return ;
             }
         }
     }
-
     //* Check of the connection is closed, if yes
     std::map<std::string, std::string> all = (requests[i]).getHttpRequestHeaders();
     if (all.find("Connection") != all.end() && (all).find("Connection")->second == "keep-alive") {
@@ -47,10 +58,10 @@ static void functionToSend(int i ,std::map<int, Request>& requests, std::set<int
         requests[i] = newRequest;
         return ;
     }
-    close(i);
     FD_CLR(i, &allsd);
     requests.erase(i);
     Fds.erase(i);
+    close(i);
 }
 
 void configureRequestClass(Request &request, configFile &configurationServers, int i) {
@@ -86,7 +97,7 @@ void checkTimeOut(std::set<int> &Fds, std::set<int> &ServersSD, std::map<int, Re
                     .addStatusLine("408")
                     .addContentType("text/html")
                     .addResponseBody(requests[*i].getPageStatus(408));
-                functionToSend(*i, requests, Fds, false);
+                functionToSend(*i, requests, Fds, false, false);
             }
         }
     }
@@ -153,7 +164,7 @@ void funcMultiplexingBySelect(configFile &configurationServers) {
         } catch (const char *error) {
             //* RESPONSE
             std::string err = error;
-            functionToSend(responseD, requests, Fds, err == "GET_FILE");
+            functionToSend(responseD, requests, Fds, err == "GET_FILE", err == "REMOVE_THE_CLIENT");
         }
     }
 }

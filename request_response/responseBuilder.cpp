@@ -6,46 +6,11 @@
 /*   By: obelaizi <obelaizi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/31 01:41:33 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/03/31 01:41:34 by obelaizi         ###   ########.fr       */
+/*   Updated: 2024/04/04 15:21:22 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/webserve.hpp"
-
-STATUS_CODE_ENUM defineStatusCode(const std::string &type) {
-
-    if (type == "200")
-        return OK;
-    if (type == "201")
-        return CREATED;
-    if (type == "204")
-        return NO_CONTENT;
-    if (type == "301")
-        return MOVED_PERMANETLY;
-    if (type == "400")
-        return BAD_REQUEST;
-    if (type == "403")
-        return FORBIDDEN;
-    if (type == "404")
-        return NOT_FOUND;
-    if (type == "405")
-        return METHOD_NOT_ALLOWED;
-    if (type == "409")
-        return CONFLICT;
-    if (type == "413")
-        return REQUEST_TOO_LARGE;
-    if (type == "414")
-        return URI_TOO_LONG;
-    if (type == "500")
-        return INTERNAL_SERVER_ERROR;
-    if (type == "501")
-        return NOT_IMPLEMENTED;
-    if (type == "302")
-        return FOUND;
-    if (type == "408")
-        return TIMEOUT;
-    return BAD_GATEWAY;
-}
 
 std::string defineMimeType(const std::string &type) {
 
@@ -87,24 +52,29 @@ std::string defineMimeType(const std::string &type) {
 void responseBuilder::defineStatusLine(const std::string &type) {
 
     std::string ret;
+    std::stringstream ss;
+    ss << type;
+    int typeCode;
+    ss >> typeCode;
 
-    switch (defineStatusCode(type)) {
-        case 0 : ret = RESPONSE_OK;  break ;
-        case 1 : ret = RESPONSE_CREATED;  break ;
-        case 2 : ret = RESPONSE_NO_CONTENT;  break ;
-        case 3 : ret = RESPONSE_MOVED_PERMANETLY;  break ;
-        case 4 : ret = RESPONSE_BAD_REQUEST;  break ;
-        case 5 : ret = RESPONSE_FORBIDDEN;  break ;
-        case 6 : ret = RESPONSE_NOT_FOUND; break ;
-        case 7 : ret = RESPONSE_METHOD_NOT_ALLOWED; break ;
-        case 8 : ret = RESPONSE_CONFLICT; break ;
-        case 9 : ret = RESPONSE_REQUEST_TOO_LARGE; break ;
-        case 10 : ret = RESPONSE_URI_TOO_LONG; break ;
-        case 11 : ret = RESPONSE_INTERNAL_SERVER_ERROR; break ;
-        case 12 : ret = RESPONSE_NOT_IMPLEMENTED; break ;
-        case 13 : ret = RESPONSE_BAD_GATEWAY; break ;
-        case 14 : ret = RESPONSE_FOUND; break ;
-        case 15 : ret = RESPONSE_REQUEST_TIMEOUT; break ;
+    switch (typeCode) {
+        case 200 : ret = RESPONSE_OK;  break ;
+        case 201 : ret = RESPONSE_CREATED;  break ;
+        case 204 : ret = RESPONSE_NO_CONTENT;  break ;
+        case 301 : ret = RESPONSE_MOVED_PERMANETLY;  break ;
+        case 302 : ret = RESPONSE_FOUND;  break ;
+        case 400 : ret = RESPONSE_BAD_REQUEST;  break ;
+        case 403 : ret = RESPONSE_FORBIDDEN;  break ;
+        case 404 : ret = RESPONSE_NOT_FOUND;  break ;
+        case 405 : ret = RESPONSE_METHOD_NOT_ALLOWED;  break ;
+        case 408 : ret = RESPONSE_REQUEST_TIMEOUT;  break ;
+        case 409 : ret = RESPONSE_CONFLICT;  break ;
+        case 413 : ret = RESPONSE_REQUEST_TOO_LARGE;  break ;
+        case 414 : ret = RESPONSE_URI_TOO_LONG;  break ;
+        case 500 : ret = RESPONSE_INTERNAL_SERVER_ERROR;  break ;
+        case 501 : ret = RESPONSE_NOT_IMPLEMENTED;  break ;
+        case 502 : ret = RESPONSE_BAD_GATEWAY;  break ;
+        default : ret = RESPONSE_INTERNAL_SERVER_ERROR;  break ;
     }
     resultMsg = ret;
 }
@@ -162,7 +132,7 @@ responseBuilder& responseBuilder::addCustomHeader(const std::string &header, con
 
 responseBuilder& responseBuilder::addLocationFile(const std::string &location) {
 
-    headersResponses.insert(std::make_pair("Location:", location));
+    headersResponses.insert(std::make_pair(LOCATION, location));
     return (*this);
 }
 
@@ -197,9 +167,7 @@ std::string &responseBuilder::build() {
         res += it->first + it->second + CRLF;
     
     res += "Keep-Alive: timeout=5\r\n\r\n";
-    if (body.length() != 0) {
-        res.insert(res.length(), body);
-        res.insert(res.length(), CRLF);
-    }
+    if (body.length() != 0)
+        res.insert(res.length(), body + CRLF);
     return res;
 }

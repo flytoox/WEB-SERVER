@@ -10,14 +10,15 @@ std::string readFromPipeAndClose(int readEnd) {
     std::vector<char> buffer(4096);
     ssize_t bytesRead;
 
-    while ((bytesRead = read(readEnd, buffer.data(), buffer.size())) > 0) {
-        ss.write(buffer.data(), bytesRead);
+    while ((bytesRead = read(readEnd, &buffer[0], buffer.size())) > 0) {
+        ss.write(&buffer[0], bytesRead);
     }
 
     close(readEnd);
 
     if (bytesRead == -1) {
         std::cerr << "Error reading from pipe" << "\n";
+        throw "REMOVE_THE_CLIENT";
     }
 
     return ss.str();
@@ -39,7 +40,7 @@ int executeChildProcess(const std::string& interpreter, const std::string& scrip
 
     envp.push_back(NULL);
 
-    execve(interpreter.c_str(), argv.data(), envp.data());
+    execve(interpreter.c_str(), &argv[0], &envp[0]);
 
     // Free the duplicated strings after execve
     for (size_t i = 0; i < envp.size(); ++i) {
