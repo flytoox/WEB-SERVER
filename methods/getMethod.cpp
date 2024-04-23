@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   getMethod.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-mal <aait-mal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: obelaizi <obelaizi@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/31 01:41:52 by obelaizi          #+#    #+#             */
-/*   Updated: 2024/04/04 01:51:43 by aait-mal         ###   ########.fr       */
+/*   Updated: 2024/04/23 21:04:27 by obelaizi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,6 +216,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
         res += "Keep-Alive: timeout=5\r\n\r\n";
         if ((send(request.FD, res.c_str(), res.length(), 0)) == -1) {
             std::cerr << "Error: Send" << std::endl;
+            inputFile.close();
             throw "REMOVE_THE_CLIENT";
         }
         request.lastPos = 0;
@@ -238,6 +239,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
         res.insert(res.length(), "\r\n");
         if (send(request.FD, res.c_str(), res.length(), 0) == -1) {
             std::cerr << "Error: send()" << std::endl;
+            inputFile.close();
             throw "REMOVE_THE_CLIENT";
         }
         inputFile.close();
@@ -245,6 +247,7 @@ void getFile(std::string &absolutePath, std::string &uri, Request &request) {
     }
     if (send(request.FD, request.bufferFile, readBytes, 0) == -1) {
         std::cerr << "Error: send()" << std::endl;
+        inputFile.close();
         throw "REMOVE_THE_CLIENT";
     }
     request.lastPos = inputFile.tellg();
